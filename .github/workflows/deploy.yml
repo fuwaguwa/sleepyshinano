@@ -21,6 +21,8 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            export PATH="$HOME/.bun/bin:$PATH"
+            export PATH="$HOME/.nvm/versions/node/v24.12.0/bin:$PATH"
             cd ~/projects/Shinano
             git pull origin master
             
