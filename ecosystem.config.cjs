@@ -1,8 +1,8 @@
 module.exports = {
   apps: [{
-    name: "Shinana",
+    name: "Shinano",
     script: "bun",
-    args: "run prod",
+    args: "run start",
     env_production: {
       NODE_ENV: "production"
     },
