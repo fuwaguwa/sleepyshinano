@@ -9,11 +9,6 @@ import { startCatchers, updateServerCount } from "../lib/utils";
   event: Events.ClientReady,
 })
 export class ReadyListener extends Listener {
-  public constructor(context: Listener.LoaderContext, options: ListenerOptions) {
-    super(context, options);
-    this.container.logger.info("ReadyListener listener loaded.");
-  }
-
   public override async run() {
     this.container.logger.info("Shinano is ready!");
 
