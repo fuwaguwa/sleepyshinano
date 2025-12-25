@@ -12,6 +12,7 @@ import type {
 } from "@sapphire/plugin-subcommands";
 import type { ChatInputCommandInteraction, Guild, Interaction, User, VoiceChannel } from "discord.js";
 import mongoose from "mongoose";
+import { buttonCollector, paginationCollector } from "./collectors";
 
 /**
  * Connect to MongoDB database
@@ -168,10 +169,17 @@ export function logSuccessfulCommand(
  * Refresh/clean up user collectors when they run a new command
  */
 export function collectorsRefresh(interaction: ChatInputCommandInteraction | Interaction) {
-  // Stop and remove existing collectors for this user
-  if (container.buttonCollector.has(interaction.user.id)) {
-    const collector = container.buttonCollector.get(interaction.user.id);
+  // Stop and remove existing button collectors for this user
+  if (buttonCollector.has(interaction.user.id)) {
+    const collector = buttonCollector.get(interaction.user.id);
     if (collector && !collector.ended) collector.stop();
-    container.buttonCollector.delete(interaction.user.id);
+    buttonCollector.delete(interaction.user.id);
+  }
+
+  // Stop and remove existing pagination collectors for this user
+  if (paginationCollector.has(interaction.user.id)) {
+    const collector = paginationCollector.get(interaction.user.id);
+    if (collector && !collector.ended) collector.stop();
+    paginationCollector.delete(interaction.user.id);
   }
 }
