@@ -15,7 +15,12 @@ import {
   MessageFlagsBitField,
 } from "discord.js";
 import { buttonCollector } from "../../lib/collectors";
+import { fetchJson } from "../../lib/utils";
 import User from "../../schemas/User";
+
+interface TopggVoteCheck {
+  voted: number;
+}
 
 @ApplyOptions<SubcommandOptions>({
   description: "N/A",
@@ -118,9 +123,7 @@ export class DeveloperCommand extends Subcommand {
   public async subcommandEval(
     interaction: Subcommand.ChatInputCommandInteraction
   ) {
-    if (!interaction.deferred) {
-      await interaction.deferReply();
-    }
+    if (!interaction.deferred) await interaction.deferReply();
 
     const code = interaction.options.getString("code", true);
 
@@ -155,9 +158,7 @@ export class DeveloperCommand extends Subcommand {
   public async subcommandVote(
     interaction: Subcommand.ChatInputCommandInteraction
   ) {
-    if (!interaction.deferred) {
-      await interaction.deferReply();
-    }
+    if (!interaction.deferred) await interaction.deferReply();
 
     const user = interaction.options.getUser("user", true);
     const botId = this.container.client.user?.id || "1002193298229829682";
@@ -165,32 +166,24 @@ export class DeveloperCommand extends Subcommand {
     // Check Shinano database
     const voteUser = await User.findOne({ userId: user.id });
 
-    let voteStatus: boolean | string;
+    let voteStatus: boolean | string = "N/A";
     let voteTime: number | string = "N/A";
 
     if (voteUser?.lastVoteTimestamp) {
       const currentTime = Math.floor(Date.now() / 1000);
       voteTime = voteUser.lastVoteTimestamp;
       voteStatus = currentTime - voteUser.lastVoteTimestamp < 43200; // 12 hours
-    } else {
-      voteStatus = "N/A";
     }
 
     // Check Top.gg database
     let topggVoteStatus = false;
     if (process.env.TOPGG_API_KEY) {
       try {
-        const response = await fetch(
+        const result = await fetchJson<TopggVoteCheck>(
           `https://top.gg/api/bots/${botId}/check?userId=${user.id}`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: process.env.TOPGG_API_KEY,
-            },
-          }
+          { headers: { Authorization: process.env.TOPGG_API_KEY } }
         );
-        const topggResult = await response.json();
-        topggVoteStatus = topggResult.voted === 1;
+        topggVoteStatus = result.voted === 1;
       } catch (error) {
         this.container.logger.error(
           "Failed to check Top.gg vote status:",
@@ -279,9 +272,7 @@ export class DeveloperCommand extends Subcommand {
   public async subcommandBLAdd(
     interaction: Subcommand.ChatInputCommandInteraction
   ) {
-    if (!interaction.deferred) {
-      await interaction.deferReply();
-    }
+    if (!interaction.deferred) await interaction.deferReply();
 
     const targetUser = interaction.options.getUser("user", true);
 
@@ -317,9 +308,7 @@ export class DeveloperCommand extends Subcommand {
   public async subcommandBLRemove(
     interaction: Subcommand.ChatInputCommandInteraction
   ) {
-    if (!interaction.deferred) {
-      await interaction.deferReply();
-    }
+    if (!interaction.deferred) await interaction.deferReply();
 
     const targetUser = interaction.options.getUser("user", true);
 
@@ -350,9 +339,7 @@ export class DeveloperCommand extends Subcommand {
   public async subcommandBLCheck(
     interaction: Subcommand.ChatInputCommandInteraction
   ) {
-    if (!interaction.deferred) {
-      await interaction.deferReply();
-    }
+    if (!interaction.deferred) await interaction.deferReply();
 
     const targetUser = interaction.options.getUser("user", true);
 

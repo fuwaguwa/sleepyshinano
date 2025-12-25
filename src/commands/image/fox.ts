@@ -1,13 +1,19 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
 import { EmbedBuilder } from "discord.js";
+import {
+  createFooter,
+  fetchJson,
+  standardCommandOptions,
+} from "../../lib/utils";
+
+interface FoxApiResponse {
+  image: string;
+}
 
 @ApplyOptions<CommandOptions>({
   description: "Generate an image of a fox!",
-  cooldownLimit: 1,
-  cooldownDelay: 4500,
-  cooldownFilteredUsers: process.env.OWNER_IDS?.split(",") || [],
-  preconditions: ["NotBlacklisted"],
+  ...standardCommandOptions,
 })
 export class FoxCommand extends Command {
   public override registerApplicationCommands(registry: Command.Registry) {
@@ -22,18 +28,16 @@ export class FoxCommand extends Command {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {
-      const response = await fetch("https://randomfox.ca/floof/");
-      const fox = await response.json();
+      const { image } = await fetchJson<FoxApiResponse>(
+        "https://randomfox.ca/floof/"
+      );
 
-      const foxEmbed = new EmbedBuilder()
+      const embed = new EmbedBuilder()
         .setColor("Random")
-        .setImage(fox.image)
-        .setFooter({
-          text: `Requested by ${interaction.user.username}`,
-          iconURL: interaction.user.displayAvatarURL({ forceStatic: false }),
-        });
+        .setImage(image)
+        .setFooter(createFooter(interaction.user));
 
-      await interaction.editReply({ embeds: [foxEmbed] });
+      await interaction.editReply({ embeds: [embed] });
     } catch (error) {
       this.container.logger.error("Failed to fetch fox:", error);
       await interaction.editReply({

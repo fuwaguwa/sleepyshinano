@@ -28,8 +28,6 @@ import { EmbedBuilder, type User } from "discord.js";
   ],
 })
 export class AvatarCommand extends Subcommand {
-  // ==================== Command Registration ====================
-
   public override registerApplicationCommands(
     registry: ApplicationCommandRegistry
   ) {
@@ -59,8 +57,6 @@ export class AvatarCommand extends Subcommand {
         )
     );
   }
-
-  // ==================== Command Handlers ====================
 
   /**
    * /avatar global
@@ -109,26 +105,22 @@ export class AvatarCommand extends Subcommand {
     interaction: Subcommand.ChatInputCommandInteraction,
     user: User
   ) {
-    const avatar = user.avatar;
-    const baseUrl = `https://cdn.discordapp.com/avatars/${user.id}/${avatar}`;
+    const baseUrl = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}`;
+    const isAnimated = user.avatar?.startsWith("a_");
+    const description = isAnimated
+      ? `[.gif](${baseUrl}.gif?size=1024) | [.webp](${baseUrl}.webp?size=1024)`
+      : `[.jpg](${baseUrl}.jpg?size=1024) | [.png](${baseUrl}.png?size=1024) | [.webp](${baseUrl}.webp?size=1024)`;
+    const displayUrl = isAnimated
+      ? `${baseUrl}.gif?size=1024`
+      : `${baseUrl}.png?size=1024`;
 
-    let description: string;
-    let displayUrl: string;
-
-    if (avatar?.startsWith("a_")) {
-      description = `[.gif](${baseUrl}.gif?size=1024) | [.webp](${baseUrl}.webp?size=1024)`;
-      displayUrl = `${baseUrl}.gif?size=1024`;
-    } else {
-      description = `[.jpg](${baseUrl}.jpg?size=1024) | [.png](${baseUrl}.png?size=1024) | [.webp](${baseUrl}.webp?size=1024)`;
-      displayUrl = `${baseUrl}.png?size=1024`;
-    }
-
-    const avatarEmbed = new EmbedBuilder()
+    const embed = new EmbedBuilder()
       .setTitle(`${user.username}'s Avatar`)
       .setDescription(description)
       .setImage(displayUrl)
       .setColor("#2b2d31")
       .setFooter({ text: `UID: ${user.id}` });
-    await interaction.reply({ embeds: [avatarEmbed] });
+
+    await interaction.reply({ embeds: [embed] });
   }
 }
