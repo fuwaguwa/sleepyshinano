@@ -1,13 +1,19 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
 import { EmbedBuilder } from "discord.js";
+import {
+  createFooter,
+  fetchJson,
+  standardCommandOptions,
+} from "../../lib/utils";
+
+interface CatApiResponse {
+  url: string;
+}
 
 @ApplyOptions<CommandOptions>({
   description: "Get an image of a cat!",
-  cooldownLimit: 1,
-  cooldownDelay: 4500,
-  cooldownFilteredUsers: process.env.OWNER_IDS?.split(",") || [],
-  preconditions: ["NotBlacklisted"],
+  ...standardCommandOptions,
 })
 export class CatCommand extends Command {
   public override registerApplicationCommands(registry: Command.Registry) {
@@ -22,20 +28,16 @@ export class CatCommand extends Command {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {
-      const response = await fetch(
+      const [data] = await fetchJson<CatApiResponse[]>(
         "https://api.thecatapi.com/v1/images/search"
       );
-      const data = await response.json();
 
-      const catEmbed = new EmbedBuilder()
+      const embed = new EmbedBuilder()
         .setColor("Random")
-        .setImage(data[0].url)
-        .setFooter({
-          text: `Requested by ${interaction.user.username}`,
-          iconURL: interaction.user.displayAvatarURL({ forceStatic: false }),
-        });
+        .setImage(data.url)
+        .setFooter(createFooter(interaction.user));
 
-      await interaction.editReply({ embeds: [catEmbed] });
+      await interaction.editReply({ embeds: [embed] });
     } catch (error) {
       this.container.logger.error("Failed to fetch cat:", error);
       await interaction.editReply({

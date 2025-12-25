@@ -1,13 +1,19 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
 import { EmbedBuilder } from "discord.js";
+import {
+  createFooter,
+  fetchJson,
+  standardCommandOptions,
+} from "../../lib/utils";
+
+interface PandaApiResponse {
+  image: string;
+}
 
 @ApplyOptions<CommandOptions>({
   description: "Pandas.",
-  cooldownLimit: 1,
-  cooldownDelay: 4500,
-  cooldownFilteredUsers: process.env.OWNER_IDS?.split(",") || [],
-  preconditions: ["NotBlacklisted"],
+  ...standardCommandOptions,
 })
 export class PandaCommand extends Command {
   public override registerApplicationCommands(registry: Command.Registry) {
@@ -22,18 +28,16 @@ export class PandaCommand extends Command {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {
-      const response = await fetch("https://some-random-api.com/animal/panda");
-      const data = await response.json();
+      const { image } = await fetchJson<PandaApiResponse>(
+        "https://some-random-api.com/animal/panda"
+      );
 
-      const pandaEmbed = new EmbedBuilder()
+      const embed = new EmbedBuilder()
         .setColor("Random")
-        .setImage(data.image)
-        .setFooter({
-          text: `Requested by ${interaction.user.username}`,
-          iconURL: interaction.user.displayAvatarURL({ forceStatic: false }),
-        });
+        .setImage(image)
+        .setFooter(createFooter(interaction.user));
 
-      await interaction.editReply({ embeds: [pandaEmbed] });
+      await interaction.editReply({ embeds: [embed] });
     } catch (error) {
       this.container.logger.error("Failed to fetch panda:", error);
       await interaction.editReply({

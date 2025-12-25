@@ -1,18 +1,20 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
+import { EmbedBuilder } from "discord.js";
 import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  EmbedBuilder,
-} from "discord.js";
+  createFooter,
+  createImageActionRow,
+  fetchJson,
+  standardCommandOptions,
+} from "../../lib/utils";
+
+interface NekosBestResponse {
+  results: { url: string }[];
+}
 
 @ApplyOptions<CommandOptions>({
   description: "Looking for waifus?",
-  cooldownLimit: 1,
-  cooldownDelay: 4500,
-  cooldownFilteredUsers: process.env.OWNER_IDS?.split(",") || [],
-  preconditions: ["NotBlacklisted"],
+  ...standardCommandOptions,
 })
 export class WaifuCommand extends Command {
   public override registerApplicationCommands(registry: Command.Registry) {
@@ -27,35 +29,20 @@ export class WaifuCommand extends Command {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {
-      const response = await fetch("https://nekos.best/api/v2/waifu");
-      const waifu = await response.json();
-      const imageUrl = waifu.results[0].url;
+      const { results } = await fetchJson<NekosBestResponse>(
+        "https://nekos.best/api/v2/waifu"
+      );
+      const imageUrl = results[0].url;
 
-      const waifuEmbed = new EmbedBuilder()
+      const embed = new EmbedBuilder()
         .setColor("Random")
-        .setFooter({
-          text: `Requested by ${interaction.user.username}`,
-          iconURL: interaction.user.displayAvatarURL({ forceStatic: false }),
-        })
+        .setFooter(createFooter(interaction.user))
         .setTimestamp()
         .setImage(imageUrl);
 
-      const imageInfo = new ActionRowBuilder<ButtonBuilder>().addComponents(
-        new ButtonBuilder()
-          .setStyle(ButtonStyle.Link)
-          .setEmoji({ name: "🔗" })
-          .setLabel("Image Link")
-          .setURL(imageUrl),
-        new ButtonBuilder()
-          .setStyle(ButtonStyle.Secondary)
-          .setEmoji({ name: "🔍" })
-          .setLabel("Get Sauce")
-          .setCustomId("SAUCE")
-      );
-
       await interaction.editReply({
-        embeds: [waifuEmbed],
-        components: [imageInfo],
+        embeds: [embed],
+        components: [createImageActionRow(imageUrl)],
       });
     } catch (error) {
       this.container.logger.error("Failed to fetch waifu:", error);

@@ -10,9 +10,81 @@ import type {
   ChatInputCommandSubcommandMappingMethod,
   ChatInputSubcommandSuccessPayload,
 } from "@sapphire/plugin-subcommands";
-import type { ChatInputCommandInteraction, Guild, Interaction, User, VoiceChannel } from "discord.js";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  type ChatInputCommandInteraction,
+  type Guild,
+  type Interaction,
+  type User,
+  type VoiceChannel,
+} from "discord.js";
 import mongoose from "mongoose";
 import { buttonCollector, paginationCollector } from "./collectors";
+
+// ==================== Command Helpers ====================
+
+/**
+ * Standard command options used across most commands
+ */
+export const standardCommandOptions = {
+  cooldownLimit: 1,
+  cooldownDelay: 4500,
+  cooldownFilteredUsers: process.env.OWNER_IDS?.split(",") || [],
+  preconditions: ["NotBlacklisted"],
+} as const;
+
+/**
+ * Create a standard footer for embeds
+ */
+export function createFooter(user: User) {
+  return {
+    text: `Requested by ${user.username}`,
+    iconURL: user.displayAvatarURL({ forceStatic: false }),
+  };
+}
+
+/**
+ * Create an image info action row with link and sauce buttons
+ */
+export function createImageActionRow(imageUrl: string) {
+  return new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setStyle(ButtonStyle.Link)
+      .setEmoji({ name: "🔗" })
+      .setLabel("Image Link")
+      .setURL(imageUrl),
+    new ButtonBuilder()
+      .setStyle(ButtonStyle.Secondary)
+      .setEmoji({ name: "🔍" })
+      .setLabel("Get Sauce")
+      .setCustomId("SAUCE")
+  );
+}
+
+/**
+ * Fetch JSON from an API with error handling
+ */
+export async function fetchJson<T>(
+  url: string,
+  options?: RequestInit
+): Promise<T> {
+  const response = await fetch(url, options);
+  if (!response.ok) {
+    throw new Error(`API returned ${response.status}`);
+  }
+  return (await response.json()) as Promise<T>;
+}
+
+/**
+ * Pick a random item from an array
+ */
+export function randomItem<T>(array: readonly T[]): T {
+  return array[Math.floor(Math.random() * array.length)];
+}
+
+// ==================== Database & Logging ====================
 
 /**
  * Connect to MongoDB database
@@ -47,7 +119,9 @@ export async function updateServerCount() {
     // Update logging server
     if (loggingGuildId && loggingChannelId) {
       const guild = await container.client.guilds.fetch(loggingGuildId);
-      const channel = (await guild.channels.fetch(loggingChannelId)) as VoiceChannel;
+      const channel = (await guild.channels.fetch(
+        loggingChannelId
+      )) as VoiceChannel;
       await channel.setName(`Server Count: ${serverCount}`);
     }
 
@@ -100,7 +174,9 @@ export function startCatchers(client: SapphireClient) {
   // Database event handlers
   mongoose.connection.on("connecting", () => {
     connectingAttempt++;
-    client.logger.info(`Connecting to database... (Attempt #${connectingAttempt})`);
+    client.logger.info(
+      `Connecting to database... (Attempt #${connectingAttempt})`
+    );
   });
 
   mongoose.connection.on("connected", () => {
@@ -168,7 +244,9 @@ export function logSuccessfulCommand(
 /**
  * Refresh/clean up user collectors when they run a new command
  */
-export function collectorsRefresh(interaction: ChatInputCommandInteraction | Interaction) {
+export function collectorsRefresh(
+  interaction: ChatInputCommandInteraction | Interaction
+) {
   // Stop and remove existing button collectors for this user
   if (buttonCollector.has(interaction.user.id)) {
     const collector = buttonCollector.get(interaction.user.id);

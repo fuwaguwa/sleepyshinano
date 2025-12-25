@@ -10,6 +10,17 @@ import {
   ButtonStyle,
   EmbedBuilder,
 } from "discord.js";
+import { fetchJson, randomItem } from "../../lib/utils";
+
+const PAT_RESPONSES = [
+  '"Aah... My ears are sensitive..."',
+  '"Alas... This one\'s ears are sensitive..."',
+] as const;
+
+interface TopggBotStats {
+  monthlyPoints?: number;
+  points?: number;
+}
 
 @ApplyOptions<SubcommandOptions>({
   description: "silly commands",
@@ -141,19 +152,14 @@ export class ShinanoCommand extends Subcommand {
   public async subcommandPat(
     interaction: Subcommand.ChatInputCommandInteraction
   ) {
-    const responses = [
-      '"Aah... My ears are sensitive..."',
-      '"Alas... This one\'s ears are sensitive..."',
-    ];
-
-    const headpatEmbed = new EmbedBuilder()
+    const embed = new EmbedBuilder()
       .setColor("#2b2d31")
-      .setDescription(responses[Math.floor(Math.random() * responses.length)])
+      .setDescription(randomItem(PAT_RESPONSES))
       .setImage(
         "https://cdn.discordapp.com/attachments/1002189321631187026/1034474955116662844/shinano_azur_lane_drawn_by_nagi_ria__3c37724853c358bebf5bc5668e0d4314_1.gif"
       );
 
-    await interaction.reply({ embeds: [headpatEmbed] });
+    await interaction.reply({ embeds: [embed] });
   }
 
   /**
@@ -162,22 +168,16 @@ export class ShinanoCommand extends Subcommand {
   public async subcommandStats(
     interaction: Subcommand.ChatInputCommandInteraction
   ) {
-    if (!interaction.deferred) {
-      await interaction.deferReply();
-    }
+    if (!interaction.deferred) await interaction.deferReply();
 
     const botId = this.container.client.user?.id || "1002193298229829682";
 
-    // Fetch Top.gg stats
-    let topggStats: any = null;
+    let topggStats: TopggBotStats | null = null;
     try {
-      const response = await fetch(`https://top.gg/api/bots/${botId}`, {
-        method: "GET",
-        headers: {
-          Authorization: process.env.TOPGG_API_KEY as string,
-        },
-      });
-      topggStats = await response.json();
+      topggStats = await fetchJson<TopggBotStats>(
+        `https://top.gg/api/bots/${botId}`,
+        { headers: { Authorization: process.env.TOPGG_API_KEY as string } }
+      );
     } catch (error) {
       this.container.logger.error("Failed to fetch Top.gg stats:", error);
     }
@@ -196,8 +196,7 @@ export class ShinanoCommand extends Subcommand {
     if (days > 0) uptimeString += `${days} days, `;
     uptimeString += `${hours} hours, ${minutes} minutes, ${seconds} seconds`;
 
-    // Build embed
-    const performanceEmbed = new EmbedBuilder()
+    const embed = new EmbedBuilder()
       .setColor("#2b2d31")
       .setTitle("Shinano's Stats")
       .addFields(
@@ -213,7 +212,7 @@ export class ShinanoCommand extends Subcommand {
         }
       );
 
-    await interaction.editReply({ embeds: [performanceEmbed] });
+    await interaction.editReply({ embeds: [embed] });
   }
 
   /**
