@@ -1,0 +1,41 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@main
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTH_KEY }}
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/projects/Shinano
+            git pull origin master
+            
+            # Create .env.production from GitHub secrets
+            cat > .env.production << EOF
+            NODE_ENV=production
+            BOT_TOKEN=${{ secrets.BOT_TOKEN }}
+            COOL_PEOPLE_IDS=${{ secrets.COOL_PEOPLE_IDS }}
+            LOGGING_CHANNEL_ID=${{ secrets.LOGGING_CHANNEL_ID }}
+            LOGGING_GUILD_ID=${{ secrets.LOGGING_GUILD_ID }}
+            MONGODB_URI=${{ secrets.MONGODB_URI }}
+            OWNER_IDS=${{ secrets.OWNER_IDS }}
+            TOP_GG_API_KEY=${{ secrets.TOP_GG_API_KEY }}
+            EOF
+            
+            bun install
+            bun run build
+            pm2 reload ecosystem.config.js --env production
