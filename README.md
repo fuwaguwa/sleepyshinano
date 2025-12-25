@@ -6,7 +6,6 @@ Foxgirl Discord Bot 💖🦊 - Bun Rewrite
 
 <p align="center">
    <a href="https://discord.gg/NFkMxFeEWr"><img height="130px" alt="Server" src="https://discord.com/api/guilds/1020960562710052895/widget.png?style=banner3"></a>
-   <a href="https://top.gg/bot/1002193298229829682"><img height="130px" alt="Listing" src="https://top.gg/api/widget/1002193298229829682.svg"></a>
 </p>
 
 ### Credits
