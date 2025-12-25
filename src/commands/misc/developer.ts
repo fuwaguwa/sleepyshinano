@@ -1,3 +1,4 @@
+import util from "node:util";
 import { ApplyOptions } from "@sapphire/decorators";
 import { CommandOptionsRunTypeEnum } from "@sapphire/framework";
 import {
@@ -11,10 +12,8 @@ import {
   ButtonStyle,
   codeBlock,
   EmbedBuilder,
-  type InteractionCollector,
   MessageFlagsBitField,
 } from "discord.js";
-import util from "util";
 import { buttonCollector } from "../../lib/collectors";
 import User from "../../schemas/User";
 
@@ -127,6 +126,7 @@ export class DeveloperCommand extends Subcommand {
 
     try {
       let output: any = await new Promise((resolve, _) => {
+        // biome-ignore lint/security/noGlobalEval: i need this
         resolve(eval(code));
       });
 

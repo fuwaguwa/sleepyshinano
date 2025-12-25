@@ -20,7 +20,7 @@ export class CooldownErrorListener extends Listener<
     { interaction }: ChatInputCommandDeniedPayload
   ) {
     if (Reflect.get(Object(context), "silent")) return;
-    if (identifier != Identifiers.PreconditionCooldown) return;
+    if (identifier !== Identifiers.PreconditionCooldown) return;
 
     const remaining = Reflect.get(Object(context), "remaining") as number;
     const retryTimestamp = Math.floor((Date.now() + remaining) / 1000);

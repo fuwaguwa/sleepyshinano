@@ -92,7 +92,7 @@ export class AvatarCommand extends Subcommand {
     try {
       const guildUser = await interaction.guild.members.fetch(user);
       await this.sendAvatar(interaction, guildUser.user);
-    } catch (error) {
+    } catch (_) {
       const errorEmbed = new EmbedBuilder()
         .setColor("Red")
         .setDescription(

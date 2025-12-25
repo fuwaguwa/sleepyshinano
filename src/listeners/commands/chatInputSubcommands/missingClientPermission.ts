@@ -17,7 +17,7 @@ export class MissingClientPermissionSubcommandListener extends Listener<
   typeof SubcommandPluginEvents.ChatInputSubcommandDenied
 > {
   public override async run(
-    { context, identifier }: UserError,
+    { context }: UserError,
     { interaction }: ChatInputSubcommandDeniedPayload
   ) {
     if (Reflect.get(Object(context), "silent")) return;
