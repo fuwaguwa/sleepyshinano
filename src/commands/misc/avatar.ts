@@ -37,8 +37,8 @@ export class AvatarCommand extends Subcommand {
       builder
         .setName(this.name)
         .setDescription(this.description)
-        .addSubcommand(command =>
-          command
+        .addSubcommand(cmd =>
+          cmd
             .setName("global")
             .setDescription("Get an user's global avatar")
             .addUserOption(option =>
@@ -47,8 +47,8 @@ export class AvatarCommand extends Subcommand {
                 .setDescription("The user you want the command to be ran on.")
             )
         )
-        .addSubcommand(command =>
-          command
+        .addSubcommand(cmd =>
+          cmd
             .setName("guild")
             .setDescription("Get an user's server/guild avatar")
             .addUserOption(option =>
