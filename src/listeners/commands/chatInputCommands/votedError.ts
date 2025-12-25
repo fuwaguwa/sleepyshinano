@@ -6,7 +6,13 @@ import {
   type ListenerOptions,
   type UserError,
 } from "@sapphire/framework";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
+  MessageFlagsBitField,
+} from "discord.js";
 
 @ApplyOptions<ListenerOptions>({
   event: "chatInputCommandDenied",
@@ -53,7 +59,7 @@ export class VotedError extends Listener<typeof Events.ChatInputCommandDenied> {
       embeds: [errorEmbed],
       components: [voteLink],
       allowedMentions: { users: [interaction.user.id], roles: [] },
-      ephemeral: true,
+      flags: MessageFlagsBitField.Flags.Ephemeral,
     });
   }
 }

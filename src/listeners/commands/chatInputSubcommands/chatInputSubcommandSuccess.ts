@@ -13,7 +13,7 @@ export class ChatInputSubcommandSuccessListener extends Listener<
   typeof SubcommandPluginEvents.ChatInputSubcommandSuccess
 > {
   public override async run(
-    interaction: Interaction,
+    _interaction: Interaction,
     subcommand: ChatInputCommandSubcommandMappingMethod,
     payload: ChatInputSubcommandSuccessPayload
   ) {

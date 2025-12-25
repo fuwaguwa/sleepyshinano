@@ -16,7 +16,9 @@ export class InMainServerPrecondition extends Precondition {
     const mainGuildId = process.env.MAIN_GUILD_ID;
 
     if (!mainGuildId) {
-      this.container.logger.warn("MAIN_GUILD_ID not set, skipping server check");
+      this.container.logger.warn(
+        "MAIN_GUILD_ID not set, skipping server check"
+      );
       return this.ok();
     }
 
@@ -24,7 +26,7 @@ export class InMainServerPrecondition extends Precondition {
       const guild = await this.container.client.guilds.fetch(mainGuildId);
       await guild.members.fetch(interaction.user.id);
       return this.ok();
-    } catch (error) {
+    } catch (_) {
       return this.error({ identifier: "inMainServerError" });
     }
   }

@@ -1,7 +1,20 @@
 import { ApplyOptions } from "@sapphire/decorators";
-import { Listener, type ListenerOptions, type UserError } from "@sapphire/framework";
-import type { ChatInputSubcommandDeniedPayload, SubcommandPluginEvents } from "@sapphire/plugin-subcommands";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
+import {
+  Listener,
+  type ListenerOptions,
+  type UserError,
+} from "@sapphire/framework";
+import type {
+  ChatInputSubcommandDeniedPayload,
+  SubcommandPluginEvents,
+} from "@sapphire/plugin-subcommands";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
+  MessageFlagsBitField,
+} from "discord.js";
 
 @ApplyOptions<ListenerOptions>({
   event: "chatInputSubcommandDenied",
@@ -9,7 +22,10 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from "disc
 export class InMainServerErrorSubcommandListener extends Listener<
   typeof SubcommandPluginEvents.ChatInputSubcommandDenied
 > {
-  public override async run({ context, identifier }: UserError, { interaction }: ChatInputSubcommandDeniedPayload) {
+  public override async run(
+    { context, identifier }: UserError,
+    { interaction }: ChatInputSubcommandDeniedPayload
+  ) {
     if (Reflect.get(Object(context), "silent")) return;
     if (identifier !== "inMainServerError") return;
 
@@ -38,7 +54,7 @@ export class InMainServerErrorSubcommandListener extends Listener<
     return interaction.reply({
       embeds: [exclusiveEmbed],
       components: [button],
-      ephemeral: true,
+      flags: MessageFlagsBitField.Flags.Ephemeral,
     });
   }
 }

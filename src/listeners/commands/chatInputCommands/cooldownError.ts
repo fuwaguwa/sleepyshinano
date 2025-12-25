@@ -7,14 +7,20 @@ import {
   type ListenerOptions,
   type UserError,
 } from "@sapphire/framework";
+import { MessageFlagsBitField } from "discord.js";
 
 @ApplyOptions<ListenerOptions>({
   event: "chatInputCommandDenied",
 })
-export class CooldownErrorListener extends Listener<typeof Events.ChatInputCommandDenied> {
-  public override async run({ context, identifier }: UserError, { interaction }: ChatInputCommandDeniedPayload) {
+export class CooldownErrorListener extends Listener<
+  typeof Events.ChatInputCommandDenied
+> {
+  public override async run(
+    { context, identifier }: UserError,
+    { interaction }: ChatInputCommandDeniedPayload
+  ) {
     if (Reflect.get(Object(context), "silent")) return;
-    if (identifier != Identifiers.PreconditionCooldown) return;
+    if (identifier !== Identifiers.PreconditionCooldown) return;
 
     const remaining = Reflect.get(Object(context), "remaining") as number;
     const retryTimestamp = Math.floor((Date.now() + remaining) / 1000);
@@ -35,7 +41,7 @@ export class CooldownErrorListener extends Listener<typeof Events.ChatInputComma
     return interaction.reply({
       embeds: [errorEmbed],
       allowedMentions: { users: [interaction.user.id], roles: [] },
-      ephemeral: true,
+      flags: MessageFlagsBitField.Flags.Ephemeral,
     });
   }
 }

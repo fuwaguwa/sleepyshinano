@@ -5,13 +5,16 @@ import {
   type ListenerOptions,
   type UserError,
 } from "@sapphire/framework";
-import { EmbedBuilder } from "discord.js";
+import { EmbedBuilder, MessageFlagsBitField } from "discord.js";
 
 @ApplyOptions<ListenerOptions>({
   event: "chatInputCommandDenied",
 })
 export class BlacklistedErrorListener extends Listener {
-  public override async run({ context, identifier }: UserError, { interaction }: ChatInputCommandDeniedPayload) {
+  public override async run(
+    { context, identifier }: UserError,
+    { interaction }: ChatInputCommandDeniedPayload
+  ) {
     if (Reflect.get(Object(context), "silent")) return;
     if (identifier !== "blacklisted") return;
 
@@ -32,7 +35,7 @@ export class BlacklistedErrorListener extends Listener {
     return interaction.reply({
       embeds: [errorEmbed],
       allowedMentions: { users: [interaction.user.id], roles: [] },
-      ephemeral: true,
+      flags: MessageFlagsBitField.Flags.Ephemeral,
     });
   }
 }

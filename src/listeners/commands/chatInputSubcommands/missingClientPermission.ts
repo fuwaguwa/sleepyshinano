@@ -1,7 +1,14 @@
 import { ApplyOptions } from "@sapphire/decorators";
-import { Listener, type ListenerOptions, type UserError } from "@sapphire/framework";
-import type { ChatInputSubcommandDeniedPayload, SubcommandPluginEvents } from "@sapphire/plugin-subcommands";
-import { EmbedBuilder } from "discord.js";
+import {
+  Listener,
+  type ListenerOptions,
+  type UserError,
+} from "@sapphire/framework";
+import type {
+  ChatInputSubcommandDeniedPayload,
+  SubcommandPluginEvents,
+} from "@sapphire/plugin-subcommands";
+import { EmbedBuilder, MessageFlagsBitField } from "discord.js";
 
 @ApplyOptions<ListenerOptions>({
   event: "chatInputSubcommandDenied",
@@ -9,7 +16,10 @@ import { EmbedBuilder } from "discord.js";
 export class MissingClientPermissionSubcommandListener extends Listener<
   typeof SubcommandPluginEvents.ChatInputSubcommandDenied
 > {
-  public override async run({ context, identifier }: UserError, { interaction }: ChatInputSubcommandDeniedPayload) {
+  public override async run(
+    { context }: UserError,
+    { interaction }: ChatInputSubcommandDeniedPayload
+  ) {
     if (Reflect.get(Object(context), "silent")) return;
 
     const missing = Reflect.get(Object(context), "missing") as string[];
@@ -17,7 +27,9 @@ export class MissingClientPermissionSubcommandListener extends Listener<
 
     const errorEmbed = new EmbedBuilder()
       .setColor("Red")
-      .setDescription(`❌ | Shinano is currently missing the following permission(s): ${missing.join(", ")}`);
+      .setDescription(
+        `❌ | Shinano is currently missing the following permission(s): ${missing.join(", ")}`
+      );
 
     if (interaction.deferred || interaction.replied) {
       return interaction.editReply({
@@ -29,7 +41,7 @@ export class MissingClientPermissionSubcommandListener extends Listener<
     return interaction.reply({
       embeds: [errorEmbed],
       allowedMentions: { users: [interaction.user.id], roles: [] },
-      ephemeral: true,
+      flags: MessageFlagsBitField.Flags.Ephemeral,
     });
   }
 }

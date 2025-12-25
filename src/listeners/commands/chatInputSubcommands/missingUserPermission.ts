@@ -1,7 +1,15 @@
 import { ApplyOptions } from "@sapphire/decorators";
-import { Identifiers, Listener, type ListenerOptions, type UserError } from "@sapphire/framework";
-import type { ChatInputSubcommandDeniedPayload, SubcommandPluginEvents } from "@sapphire/plugin-subcommands";
-import { EmbedBuilder } from "discord.js";
+import {
+  Identifiers,
+  Listener,
+  type ListenerOptions,
+  type UserError,
+} from "@sapphire/framework";
+import type {
+  ChatInputSubcommandDeniedPayload,
+  SubcommandPluginEvents,
+} from "@sapphire/plugin-subcommands";
+import { EmbedBuilder, MessageFlagsBitField } from "discord.js";
 
 @ApplyOptions<ListenerOptions>({
   event: "chatInputSubcommandDenied",
@@ -9,7 +17,10 @@ import { EmbedBuilder } from "discord.js";
 export class MissingUserPermissionSubcommandListener extends Listener<
   typeof SubcommandPluginEvents.ChatInputSubcommandDenied
 > {
-  public override async run({ context, identifier }: UserError, { interaction }: ChatInputSubcommandDeniedPayload) {
+  public override async run(
+    { context, identifier }: UserError,
+    { interaction }: ChatInputSubcommandDeniedPayload
+  ) {
     if (Reflect.get(Object(context), "silent")) return;
     if (identifier !== Identifiers.PreconditionUserPermissions) return;
 
@@ -18,7 +29,9 @@ export class MissingUserPermissionSubcommandListener extends Listener<
 
     const errorEmbed = new EmbedBuilder()
       .setColor("Red")
-      .setDescription(`❌ | You currently are missing the following permission(s): ${missing.join(", ")}`);
+      .setDescription(
+        `❌ | You currently are missing the following permission(s): ${missing.join(", ")}`
+      );
 
     if (interaction.deferred || interaction.replied) {
       return interaction.editReply({
@@ -30,7 +43,7 @@ export class MissingUserPermissionSubcommandListener extends Listener<
     return interaction.reply({
       embeds: [errorEmbed],
       allowedMentions: { users: [interaction.user.id], roles: [] },
-      ephemeral: true,
+      flags: MessageFlagsBitField.Flags.Ephemeral,
     });
   }
 }
