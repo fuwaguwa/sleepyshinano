@@ -1,6 +1,12 @@
 import { ApplyOptions } from "@sapphire/decorators";
-import { type ApplicationCommandRegistry, CommandOptionsRunTypeEnum } from "@sapphire/framework";
-import { Subcommand, type SubcommandOptions } from "@sapphire/plugin-subcommands";
+import {
+  type ApplicationCommandRegistry,
+  CommandOptionsRunTypeEnum,
+} from "@sapphire/framework";
+import {
+  Subcommand,
+  type SubcommandOptions,
+} from "@sapphire/plugin-subcommands";
 import { EmbedBuilder, type User } from "discord.js";
 
 @ApplyOptions<SubcommandOptions>({
@@ -22,7 +28,11 @@ import { EmbedBuilder, type User } from "discord.js";
   ],
 })
 export class AvatarCommand extends Subcommand {
-  public override registerApplicationCommands(registry: ApplicationCommandRegistry) {
+  // ==================== Command Registration ====================
+
+  public override registerApplicationCommands(
+    registry: ApplicationCommandRegistry
+  ) {
     registry.registerChatInputCommand(builder =>
       builder
         .setName(this.name)
@@ -32,7 +42,9 @@ export class AvatarCommand extends Subcommand {
             .setName("global")
             .setDescription("Get an user's global avatar")
             .addUserOption(option =>
-              option.setName("user").setDescription("The user you want the command to be ran on.")
+              option
+                .setName("user")
+                .setDescription("The user you want the command to be ran on.")
             )
         )
         .addSubcommand(command =>
@@ -40,18 +52,34 @@ export class AvatarCommand extends Subcommand {
             .setName("guild")
             .setDescription("Get an user's server/guild avatar")
             .addUserOption(option =>
-              option.setName("user").setDescription("The user you want the command to be ran on.")
+              option
+                .setName("user")
+                .setDescription("The user you want the command to be ran on.")
             )
         )
     );
   }
 
-  public async subcommandGlobal(interaction: Subcommand.ChatInputCommandInteraction) {
+  // ==================== Command Handlers ====================
+
+  /**
+   * /avatar global
+   * Grabs an user's global avatar
+   */
+  public async subcommandGlobal(
+    interaction: Subcommand.ChatInputCommandInteraction
+  ) {
     const user = interaction.options.getUser("user") || interaction.user;
     await this.sendAvatar(interaction, user);
   }
 
-  public async subcommandGuild(interaction: Subcommand.ChatInputCommandInteraction) {
+  /**
+   * /avatar guild
+   * Grabs an user's guild avatar
+   */
+  public async subcommandGuild(
+    interaction: Subcommand.ChatInputCommandInteraction
+  ) {
     const user = interaction.options.getUser("user") || interaction.user;
 
     if (!interaction.guild) {
@@ -67,12 +95,20 @@ export class AvatarCommand extends Subcommand {
     } catch (error) {
       const errorEmbed = new EmbedBuilder()
         .setColor("Red")
-        .setDescription("❌ | User is not in the guild, please use `/avatar global` instead!");
+        .setDescription(
+          "❌ | User is not in the guild, please use `/avatar global` instead!"
+        );
       return interaction.reply({ embeds: [errorEmbed] });
     }
   }
 
-  private async sendAvatar(interaction: Subcommand.ChatInputCommandInteraction, user: User) {
+  /**
+   * Send the avatar embed
+   */
+  private async sendAvatar(
+    interaction: Subcommand.ChatInputCommandInteraction,
+    user: User
+  ) {
     const avatar = user.avatar;
     const baseUrl = `https://cdn.discordapp.com/avatars/${user.id}/${avatar}`;
 

@@ -15,6 +15,8 @@ import { EmbedBuilder } from "discord.js";
   runIn: CommandOptionsRunTypeEnum.GuildAny,
 })
 export class BannerCommand extends Command {
+  // ==================== Command Registration ====================
+
   public override registerApplicationCommands(registry: Command.Registry) {
     registry.registerChatInputCommand(builder =>
       builder
@@ -28,6 +30,12 @@ export class BannerCommand extends Command {
     );
   }
 
+  // ==================== Command Handlers ====================
+
+  /**
+   * /banner
+   * Grabs an user's banner
+   */
   public override async chatInputRun(
     interaction: Command.ChatInputCommandInteraction
   ) {
