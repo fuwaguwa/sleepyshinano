@@ -22,12 +22,12 @@ export class DogCommand extends Command {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {
-      const response = await fetch("https://some-random-api.com/animal/dog");
+      const response = await fetch("https://dog.ceo/api/breeds/image/random");
       const data = await response.json();
 
       const dogEmbed = new EmbedBuilder()
         .setColor("Random")
-        .setImage(data.image)
+        .setImage(data.message)
         .setFooter({
           text: `Requested by ${interaction.user.username}`,
           iconURL: interaction.user.displayAvatarURL({ forceStatic: false }),

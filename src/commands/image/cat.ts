@@ -22,12 +22,14 @@ export class CatCommand extends Command {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {
-      const response = await fetch("https://some-random-api.com/animal/cat");
+      const response = await fetch(
+        "https://api.thecatapi.com/v1/images/search"
+      );
       const data = await response.json();
 
       const catEmbed = new EmbedBuilder()
         .setColor("Random")
-        .setImage(data.image)
+        .setImage(data[0].url)
         .setFooter({
           text: `Requested by ${interaction.user.username}`,
           iconURL: interaction.user.displayAvatarURL({ forceStatic: false }),
@@ -37,7 +39,7 @@ export class CatCommand extends Command {
     } catch (error) {
       this.container.logger.error("Failed to fetch cat:", error);
       await interaction.editReply({
-        content: "Failed to fetch a cat image. Please try again later.",
+        content: "Failed to fetch a cat. Please try again later.",
       });
     }
   }
