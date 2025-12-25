@@ -165,7 +165,7 @@ export class DeveloperCommand extends Subcommand {
     // Check Shinano database
     const voteUser = await User.findOne({ userId: user.id });
 
-    let voteStatus: boolean | string = false;
+    let voteStatus: boolean | string;
     let voteTime: number | string = "N/A";
 
     if (voteUser?.lastVoteTimestamp) {
