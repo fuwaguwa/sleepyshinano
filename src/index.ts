@@ -2,15 +2,10 @@ import "./lib/setup";
 
 import { LogLevel, SapphireClient } from "@sapphire/framework";
 import { GatewayIntentBits, Options, Partials } from "discord.js";
-import { dirname, join } from "path";
-import { fileURLToPath } from "url";
 import { connectToDatabase } from "./lib/utils";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const client: SapphireClient = new SapphireClient({
-  baseUserDirectory: join(__dirname),
+const client: SapphireClient<true> = new SapphireClient({
+  baseUserDirectory: import.meta.dir,
   logger: {
     level: process.env.NODE_ENV === "production" ? LogLevel.Info : LogLevel.Debug,
   },
