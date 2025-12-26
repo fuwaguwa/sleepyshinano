@@ -1,5 +1,8 @@
-import { type ChatInputCommandSuccessPayload, Listener } from "@sapphire/framework";
-import { logSuccessfulCommand } from "../../../lib/utils";
+import {
+  type ChatInputCommandSuccessPayload,
+  Listener,
+} from "@sapphire/framework";
+import { logSuccessfulCommand } from "../../../lib/utils/logging";
 import User from "../../../schemas/User";
 
 export class ChatInputCommandSuccessListener extends Listener {

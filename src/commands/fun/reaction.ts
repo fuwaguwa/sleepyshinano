@@ -9,7 +9,8 @@ import {
   InteractionContextType,
   type User,
 } from "discord.js";
-import { fetchJson, standardCommandOptions } from "../../lib/utils";
+import { standardCommandOptions } from "../../lib/utils/command";
+import { fetchJson } from "../../lib/utils/http";
 
 import type { NekosBestResponse } from "../../typings/api/misc";
 

@@ -1,11 +1,8 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
 import { EmbedBuilder } from "discord.js";
-import {
-  createFooter,
-  fetchJson,
-  standardCommandOptions,
-} from "../../lib/utils";
+import { createFooter, standardCommandOptions } from "../../lib/utils/command";
+import { fetchJson } from "../../lib/utils/http";
 
 import type { CatApiResponse } from "../../typings/api/animal";
 

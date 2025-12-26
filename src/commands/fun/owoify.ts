@@ -1,7 +1,8 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
 import { EmbedBuilder } from "discord.js";
-import { fetchJson, standardCommandOptions } from "../../lib/utils";
+import { standardCommandOptions } from "../../lib/utils/command";
+import { fetchJson } from "../../lib/utils/http";
 
 import type { OwoifyResponse } from "../../typings/api/misc";
 

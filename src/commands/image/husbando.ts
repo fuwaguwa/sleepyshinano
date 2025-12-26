@@ -4,9 +4,9 @@ import { EmbedBuilder } from "discord.js";
 import {
   createFooter,
   createImageActionRow,
-  fetchJson,
   standardCommandOptions,
-} from "../../lib/utils";
+} from "../../lib/utils/command";
+import { fetchJson } from "../../lib/utils/http";
 
 import type { NekosBestResponse } from "../../typings/api/misc";
 

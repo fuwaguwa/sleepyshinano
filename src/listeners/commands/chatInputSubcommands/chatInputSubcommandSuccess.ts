@@ -6,7 +6,7 @@ import type {
   SubcommandPluginEvents,
 } from "@sapphire/plugin-subcommands";
 import type { Interaction } from "discord.js";
-import { logSuccessfulCommand } from "../../../lib/utils";
+import { logSuccessfulCommand } from "../../../lib/utils/logging";
 import User from "../../../schemas/User";
 
 export class ChatInputSubcommandSuccessListener extends Listener<

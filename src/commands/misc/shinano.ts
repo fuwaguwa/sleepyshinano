@@ -9,7 +9,8 @@ import {
   ButtonStyle,
   EmbedBuilder,
 } from "discord.js";
-import { fetchJson, randomItem } from "../../lib/utils";
+import { fetchJson } from "../../lib/utils/http";
+import { randomItem } from "../../lib/utils/misc";
 
 import type { TopggBotStats } from "../../typings/api/botListing";
 

@@ -5,7 +5,7 @@ import {
   EmbedBuilder,
   InteractionContextType,
 } from "discord.js";
-import { fetchJson } from "../../lib/utils";
+import { fetchJson } from "../../lib/utils/http";
 
 import type { DiscordUserResponse } from "../../typings/api/misc";
 

@@ -1,7 +1,7 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
 import { EmbedBuilder } from "discord.js";
-import { standardCommandOptions } from "../../lib/utils";
+import { standardCommandOptions } from "../../lib/utils/command";
 
 @ApplyOptions<CommandOptions>({
   description: "Roll a dice.",

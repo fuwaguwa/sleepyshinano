@@ -14,7 +14,7 @@ import {
   MessageFlagsBitField,
 } from "discord.js";
 import { buttonCollector } from "../../lib/collectors";
-import { fetchJson } from "../../lib/utils";
+import { fetchJson } from "../../lib/utils/http";
 import User from "../../schemas/User";
 
 import type { TopggVoteCheck } from "../../typings/api/botListing";

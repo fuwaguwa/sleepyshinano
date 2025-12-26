@@ -7,8 +7,9 @@ import {
   ComponentType,
   EmbedBuilder,
 } from "discord.js";
-import { buttonCollector } from "../../lib/collectors";
-import { collectorsRefresh, fetchJson, randomItem } from "../../lib/utils";
+import { buttonCollector, collectorsRefresh } from "../../lib/collectors";
+import { fetchJson } from "../../lib/utils/http";
+import { randomItem } from "../../lib/utils/misc";
 
 import type {
   TriviaApiItem,
