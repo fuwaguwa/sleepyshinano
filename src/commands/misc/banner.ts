@@ -1,10 +1,10 @@
 import { ApplyOptions } from "@sapphire/decorators";
+import { Command, type CommandOptions } from "@sapphire/framework";
 import {
-  Command,
-  type CommandOptions,
-  CommandOptionsRunTypeEnum,
-} from "@sapphire/framework";
-import { EmbedBuilder } from "discord.js";
+  ApplicationIntegrationType,
+  EmbedBuilder,
+  InteractionContextType,
+} from "discord.js";
 import { fetchJson } from "../../lib/utils";
 
 interface DiscordUserResponse {
@@ -17,7 +17,6 @@ interface DiscordUserResponse {
   cooldownLimit: 1,
   cooldownDelay: 3000,
   cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS?.split(",") || [],
-  runIn: CommandOptionsRunTypeEnum.GuildAny,
 })
 export class BannerCommand extends Command {
   public override registerApplicationCommands(registry: Command.Registry) {
@@ -25,6 +24,15 @@ export class BannerCommand extends Command {
       builder
         .setName(this.name)
         .setDescription(this.description)
+        .setIntegrationTypes([
+          ApplicationIntegrationType.GuildInstall,
+          ApplicationIntegrationType.UserInstall,
+        ])
+        .setContexts([
+          InteractionContextType.Guild,
+          InteractionContextType.BotDM,
+          InteractionContextType.PrivateChannel,
+        ])
         .addUserOption(option =>
           option
             .setName("user")

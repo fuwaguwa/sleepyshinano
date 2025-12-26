@@ -1,6 +1,5 @@
 import util from "node:util";
 import { ApplyOptions } from "@sapphire/decorators";
-import { CommandOptionsRunTypeEnum } from "@sapphire/framework";
 import {
   Subcommand,
   type SubcommandOptions,
@@ -28,7 +27,6 @@ interface TopggVoteCheck {
   cooldownLimit: 1,
   cooldownDelay: 100000,
   cooldownFilteredUsers: process.env.OWNER_IDS?.split(",") || [],
-  runIn: CommandOptionsRunTypeEnum.GuildAny,
   subcommands: [
     { name: "eval", chatInputRun: "subcommandEval" },
     { name: "vote-check", chatInputRun: "subcommandVote" },
@@ -44,7 +42,6 @@ interface TopggVoteCheck {
   ],
 })
 export class DeveloperCommand extends Subcommand {
-  // ==================== Command Registration ====================
   public override async registerApplicationCommands(
     registry: Subcommand.Registry
   ) {
@@ -114,8 +111,6 @@ export class DeveloperCommand extends Subcommand {
         )
     );
   }
-
-  // ==================== Subcommand Handlers ====================
 
   /**
    * /developer eval - Evaluate JavaScript code

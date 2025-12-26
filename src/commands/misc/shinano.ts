@@ -1,5 +1,4 @@
 import { ApplyOptions } from "@sapphire/decorators";
-import { CommandOptionsRunTypeEnum } from "@sapphire/framework";
 import {
   Subcommand,
   type SubcommandOptions,
@@ -28,7 +27,6 @@ interface TopggBotStats {
   cooldownLimit: 1,
   cooldownDelay: 5000,
   cooldownFilteredUsers: process.env.OWNER_IDS?.split(",") || [],
-  runIn: CommandOptionsRunTypeEnum.GuildAny,
   subcommands: [
     { name: "ping", chatInputRun: "subcommandPing" },
     { name: "info", chatInputRun: "subcommandInfo" },

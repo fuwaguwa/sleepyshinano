@@ -17,6 +17,7 @@ import {
   type ChatInputCommandInteraction,
   type Guild,
   type Interaction,
+  InteractionContextType,
   type User,
   type VoiceChannel,
 } from "discord.js";
@@ -221,23 +222,38 @@ export function logSuccessfulCommand(
   let guild: Guild | null;
   let user: User;
   let command: Command;
+  let contextInfo: string;
 
   if ("interaction" in payload) {
     guild = payload.interaction.guild;
     user = payload.interaction.user;
     command = payload.command;
+
+    // Determine context based on interaction.context
+    const context = payload.interaction.context;
+    if (context === InteractionContextType.Guild && guild) {
+      contextInfo = `${guild.name} (${guild.id})`;
+    } else if (context === InteractionContextType.BotDM) {
+      contextInfo = "Bot DM";
+    } else if (context === InteractionContextType.PrivateChannel) {
+      contextInfo = "Private Channel (User Install)";
+    } else if (guild) {
+      contextInfo = `${guild.name} (${guild.id})`;
+    } else {
+      contextInfo = "DM";
+    }
   } else {
     guild = payload.message.guild;
     user = payload.message.author;
     command = payload.command;
+    contextInfo = guild ? `${guild.name} (${guild.id})` : "DM";
   }
 
   const shardId = guild?.shardId ?? 0;
-  const guildInfo = guild ? `${guild.name} (${guild.id})` : "DM";
   const subcommandName = subcommand ? ` ${subcommand.name}` : "";
 
   container.logger.debug(
-    `[Shard ${shardId}] ${command.name}${subcommandName} | ${user.username} (${user.id}) | ${guildInfo}`
+    `[Shard ${shardId}] ${command.name}${subcommandName} | ${user.username} (${user.id}) | ${contextInfo}`
   );
 }
 

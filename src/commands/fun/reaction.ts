@@ -3,7 +3,12 @@ import {
   Subcommand,
   type SubcommandOptions,
 } from "@sapphire/plugin-subcommands";
-import { EmbedBuilder, type User } from "discord.js";
+import {
+  ApplicationIntegrationType,
+  EmbedBuilder,
+  InteractionContextType,
+  type User,
+} from "discord.js";
 import { fetchJson, standardCommandOptions } from "../../lib/utils";
 
 interface NekosBestResponse {
@@ -17,7 +22,6 @@ const REACTION_MESSAGES: Record<string, readonly [string, string?]> = {
   blush: ["{user} blushed!"],
   bored: ["{user} is bored..."],
   cuddle: ["{user} cuddled with {target}!", "You cuddled with yourself?"],
-  dance: [""],
   handhold: ["{user} held {target}'s hand!", "You held hands with yourself..."],
   highfive: ["{user} highfived {target}", "You highfived yourself?"],
   hug: ["{user} hugged {target}!", "You hugged yourself?"],
@@ -51,6 +55,14 @@ export class ReactionCommand extends Subcommand {
       builder
         .setName(this.name)
         .setDescription(this.description)
+        .setIntegrationTypes([
+          ApplicationIntegrationType.GuildInstall,
+          ApplicationIntegrationType.UserInstall,
+        ])
+        .setContexts([
+          InteractionContextType.Guild,
+          InteractionContextType.PrivateChannel,
+        ])
         .addSubcommand(cmd =>
           cmd
             .setName("bite")
@@ -75,7 +87,6 @@ export class ReactionCommand extends Subcommand {
                 .setDescription("User receiving the reaction.")
             )
         )
-        .addSubcommand(cmd => cmd.setName("dance").setDescription("💃🕺"))
         .addSubcommand(cmd =>
           cmd
             .setName("handhold")
