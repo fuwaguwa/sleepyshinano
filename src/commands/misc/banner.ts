@@ -1,15 +1,13 @@
 import { ApplyOptions } from "@sapphire/decorators";
+import { Command, type CommandOptions } from "@sapphire/framework";
 import {
-  Command,
-  type CommandOptions,
-  CommandOptionsRunTypeEnum,
-} from "@sapphire/framework";
-import { EmbedBuilder } from "discord.js";
-import { fetchJson } from "../../lib/utils";
+  ApplicationIntegrationType,
+  EmbedBuilder,
+  InteractionContextType,
+} from "discord.js";
+import { fetchJson } from "../../lib/utils/http";
 
-interface DiscordUserResponse {
-  banner?: string;
-}
+import type { DiscordUserResponse } from "../../typings/api/misc";
 
 @ApplyOptions<CommandOptions>({
   description: "Get a user's banner",
@@ -17,7 +15,6 @@ interface DiscordUserResponse {
   cooldownLimit: 1,
   cooldownDelay: 3000,
   cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS?.split(",") || [],
-  runIn: CommandOptionsRunTypeEnum.GuildAny,
 })
 export class BannerCommand extends Command {
   public override registerApplicationCommands(registry: Command.Registry) {
@@ -25,6 +22,15 @@ export class BannerCommand extends Command {
       builder
         .setName(this.name)
         .setDescription(this.description)
+        .setIntegrationTypes([
+          ApplicationIntegrationType.GuildInstall,
+          ApplicationIntegrationType.UserInstall,
+        ])
+        .setContexts([
+          InteractionContextType.Guild,
+          InteractionContextType.BotDM,
+          InteractionContextType.PrivateChannel,
+        ])
         .addUserOption(option =>
           option
             .setName("user")
@@ -71,9 +77,12 @@ export class BannerCommand extends Command {
       await interaction.editReply({ embeds: [embed] });
     } catch (error) {
       this.container.logger.error("Failed to fetch banner:", error);
-      await interaction.editReply({
-        content: "Failed to fetch the banner. Please try again later.",
-      });
+      const errorEmbed = new EmbedBuilder()
+        .setColor("Red")
+        .setDescription(
+          "❌ | Failed to fetch the banner. Please try again later."
+        );
+      await interaction.editReply({ embeds: [errorEmbed] });
     }
   }
 }

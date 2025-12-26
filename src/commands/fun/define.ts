@@ -1,17 +1,10 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
 import { EmbedBuilder } from "discord.js";
-import { fetchJson, standardCommandOptions } from "../../lib/utils";
+import { standardCommandOptions } from "../../lib/utils/command";
+import { fetchJson } from "../../lib/utils/http";
 
-interface UrbanDictionaryResponse {
-  list: {
-    word: string;
-    definition: string;
-    author: string;
-    thumbs_up: number;
-    thumbs_down: number;
-  }[];
-}
+import type { UrbanDictionaryResponse } from "../../typings/api/misc";
 
 @ApplyOptions<CommandOptions>({
   description: "Get a word's definition from Urban Dictionary",
@@ -71,9 +64,12 @@ export class DefineCommand extends Command {
       await interaction.editReply({ embeds: [definitionEmbed] });
     } catch (error) {
       this.container.logger.error("Failed to fetch definition:", error);
-      await interaction.editReply({
-        content: "Failed to fetch definition. Please try again later.",
-      });
+      const errorEmbed = new EmbedBuilder()
+        .setColor("Red")
+        .setDescription(
+          "❌ | Failed to fetch definition. Please try again later."
+        );
+      await interaction.editReply({ embeds: [errorEmbed] });
     }
   }
 }

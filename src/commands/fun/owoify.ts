@@ -1,11 +1,10 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
 import { EmbedBuilder } from "discord.js";
-import { fetchJson, standardCommandOptions } from "../../lib/utils";
+import { standardCommandOptions } from "../../lib/utils/command";
+import { fetchJson } from "../../lib/utils/http";
 
-interface OwoifyResponse {
-  owo: string;
-}
+import type { OwoifyResponse } from "../../typings/api/misc";
 
 @ApplyOptions<CommandOptions>({
   description: "Owoify your text",
@@ -54,9 +53,10 @@ export class OwoifyCommand extends Command {
       await interaction.editReply({ embeds: [owoEmbed] });
     } catch (error) {
       this.container.logger.error("Failed to owoify text:", error);
-      await interaction.editReply({
-        content: "Failed to owoify text. Please try again later.",
-      });
+      const errorEmbed = new EmbedBuilder()
+        .setColor("Red")
+        .setDescription("❌ | Failed to owoify text. Please try again later.");
+      await interaction.editReply({ embeds: [errorEmbed] });
     }
   }
 }

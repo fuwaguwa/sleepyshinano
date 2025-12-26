@@ -1,13 +1,12 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
 import { EmbedBuilder } from "discord.js";
-import { fetchJson, standardCommandOptions } from "../../lib/utils";
+import { standardCommandOptions } from "../../lib/utils/command";
+import { fetchJson } from "../../lib/utils/http";
 
-interface DadJokeResponse {
-  joke: string;
-}
+import type { DadJokeResponse } from "../../typings/api/misc";
 
-const API_URL = "https://icanhazdadjoke.com/";
+const DAD_JOKE_API = "https://icanhazdadjoke.com/";
 
 @ApplyOptions<CommandOptions>({
   description: "Make a dadjoke",
@@ -26,7 +25,7 @@ export class DadjokeCommand extends Command {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {
-      const { joke } = await fetchJson<DadJokeResponse>(API_URL, {
+      const { joke } = await fetchJson<DadJokeResponse>(DAD_JOKE_API, {
         headers: { Accept: "application/json" },
       });
 
@@ -35,9 +34,12 @@ export class DadjokeCommand extends Command {
       await interaction.editReply({ embeds: [embed] });
     } catch (error) {
       this.container.logger.error("Failed to fetch dad joke:", error);
-      await interaction.editReply({
-        content: "Failed to fetch a dad joke. Please try again later.",
-      });
+      const errorEmbed = new EmbedBuilder()
+        .setColor("Red")
+        .setDescription(
+          "❌ | Failed to fetch a dad joke. Please try again later."
+        );
+      await interaction.editReply({ embeds: [errorEmbed] });
     }
   }
 }

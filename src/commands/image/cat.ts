@@ -1,15 +1,10 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
 import { EmbedBuilder } from "discord.js";
-import {
-  createFooter,
-  fetchJson,
-  standardCommandOptions,
-} from "../../lib/utils";
+import { createFooter, standardCommandOptions } from "../../lib/utils/command";
+import { fetchJson } from "../../lib/utils/http";
 
-interface CatApiResponse {
-  url: string;
-}
+import type { CatApiResponse } from "../../typings/api/animal";
 
 @ApplyOptions<CommandOptions>({
   description: "Get an image of a cat!",
@@ -40,9 +35,10 @@ export class CatCommand extends Command {
       await interaction.editReply({ embeds: [embed] });
     } catch (error) {
       this.container.logger.error("Failed to fetch cat:", error);
-      await interaction.editReply({
-        content: "Failed to fetch a cat. Please try again later.",
-      });
+      const errorEmbed = new EmbedBuilder()
+        .setColor("Red")
+        .setDescription("❌ | Failed to fetch a cat. Please try again later.");
+      await interaction.editReply({ embeds: [errorEmbed] });
     }
   }
 }

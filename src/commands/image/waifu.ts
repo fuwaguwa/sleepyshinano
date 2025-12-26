@@ -4,13 +4,11 @@ import { EmbedBuilder } from "discord.js";
 import {
   createFooter,
   createImageActionRow,
-  fetchJson,
   standardCommandOptions,
-} from "../../lib/utils";
+} from "../../lib/utils/command";
+import { fetchJson } from "../../lib/utils/http";
 
-interface NekosBestResponse {
-  results: { url: string }[];
-}
+import type { NekosBestResponse } from "../../typings/api/misc";
 
 @ApplyOptions<CommandOptions>({
   description: "Looking for waifus?",
@@ -46,9 +44,12 @@ export class WaifuCommand extends Command {
       });
     } catch (error) {
       this.container.logger.error("Failed to fetch waifu:", error);
-      await interaction.editReply({
-        content: "Failed to fetch a waifu. Please try again later.",
-      });
+      const errorEmbed = new EmbedBuilder()
+        .setColor("Red")
+        .setDescription(
+          "❌ | Failed to fetch a waifu. Please try again later."
+        );
+      await interaction.editReply({ embeds: [errorEmbed] });
     }
   }
 }

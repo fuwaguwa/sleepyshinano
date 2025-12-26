@@ -4,13 +4,10 @@ import { EmbedBuilder } from "discord.js";
 import {
   createFooter,
   createImageActionRow,
-  fetchJson,
   standardCommandOptions,
-} from "../../lib/utils";
-
-interface NekosBestResponse {
-  results: { url: string }[];
-}
+} from "../../lib/utils/command";
+import { fetchJson } from "../../lib/utils/http";
+import type { NekosBestResponse } from "../../typings/api/misc";
 
 @ApplyOptions<CommandOptions>({
   description: "Get a pic of a catgirl (SFW)",
@@ -46,9 +43,12 @@ export class CatgirlCommand extends Command {
       });
     } catch (error) {
       this.container.logger.error("Failed to fetch catgirl:", error);
-      await interaction.editReply({
-        content: "Failed to fetch a catgirl. Please try again later.",
-      });
+      const errorEmbed = new EmbedBuilder()
+        .setColor("Red")
+        .setDescription(
+          "❌ | Failed to fetch a catgirl. Please try again later."
+        );
+      await interaction.editReply({ embeds: [errorEmbed] });
     }
   }
 }

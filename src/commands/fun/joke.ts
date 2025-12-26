@@ -1,11 +1,10 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
 import { EmbedBuilder } from "discord.js";
-import { fetchJson, standardCommandOptions } from "../../lib/utils";
+import { standardCommandOptions } from "../../lib/utils/command";
+import { buildSraUrl, fetchJson } from "../../lib/utils/http";
 
-interface JokeResponse {
-  joke: string;
-}
+import type { JokeResponse } from "../../typings/api/misc";
 
 @ApplyOptions<CommandOptions>({
   description: "Tell you a joke, may or may not be funny",
@@ -24,9 +23,7 @@ export class JokeCommand extends Command {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {
-      const data = await fetchJson<JokeResponse>(
-        "https://some-random-api.com/others/joke"
-      );
+      const data = await fetchJson<JokeResponse>(buildSraUrl("others/joke"));
 
       const jokeEmbed = new EmbedBuilder()
         .setColor("#2b2d31")
@@ -35,9 +32,10 @@ export class JokeCommand extends Command {
       await interaction.editReply({ embeds: [jokeEmbed] });
     } catch (error) {
       this.container.logger.error("Failed to fetch joke:", error);
-      await interaction.editReply({
-        content: "Failed to fetch a joke. Please try again later.",
-      });
+      const errorEmbed = new EmbedBuilder()
+        .setColor("Red")
+        .setDescription("❌ | Failed to fetch a joke. Please try again later.");
+      await interaction.editReply({ embeds: [errorEmbed] });
     }
   }
 }

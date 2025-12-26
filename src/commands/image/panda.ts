@@ -1,15 +1,10 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
 import { EmbedBuilder } from "discord.js";
-import {
-  createFooter,
-  fetchJson,
-  standardCommandOptions,
-} from "../../lib/utils";
+import { createFooter, standardCommandOptions } from "../../lib/utils/command";
+import { buildSraUrl, fetchJson } from "../../lib/utils/http";
 
-interface PandaApiResponse {
-  image: string;
-}
+import type { PandaApiResponse } from "../../typings/api/animal";
 
 @ApplyOptions<CommandOptions>({
   description: "Pandas.",
@@ -29,7 +24,7 @@ export class PandaCommand extends Command {
 
     try {
       const { image } = await fetchJson<PandaApiResponse>(
-        "https://some-random-api.com/animal/panda"
+        buildSraUrl("animal/panda")
       );
 
       const embed = new EmbedBuilder()
@@ -40,9 +35,12 @@ export class PandaCommand extends Command {
       await interaction.editReply({ embeds: [embed] });
     } catch (error) {
       this.container.logger.error("Failed to fetch panda:", error);
-      await interaction.editReply({
-        content: "Failed to fetch a panda image. Please try again later.",
-      });
+      const errorEmbed = new EmbedBuilder()
+        .setColor("Red")
+        .setDescription(
+          "❌ | Failed to fetch a panda image. Please try again later."
+        );
+      await interaction.editReply({ embeds: [errorEmbed] });
     }
   }
 }

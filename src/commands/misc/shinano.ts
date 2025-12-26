@@ -1,5 +1,4 @@
 import { ApplyOptions } from "@sapphire/decorators";
-import { CommandOptionsRunTypeEnum } from "@sapphire/framework";
 import {
   Subcommand,
   type SubcommandOptions,
@@ -10,17 +9,15 @@ import {
   ButtonStyle,
   EmbedBuilder,
 } from "discord.js";
-import { fetchJson, randomItem } from "../../lib/utils";
+import { fetchJson } from "../../lib/utils/http";
+import { randomItem } from "../../lib/utils/misc";
+
+import type { TopggBotStats } from "../../typings/api/botListing";
 
 const PAT_RESPONSES = [
   '"Aah... My ears are sensitive..."',
   '"Alas... This one\'s ears are sensitive..."',
 ] as const;
-
-interface TopggBotStats {
-  monthlyPoints?: number;
-  points?: number;
-}
 
 @ApplyOptions<SubcommandOptions>({
   description: "silly commands",
@@ -28,7 +25,6 @@ interface TopggBotStats {
   cooldownLimit: 1,
   cooldownDelay: 5000,
   cooldownFilteredUsers: process.env.OWNER_IDS?.split(",") || [],
-  runIn: CommandOptionsRunTypeEnum.GuildAny,
   subcommands: [
     { name: "ping", chatInputRun: "subcommandPing" },
     { name: "info", chatInputRun: "subcommandInfo" },
