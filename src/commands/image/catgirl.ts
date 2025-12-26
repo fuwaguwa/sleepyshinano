@@ -43,9 +43,12 @@ export class CatgirlCommand extends Command {
       });
     } catch (error) {
       this.container.logger.error("Failed to fetch catgirl:", error);
-      await interaction.editReply({
-        content: "Failed to fetch a catgirl. Please try again later.",
-      });
+      const errorEmbed = new EmbedBuilder()
+        .setColor("Red")
+        .setDescription(
+          "❌ | Failed to fetch a catgirl. Please try again later."
+        );
+      await interaction.editReply({ embeds: [errorEmbed] });
     }
   }
 }

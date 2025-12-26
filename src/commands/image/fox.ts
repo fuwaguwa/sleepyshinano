@@ -35,9 +35,12 @@ export class FoxCommand extends Command {
       await interaction.editReply({ embeds: [embed] });
     } catch (error) {
       this.container.logger.error("Failed to fetch fox:", error);
-      await interaction.editReply({
-        content: "Failed to fetch a fox image. Please try again later.",
-      });
+      const errorEmbed = new EmbedBuilder()
+        .setColor("Red")
+        .setDescription(
+          "❌ | Failed to fetch a fox image. Please try again later."
+        );
+      await interaction.editReply({ embeds: [errorEmbed] });
     }
   }
 }
