@@ -10,28 +10,11 @@ import {
 import { buttonCollector } from "../../lib/collectors";
 import { collectorsRefresh, fetchJson, randomItem } from "../../lib/utils";
 
-interface TriviaApiItem {
-  question: string;
-  correctAnswer: string;
-  incorrectAnswers: string[];
-  difficulty: string;
-  category: string;
-}
-
-type FetchedQuestion = {
-  question: string;
-  difficulty: string;
-  category: string;
-  answers: string[]; // first item is the correct answer (pre-shuffle)
-};
-
-interface TriviaQuestion {
-  question: string;
-  difficulty: string;
-  category: string;
-  correctAnswer: string;
-  answers: string[]; // length 4
-}
+import type {
+  TriviaApiItem,
+  TriviaFetchedQuestion,
+  TriviaQuestion,
+} from "../../typings/api/misc";
 
 @ApplyOptions<CommandOptions>({
   description: "Trivia questions!",
@@ -235,7 +218,7 @@ export class TriviaCommand extends Command {
     category: string,
     difficulty: string
   ): Promise<TriviaQuestion> {
-    let fetched: FetchedQuestion = await this.fetchQuestion(
+    let fetched: TriviaFetchedQuestion = await this.fetchQuestion(
       category,
       difficulty
     );
@@ -268,7 +251,7 @@ export class TriviaCommand extends Command {
   private async fetchQuestion(
     category: string,
     difficulty: string
-  ): Promise<FetchedQuestion> {
+  ): Promise<TriviaFetchedQuestion> {
     const trivia = await fetchJson<TriviaApiItem[]>(
       `https://the-trivia-api.com/api/questions?categories=${category}&limit=1&difficulty=${difficulty}`
     );

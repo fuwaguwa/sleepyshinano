@@ -3,9 +3,7 @@ import { Command, type CommandOptions } from "@sapphire/framework";
 import { EmbedBuilder } from "discord.js";
 import { fetchJson, standardCommandOptions } from "../../lib/utils";
 
-interface DadJokeResponse {
-  joke: string;
-}
+import type { DadJokeResponse } from "../../typings/api/misc";
 
 const API_URL = "https://icanhazdadjoke.com/";
 

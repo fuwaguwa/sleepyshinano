@@ -8,9 +8,7 @@ import {
   standardCommandOptions,
 } from "../../lib/utils";
 
-interface NekosBestResponse {
-  results: { url: string }[];
-}
+import type { NekosBestResponse } from "../../typings/api/misc";
 
 @ApplyOptions<CommandOptions>({
   description: "If you love me, you'll love them too (SFW)",

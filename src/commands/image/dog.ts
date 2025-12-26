@@ -7,9 +7,7 @@ import {
   standardCommandOptions,
 } from "../../lib/utils";
 
-interface DogApiResponse {
-  message: string;
-}
+import type { DogApiResponse } from "../../typings/api/animal";
 
 @ApplyOptions<CommandOptions>({
   description: "Get an image of a dog!",

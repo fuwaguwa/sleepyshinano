@@ -17,9 +17,7 @@ import { buttonCollector } from "../../lib/collectors";
 import { fetchJson } from "../../lib/utils";
 import User from "../../schemas/User";
 
-interface TopggVoteCheck {
-  voted: number;
-}
+import type { TopggVoteCheck } from "../../typings/api/botListing";
 
 @ApplyOptions<SubcommandOptions>({
   description: "N/A",

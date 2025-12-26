@@ -7,9 +7,7 @@ import {
   standardCommandOptions,
 } from "../../lib/utils";
 
-interface PandaApiResponse {
-  image: string;
-}
+import type { PandaApiResponse } from "../../typings/api/animal";
 
 @ApplyOptions<CommandOptions>({
   description: "Pandas.",

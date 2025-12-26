@@ -3,9 +3,7 @@ import { Command, type CommandOptions } from "@sapphire/framework";
 import { EmbedBuilder } from "discord.js";
 import { fetchJson, standardCommandOptions } from "../../lib/utils";
 
-interface JokeResponse {
-  joke: string;
-}
+import type { JokeResponse } from "../../typings/api/misc";
 
 @ApplyOptions<CommandOptions>({
   description: "Tell you a joke, may or may not be funny",

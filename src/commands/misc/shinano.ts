@@ -11,15 +11,12 @@ import {
 } from "discord.js";
 import { fetchJson, randomItem } from "../../lib/utils";
 
+import type { TopggBotStats } from "../../typings/api/botListing";
+
 const PAT_RESPONSES = [
   '"Aah... My ears are sensitive..."',
   '"Alas... This one\'s ears are sensitive..."',
 ] as const;
-
-interface TopggBotStats {
-  monthlyPoints?: number;
-  points?: number;
-}
 
 @ApplyOptions<SubcommandOptions>({
   description: "silly commands",

@@ -11,9 +11,7 @@ import {
 } from "discord.js";
 import { fetchJson, standardCommandOptions } from "../../lib/utils";
 
-interface NekosBestResponse {
-  results: { url: string }[];
-}
+import type { NekosBestResponse } from "../../typings/api/misc";
 
 // Message templates: [messageWithTarget, messageWithoutTarget?]
 // {user} = interaction user, {target} = target user

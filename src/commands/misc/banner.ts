@@ -7,9 +7,7 @@ import {
 } from "discord.js";
 import { fetchJson } from "../../lib/utils";
 
-interface DiscordUserResponse {
-  banner?: string;
-}
+import type { DiscordUserResponse } from "../../typings/api/misc";
 
 @ApplyOptions<CommandOptions>({
   description: "Get a user's banner",

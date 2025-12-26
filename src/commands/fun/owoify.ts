@@ -3,9 +3,7 @@ import { Command, type CommandOptions } from "@sapphire/framework";
 import { EmbedBuilder } from "discord.js";
 import { fetchJson, standardCommandOptions } from "../../lib/utils";
 
-interface OwoifyResponse {
-  owo: string;
-}
+import type { OwoifyResponse } from "../../typings/api/misc";
 
 @ApplyOptions<CommandOptions>({
   description: "Owoify your text",

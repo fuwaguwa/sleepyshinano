@@ -3,15 +3,7 @@ import { Command, type CommandOptions } from "@sapphire/framework";
 import { EmbedBuilder } from "discord.js";
 import { fetchJson, standardCommandOptions } from "../../lib/utils";
 
-interface UrbanDictionaryResponse {
-  list: {
-    word: string;
-    definition: string;
-    author: string;
-    thumbs_up: number;
-    thumbs_down: number;
-  }[];
-}
+import type { UrbanDictionaryResponse } from "../../typings/api/misc";
 
 @ApplyOptions<CommandOptions>({
   description: "Get a word's definition from Urban Dictionary",

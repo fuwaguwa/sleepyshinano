@@ -7,9 +7,7 @@ import {
   standardCommandOptions,
 } from "../../lib/utils";
 
-interface CatApiResponse {
-  url: string;
-}
+import type { CatApiResponse } from "../../typings/api/animal";
 
 @ApplyOptions<CommandOptions>({
   description: "Get an image of a cat!",

@@ -7,9 +7,7 @@ import {
   standardCommandOptions,
 } from "../../lib/utils";
 
-interface FoxApiResponse {
-  image: string;
-}
+import type { FoxApiResponse } from "../../typings/api/animal";
 
 @ApplyOptions<CommandOptions>({
   description: "Generate an image of a fox!",

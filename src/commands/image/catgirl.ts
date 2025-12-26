@@ -7,10 +7,7 @@ import {
   fetchJson,
   standardCommandOptions,
 } from "../../lib/utils";
-
-interface NekosBestResponse {
-  results: { url: string }[];
-}
+import type { NekosBestResponse } from "../../typings/api/misc";
 
 @ApplyOptions<CommandOptions>({
   description: "Get a pic of a catgirl (SFW)",
