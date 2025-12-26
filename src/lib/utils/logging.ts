@@ -103,7 +103,7 @@ export function logSuccessfulCommand(
   const shardId = guild?.shardId ?? 0;
   const subcommandName = subcommand ? ` ${subcommand.name}` : "";
 
-  container.logger.debug(
+  container.logger.info(
     `[Shard ${shardId}] ${command.name}${subcommandName} | ${user.username} (${user.id}) | ${contextInfo}`
   );
 }

@@ -18,7 +18,7 @@ export async function connectToDatabase() {
  * Restarting bot, pm2 should autorestart
  */
 export function restartBot() {
-  container.logger.debug("Restarting bot...");
+  container.logger.info("Restarting bot...");
   process.exit(1);
 }
 
