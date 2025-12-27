@@ -63,13 +63,13 @@ export class DefineCommand extends Command {
 
       await interaction.editReply({ embeds: [definitionEmbed] });
     } catch (error) {
-      this.container.logger.error("Failed to fetch definition:", error);
       const errorEmbed = new EmbedBuilder()
         .setColor("Red")
         .setDescription(
           "❌ | Failed to fetch definition. Please try again later."
         );
       await interaction.editReply({ embeds: [errorEmbed] });
+      throw error;
     }
   }
 }

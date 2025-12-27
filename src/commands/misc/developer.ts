@@ -1,14 +1,11 @@
 import util from "node:util";
 import { ApplyOptions } from "@sapphire/decorators";
-import {
-  Subcommand,
-  type SubcommandOptions,
-} from "@sapphire/plugin-subcommands";
+import { Subcommand, type SubcommandOptions } from "@sapphire/plugin-subcommands";
 import {
   ActionRowBuilder,
   ButtonBuilder,
-  type ButtonInteraction,
   ButtonStyle,
+  ComponentType,
   codeBlock,
   EmbedBuilder,
   MessageFlagsBitField,
@@ -40,71 +37,46 @@ import type { TopggVoteCheck } from "../../typings/api/botListing";
   ],
 })
 export class DeveloperCommand extends Subcommand {
-  public override async registerApplicationCommands(
-    registry: Subcommand.Registry
-  ) {
+  public override async registerApplicationCommands(registry: Subcommand.Registry) {
     registry.registerChatInputCommand(builder =>
       builder
         .setName(this.name)
         .setDescription("Developer-only commands")
-        .addSubcommand(cmd =>
-          cmd
+        .addSubcommand(command =>
+          command
             .setName("eval")
             .setDescription("Evaluate JavaScript code")
-            .addStringOption(opt =>
-              opt
-                .setName("code")
-                .setDescription("Code to evaluate")
-                .setRequired(true)
-            )
+            .addStringOption(option => option.setName("code").setDescription("Code to evaluate").setRequired(true))
         )
-        .addSubcommand(cmd =>
-          cmd
+        .addSubcommand(command =>
+          command
             .setName("vote-check")
             .setDescription("Check a user's vote status")
-            .addUserOption(opt =>
-              opt
-                .setName("user")
-                .setDescription("User to check vote status")
-                .setRequired(true)
+            .addUserOption(option =>
+              option.setName("user").setDescription("User to check vote status").setRequired(true)
             )
         )
         .addSubcommandGroup(group =>
           group
             .setName("blacklist")
             .setDescription("Manage blacklisted users")
-            .addSubcommand(cmd =>
-              cmd
+            .addSubcommand(command =>
+              command
                 .setName("add")
                 .setDescription("Add someone to the bot's blacklist")
-                .addUserOption(opt =>
-                  opt
-                    .setName("user")
-                    .setDescription("User to blacklist")
-                    .setRequired(true)
-                )
+                .addUserOption(option => option.setName("user").setDescription("User to blacklist").setRequired(true))
             )
-            .addSubcommand(cmd =>
-              cmd
+            .addSubcommand(command =>
+              command
                 .setName("remove")
                 .setDescription("Remove someone from the bot's blacklist")
-                .addUserOption(opt =>
-                  opt
-                    .setName("user")
-                    .setDescription("User to unblacklist")
-                    .setRequired(true)
-                )
+                .addUserOption(option => option.setName("user").setDescription("User to unblacklist").setRequired(true))
             )
-            .addSubcommand(cmd =>
-              cmd
+            .addSubcommand(command =>
+              command
                 .setName("check")
                 .setDescription("Check if a user is blacklisted")
-                .addUserOption(opt =>
-                  opt
-                    .setName("user")
-                    .setDescription("User to check")
-                    .setRequired(true)
-                )
+                .addUserOption(option => option.setName("user").setDescription("User to check").setRequired(true))
             )
         )
     );
@@ -113,9 +85,7 @@ export class DeveloperCommand extends Subcommand {
   /**
    * /developer eval - Evaluate JavaScript code
    */
-  public async subcommandEval(
-    interaction: Subcommand.ChatInputCommandInteraction
-  ) {
+  public async subcommandEval(interaction: Subcommand.ChatInputCommandInteraction) {
     if (!interaction.deferred) await interaction.deferReply();
 
     const code = interaction.options.getString("code", true);
@@ -148,13 +118,10 @@ export class DeveloperCommand extends Subcommand {
   /**
    * /developer vote-check - Check user's vote status
    */
-  public async subcommandVote(
-    interaction: Subcommand.ChatInputCommandInteraction
-  ) {
+  public async subcommandVote(interaction: Subcommand.ChatInputCommandInteraction) {
     if (!interaction.deferred) await interaction.deferReply();
 
     const user = interaction.options.getUser("user", true);
-    const botId = this.container.client.user?.id || "1002193298229829682";
 
     // Check Shinano database
     const voteUser = await User.findOne({ userId: user.id });
@@ -162,10 +129,10 @@ export class DeveloperCommand extends Subcommand {
     let voteStatus: boolean | string = "N/A";
     let voteTime: number | string = "N/A";
 
-    if (voteUser?.lastVoteTimestamp) {
+    if (voteUser?.voteTimestamp) {
       const currentTime = Math.floor(Date.now() / 1000);
-      voteTime = voteUser.lastVoteTimestamp;
-      voteStatus = currentTime - voteUser.lastVoteTimestamp < 43200; // 12 hours
+      voteTime = voteUser.voteTimestamp;
+      voteStatus = currentTime - voteUser.voteTimestamp < 43200; // 12 hours
     }
 
     // Check Top.gg database
@@ -173,15 +140,14 @@ export class DeveloperCommand extends Subcommand {
     if (process.env.TOPGG_API_KEY) {
       try {
         const result = await fetchJson<TopggVoteCheck>(
-          `https://top.gg/api/bots/${botId}/check?userId=${user.id}`,
-          { headers: { Authorization: process.env.TOPGG_API_KEY } }
+          `https://top.gg/api/bots/1002193298229829682/check?userId=${user.id}`,
+          {
+            headers: { Authorization: process.env.TOPGG_API_KEY },
+          }
         );
         topggVoteStatus = result.voted === 1;
       } catch (error) {
-        this.container.logger.error(
-          "Failed to check Top.gg vote status:",
-          error
-        );
+        throw error;
       }
     }
 
@@ -203,7 +169,7 @@ export class DeveloperCommand extends Subcommand {
         .setLabel("Update user in database")
         .setEmoji({ name: "✅" })
         .setStyle(ButtonStyle.Success)
-        .setCustomId("ADB")
+        .setCustomId("addDatabase")
         .setDisabled(false)
     );
 
@@ -215,14 +181,14 @@ export class DeveloperCommand extends Subcommand {
 
     // Create collector
     const collector = message.createMessageComponentCollector({
+      componentType: ComponentType.Button,
       time: 60000,
     });
 
     buttonCollector.set(interaction.user.id, collector);
 
-    collector.on("collect", async collectedInteraction => {
+    collector.on("collect", async i => {
       // Check if user is developer
-      const i = collectedInteraction as ButtonInteraction;
       const ownerIds = process.env.OWNER_IDS?.split(",") || [];
       if (!ownerIds.includes(i.user.id)) {
         return i.reply({
@@ -241,9 +207,7 @@ export class DeveloperCommand extends Subcommand {
         { upsert: true }
       );
 
-      const updatedEmbed = new EmbedBuilder()
-        .setColor("Green")
-        .setDescription("✅ | Updated the database!");
+      const updatedEmbed = new EmbedBuilder().setColor("Green").setDescription("✅ | Updated the database!");
 
       await i.reply({
         embeds: [updatedEmbed],
@@ -262,9 +226,7 @@ export class DeveloperCommand extends Subcommand {
   /**
    * /developer blacklist add - Add user to blacklist
    */
-  public async subcommandBLAdd(
-    interaction: Subcommand.ChatInputCommandInteraction
-  ) {
+  public async subcommandBLAdd(interaction: Subcommand.ChatInputCommandInteraction) {
     if (!interaction.deferred) await interaction.deferReply();
 
     const targetUser = interaction.options.getUser("user", true);
@@ -298,9 +260,7 @@ export class DeveloperCommand extends Subcommand {
   /**
    * /developer blacklist remove - Remove user from blacklist
    */
-  public async subcommandBLRemove(
-    interaction: Subcommand.ChatInputCommandInteraction
-  ) {
+  public async subcommandBLRemove(interaction: Subcommand.ChatInputCommandInteraction) {
     if (!interaction.deferred) await interaction.deferReply();
 
     const targetUser = interaction.options.getUser("user", true);
@@ -309,14 +269,12 @@ export class DeveloperCommand extends Subcommand {
     const user = await User.findOne({ userId: targetUser.id });
 
     if (!user || !user.blacklisted) {
-      const notBlacklisted = new EmbedBuilder()
-        .setColor("Red")
-        .setDescription("User is not blacklisted!");
+      const notBlacklisted = new EmbedBuilder().setColor("Red").setDescription("User is not blacklisted!");
       return interaction.editReply({ embeds: [notBlacklisted] });
     }
 
-    // Remove from blacklist
-    await user.updateOne({ blacklisted: false });
+    // Remove blacklist field from document
+    await user.updateOne({ $unset: { blacklisted: "" } });
 
     const success = new EmbedBuilder()
       .setColor("Green")
@@ -329,9 +287,7 @@ export class DeveloperCommand extends Subcommand {
   /**
    * /developer blacklist check - Check if user is blacklisted
    */
-  public async subcommandBLCheck(
-    interaction: Subcommand.ChatInputCommandInteraction
-  ) {
+  public async subcommandBLCheck(interaction: Subcommand.ChatInputCommandInteraction) {
     if (!interaction.deferred) await interaction.deferReply();
 
     const targetUser = interaction.options.getUser("user", true);
@@ -346,9 +302,7 @@ export class DeveloperCommand extends Subcommand {
         .addFields({ name: "User:", value: `${targetUser}` });
       await interaction.editReply({ embeds: [blacklisted] });
     } else {
-      const notBlacklisted = new EmbedBuilder()
-        .setColor("Green")
-        .setDescription("User is not blacklisted!");
+      const notBlacklisted = new EmbedBuilder().setColor("Green").setDescription("User is not blacklisted!");
       await interaction.editReply({ embeds: [notBlacklisted] });
     }
   }

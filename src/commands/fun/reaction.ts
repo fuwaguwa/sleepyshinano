@@ -258,10 +258,13 @@ export class ReactionCommand extends Subcommand {
 
       await interaction.editReply({ embeds: [reactionEmbed] });
     } catch (error) {
-      this.container.logger.error("Failed to fetch reaction image:", error);
-      await interaction.editReply({
-        content: "Failed to fetch reaction. Please try again later.",
-      });
+      const errorEmbed = new EmbedBuilder()
+        .setColor("Red")
+        .setDescription(
+          "❌ | Failed to fetch reaction. Please try again later."
+        );
+      await interaction.editReply({ embeds: [errorEmbed] });
+      throw error;
     }
   }
 

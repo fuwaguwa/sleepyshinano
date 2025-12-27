@@ -43,13 +43,13 @@ export class WaifuCommand extends Command {
         components: [createImageActionRow(imageUrl)],
       });
     } catch (error) {
-      this.container.logger.error("Failed to fetch waifu:", error);
       const errorEmbed = new EmbedBuilder()
         .setColor("Red")
         .setDescription(
           "❌ | Failed to fetch a waifu. Please try again later."
         );
       await interaction.editReply({ embeds: [errorEmbed] });
+      throw error;
     }
   }
 }

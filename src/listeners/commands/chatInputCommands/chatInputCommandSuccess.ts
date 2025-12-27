@@ -1,7 +1,4 @@
-import {
-  type ChatInputCommandSuccessPayload,
-  Listener,
-} from "@sapphire/framework";
+import { type ChatInputCommandSuccessPayload, Listener } from "@sapphire/framework";
 import { logSuccessfulCommand } from "../../../lib/utils/logging";
 import User from "../../../schemas/User";
 
@@ -10,14 +7,10 @@ export class ChatInputCommandSuccessListener extends Listener {
     logSuccessfulCommand(payload);
 
     // Create user entry if they don't exist yet
-    try {
-      await User.findOneAndUpdate(
-        { userId: payload.interaction.user.id },
-        { $setOnInsert: { userId: payload.interaction.user.id } },
-        { upsert: true }
-      );
-    } catch (error) {
-      this.container.logger.error("Failed to create user entry: ", error);
-    }
+    await User.findOneAndUpdate(
+      { userId: payload.interaction.user.id },
+      { $setOnInsert: { userId: payload.interaction.user.id } },
+      { upsert: true }
+    );
   }
 }

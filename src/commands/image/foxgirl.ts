@@ -43,13 +43,13 @@ export class FoxgirlCommand extends Command {
         components: [createImageActionRow(imageUrl)],
       });
     } catch (error) {
-      this.container.logger.error("Failed to fetch foxgirl:", error);
       const errorEmbed = new EmbedBuilder()
         .setColor("Red")
         .setDescription(
           "❌ | Failed to fetch a foxgirl. Please try again later."
         );
       await interaction.editReply({ embeds: [errorEmbed] });
+      throw error;
     }
   }
 }

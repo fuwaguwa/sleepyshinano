@@ -94,9 +94,9 @@ export class ImageCommand extends Subcommand {
         .addSubcommand(command =>
           command
             .setName("no")
-            .setDescription("No bitches?")
+            .setDescription("No <item>?")
             .addStringOption(option =>
-              option.setName("item").setDescription("Item.").setRequired(false)
+              option.setName("item").setDescription("Item.").setRequired(true)
             )
         )
         .addSubcommand(command =>

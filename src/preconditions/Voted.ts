@@ -17,12 +17,12 @@ export class VotedPrecondition extends Precondition {
     const user = await User.findOne({ userId: interaction.user.id });
 
     // User hasn't voted yet
-    if (!user?.lastVoteTimestamp) {
+    if (!user?.voteTimestamp) {
       return this.error({ message: "noVote", identifier: "votedError" });
     }
 
     const now = Math.floor(Date.now() / 1000);
-    const timeSinceVote = now - user.lastVoteTimestamp;
+    const timeSinceVote = now - user.voteTimestamp;
     const voteValidDuration = 43200; // 12 hours in seconds
 
     // Vote is still valid
@@ -32,7 +32,7 @@ export class VotedPrecondition extends Precondition {
 
     // Vote expired
     return this.error({
-      message: `exp-${user.lastVoteTimestamp}`,
+      message: `exp-${user.voteTimestamp}`,
       identifier: "votedError",
     });
   }

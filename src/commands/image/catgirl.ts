@@ -42,13 +42,13 @@ export class CatgirlCommand extends Command {
         components: [createImageActionRow(imageUrl)],
       });
     } catch (error) {
-      this.container.logger.error("Failed to fetch catgirl:", error);
       const errorEmbed = new EmbedBuilder()
         .setColor("Red")
         .setDescription(
           "❌ | Failed to fetch a catgirl. Please try again later."
         );
       await interaction.editReply({ embeds: [errorEmbed] });
+      throw error;
     }
   }
 }

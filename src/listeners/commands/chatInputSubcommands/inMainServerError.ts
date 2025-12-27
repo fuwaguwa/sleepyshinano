@@ -1,20 +1,7 @@
 import { ApplyOptions } from "@sapphire/decorators";
-import {
-  Listener,
-  type ListenerOptions,
-  type UserError,
-} from "@sapphire/framework";
-import type {
-  ChatInputSubcommandDeniedPayload,
-  SubcommandPluginEvents,
-} from "@sapphire/plugin-subcommands";
-import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  EmbedBuilder,
-  MessageFlagsBitField,
-} from "discord.js";
+import { Listener, type ListenerOptions, type UserError } from "@sapphire/framework";
+import type { ChatInputSubcommandDeniedPayload, SubcommandPluginEvents } from "@sapphire/plugin-subcommands";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageFlagsBitField } from "discord.js";
 
 @ApplyOptions<ListenerOptions>({
   event: "chatInputSubcommandDenied",
@@ -22,10 +9,7 @@ import {
 export class InMainServerErrorSubcommandListener extends Listener<
   typeof SubcommandPluginEvents.ChatInputSubcommandDenied
 > {
-  public override async run(
-    { context, identifier }: UserError,
-    { interaction }: ChatInputSubcommandDeniedPayload
-  ) {
+  public override async run({ context, identifier }: UserError, { interaction }: ChatInputSubcommandDeniedPayload) {
     if (Reflect.get(Object(context), "silent")) return;
     if (identifier !== "inMainServerError") return;
 

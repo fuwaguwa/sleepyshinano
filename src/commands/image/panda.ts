@@ -34,13 +34,13 @@ export class PandaCommand extends Command {
 
       await interaction.editReply({ embeds: [embed] });
     } catch (error) {
-      this.container.logger.error("Failed to fetch panda:", error);
       const errorEmbed = new EmbedBuilder()
         .setColor("Red")
         .setDescription(
           "❌ | Failed to fetch a panda image. Please try again later."
         );
       await interaction.editReply({ embeds: [errorEmbed] });
+      throw error;
     }
   }
 }
