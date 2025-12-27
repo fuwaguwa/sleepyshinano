@@ -1,23 +1,12 @@
 import { ApplyOptions } from "@sapphire/decorators";
-import {
-  Subcommand,
-  type SubcommandOptions,
-} from "@sapphire/plugin-subcommands";
-import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  EmbedBuilder,
-} from "discord.js";
+import { Subcommand, type SubcommandOptions } from "@sapphire/plugin-subcommands";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
 import { fetchJson } from "../../lib/utils/http";
 import { randomItem } from "../../lib/utils/misc";
 
 import type { TopggBotStats } from "../../typings/api/botListing";
 
-const PAT_RESPONSES = [
-  '"Aah... My ears are sensitive..."',
-  '"Alas... This one\'s ears are sensitive..."',
-] as const;
+const PAT_RESPONSES = ['"Aah... My ears are sensitive..."', '"Alas... This one\'s ears are sensitive..."'] as const;
 
 @ApplyOptions<SubcommandOptions>({
   description: "silly commands",
@@ -43,31 +32,13 @@ export class ShinanoCommand extends Subcommand {
       builder
         .setName("shinano")
         .setDescription("Shinano Utilities Commands")
-        .addSubcommand(cmd => cmd.setName("ping").setDescription("Pong!"))
-        .addSubcommand(cmd =>
-          cmd.setName("info").setDescription("Information about Shinano")
-        )
-        .addSubcommand(cmd =>
-          cmd.setName("pat").setDescription("Headpats for the floof")
-        )
-        .addSubcommand(cmd =>
-          cmd.setName("stats").setDescription("Display Shinano's stats")
-        )
-        .addSubcommand(cmd =>
-          cmd
-            .setName("support")
-            .setDescription("Got a problem? Run this command!")
-        )
-        .addSubcommand(cmd =>
-          cmd
-            .setName("vote")
-            .setDescription("Vote for Shinano, or check your vote status")
-        )
-        .addSubcommand(cmd =>
-          cmd
-            .setName("help")
-            .setDescription("How to look for all Shinano commands!")
-        )
+        .addSubcommand(command => command.setName("info").setDescription("Information about Shinano"))
+        .addSubcommand(command => command.setName("ping").setDescription("Pong!"))
+        .addSubcommand(command => command.setName("pat").setDescription("Headpats for the floof"))
+        .addSubcommand(command => command.setName("stats").setDescription("Display Shinano's stats"))
+        .addSubcommand(command => command.setName("support").setDescription("Got a problem? Run this command!"))
+        .addSubcommand(command => command.setName("vote").setDescription("Vote for Shinano, or check your vote status"))
+        .addSubcommand(command => command.setName("help").setDescription("How to look for all Shinano commands!"))
     );
   }
 
@@ -76,9 +47,7 @@ export class ShinanoCommand extends Subcommand {
   /**
    * /shinano ping - Show bot latency
    */
-  public async subcommandPing(
-    interaction: Subcommand.ChatInputCommandInteraction
-  ) {
+  public async subcommandPing(interaction: Subcommand.ChatInputCommandInteraction) {
     const latency = Date.now() - interaction.createdTimestamp;
     const apiLatency = Math.round(this.container.client.ws.ping);
 
@@ -93,9 +62,7 @@ export class ShinanoCommand extends Subcommand {
   /**
    * /shinano info - Show bot information
    */
-  public async subcommandInfo(
-    interaction: Subcommand.ChatInputCommandInteraction
-  ) {
+  public async subcommandInfo(interaction: Subcommand.ChatInputCommandInteraction) {
     const botId = this.container.client.user?.id || "1002193298229829682";
 
     const shinanoEmbed = new EmbedBuilder()
@@ -145,9 +112,7 @@ export class ShinanoCommand extends Subcommand {
   /**
    * /shinano pat - Give Shinano headpats
    */
-  public async subcommandPat(
-    interaction: Subcommand.ChatInputCommandInteraction
-  ) {
+  public async subcommandPat(interaction: Subcommand.ChatInputCommandInteraction) {
     const embed = new EmbedBuilder()
       .setColor("#2b2d31")
       .setDescription(randomItem(PAT_RESPONSES))
@@ -161,19 +126,16 @@ export class ShinanoCommand extends Subcommand {
   /**
    * /shinano stats - Display bot statistics
    */
-  public async subcommandStats(
-    interaction: Subcommand.ChatInputCommandInteraction
-  ) {
+  public async subcommandStats(interaction: Subcommand.ChatInputCommandInteraction) {
     if (!interaction.deferred) await interaction.deferReply();
 
     const botId = this.container.client.user?.id || "1002193298229829682";
 
     let topggStats: TopggBotStats | null = null;
     try {
-      topggStats = await fetchJson<TopggBotStats>(
-        `https://top.gg/api/bots/${botId}`,
-        { headers: { Authorization: process.env.TOPGG_API_KEY as string } }
-      );
+      topggStats = await fetchJson<TopggBotStats>(`https://top.gg/api/bots/${botId}`, {
+        headers: { Authorization: process.env.TOPGG_API_KEY as string },
+      });
     } catch (error) {
       this.container.logger.error("Failed to fetch Top.gg stats:", error);
     }
@@ -201,9 +163,7 @@ export class ShinanoCommand extends Subcommand {
           name: "Bot Stats:",
           value:
             `Total Guilds: **${this.container.client.guilds.cache.size}**\n` +
-            (topggStats
-              ? `Current Votes: **${topggStats.monthlyPoints || 0}**\n`
-              : "") +
+            (topggStats ? `Current Votes: **${topggStats.monthlyPoints || 0}**\n` : "") +
             (topggStats ? `Total Votes: **${topggStats.points || 0}**\n` : ""),
         }
       );
@@ -214,9 +174,7 @@ export class ShinanoCommand extends Subcommand {
   /**
    * /shinano support - Show support server link
    */
-  public async subcommandSupport(
-    interaction: Subcommand.ChatInputCommandInteraction
-  ) {
+  public async subcommandSupport(interaction: Subcommand.ChatInputCommandInteraction) {
     const supportEmbed = new EmbedBuilder()
       .setColor("#2b2d31")
       .setDescription(
@@ -240,14 +198,10 @@ export class ShinanoCommand extends Subcommand {
   /**
    * /shinano vote - Show voting links
    */
-  public async subcommandVote(
-    interaction: Subcommand.ChatInputCommandInteraction
-  ) {
+  public async subcommandVote(interaction: Subcommand.ChatInputCommandInteraction) {
     if (!interaction.deferred) {
       await interaction.deferReply();
     }
-
-    const botId = this.container.client.user?.id || "1002193298229829682";
 
     const voteEmbed = new EmbedBuilder()
       .setColor("#2b2d31")
@@ -255,44 +209,29 @@ export class ShinanoCommand extends Subcommand {
         "You may cast your vote for me down below. I express my gratitude for your unwavering support!\n"
       );
 
-    const links1 = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    const links = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
         .setStyle(ButtonStyle.Link)
         .setLabel("Vote on top.gg")
         .setEmoji({ id: "1002849574517477447" })
-        .setURL(`https://top.gg/bot/${botId}/vote`),
+        .setURL(`https://top.gg/bot/1002193298229829682/vote`),
       new ButtonBuilder()
         .setStyle(ButtonStyle.Secondary)
         .setLabel("Check top.gg Vote")
         .setEmoji({ name: "🔍" })
-        .setCustomId("VOTE-CHECK")
-    );
-
-    const links2 = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setStyle(ButtonStyle.Link)
-        .setLabel("Vote on discordbotlist.com")
-        .setURL("https://discordbotlist.com/bots/shinano/upvote")
-        .setEmoji({ name: "🤖" }),
-      new ButtonBuilder()
-        .setStyle(ButtonStyle.Link)
-        .setLabel("Vote on discordservices.net")
-        .setURL(`https://discordservices.net/bot/${botId}`)
-        .setEmoji({ name: "🔨" })
+        .setCustomId("voteCheck")
     );
 
     await interaction.editReply({
       embeds: [voteEmbed],
-      components: [links1, links2],
+      components: [links],
     });
   }
 
   /**
    * /shinano help - Show help information
    */
-  public async subcommandHelp(
-    interaction: Subcommand.ChatInputCommandInteraction
-  ) {
+  public async subcommandHelp(interaction: Subcommand.ChatInputCommandInteraction) {
     const messageString = "</shinano support:1059059516081192961>";
     const message =
       `All of Shinano functions are indexed within the \`Apps & Commands\` button. Please use it to see all available Shinano commands! For more information you can join the support server via ${messageString}\n\n` +

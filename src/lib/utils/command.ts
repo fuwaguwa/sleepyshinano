@@ -1,9 +1,4 @@
-import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  type User,
-} from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, type User } from "discord.js";
 
 /**
  * Standard command options used across most commands
@@ -30,15 +25,11 @@ export function createFooter(user: User) {
  */
 export function createImageActionRow(imageUrl: string) {
   return new ActionRowBuilder<ButtonBuilder>().addComponents(
-    new ButtonBuilder()
-      .setStyle(ButtonStyle.Link)
-      .setEmoji({ name: "🔗" })
-      .setLabel("Image Link")
-      .setURL(imageUrl),
+    new ButtonBuilder().setStyle(ButtonStyle.Link).setEmoji({ name: "🔗" }).setLabel("Image Link").setURL(imageUrl),
     new ButtonBuilder()
       .setStyle(ButtonStyle.Secondary)
       .setEmoji({ name: "🔍" })
       .setLabel("Get Sauce")
-      .setCustomId("SAUCE")
+      .setCustomId("getSauce")
   );
 }
