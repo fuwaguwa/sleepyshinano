@@ -6,13 +6,8 @@ import {
   type ListenerOptions,
   type UserError,
 } from "@sapphire/framework";
-import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  EmbedBuilder,
-  MessageFlagsBitField,
-} from "discord.js";
+import { EmbedBuilder, MessageFlagsBitField } from "discord.js";
+import { VOTE_LINK_BUTTON } from "../../../lib/constants";
 
 @ApplyOptions<ListenerOptions>({
   event: "chatInputCommandDenied",
@@ -32,32 +27,23 @@ export class VotedError extends Listener<typeof Events.ChatInputCommandDenied> {
         "It seems that you have not cast your vote for me! Please do so with the option below!"
       );
     } else {
-      const lastVoteTimestamp = content.split("-")[1];
+      const voteTimestamp = content.split("-")[1];
       errorEmbed.setDescription(
-        `Your last vote was <t:${lastVoteTimestamp}:R>, you can now vote again using the button below!`
+        `Your last vote was <t:${voteTimestamp}:R>, you can now vote again using the button below!`
       );
     }
-
-    const botId = this.container.client.user?.id || "1002193298229829682";
-    const voteLink = new ActionRowBuilder<ButtonBuilder>().setComponents(
-      new ButtonBuilder()
-        .setStyle(ButtonStyle.Link)
-        .setLabel("Vote for Shinano!")
-        .setEmoji({ id: "1002849574517477447" })
-        .setURL(`https://top.gg/bot/${botId}/vote`)
-    );
 
     if (interaction.deferred || interaction.replied) {
       return interaction.editReply({
         embeds: [errorEmbed],
-        components: [voteLink],
+        components: [VOTE_LINK_BUTTON],
         allowedMentions: { users: [interaction.user.id], roles: [] },
       });
     }
 
     return interaction.reply({
       embeds: [errorEmbed],
-      components: [voteLink],
+      components: [VOTE_LINK_BUTTON],
       allowedMentions: { users: [interaction.user.id], roles: [] },
       flags: MessageFlagsBitField.Flags.Ephemeral,
     });

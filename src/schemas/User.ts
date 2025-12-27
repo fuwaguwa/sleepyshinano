@@ -11,7 +11,7 @@ const userSchema = new Schema<ShinanoUser>({
     type: Boolean,
     default: false,
   },
-  lastVoteTimestamp: {
+  voteTimestamp: {
     type: Number,
     default: 0,
   },
