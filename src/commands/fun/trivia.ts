@@ -1,21 +1,11 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
-import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  ComponentType,
-  EmbedBuilder,
-} from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder } from "discord.js";
 import { buttonCollector, collectorsRefresh } from "../../lib/collectors";
 import { fetchJson } from "../../lib/utils/http";
 import { randomItem } from "../../lib/utils/misc";
 
-import type {
-  TriviaApiItem,
-  TriviaFetchedQuestion,
-  TriviaQuestion,
-} from "../../typings/api/misc";
+import type { TriviaApiItem, TriviaFetchedQuestion, TriviaQuestion } from "../../typings/api/misc";
 
 @ApplyOptions<CommandOptions>({
   description: "Trivia questions!",
@@ -62,9 +52,7 @@ export class TriviaCommand extends Command {
     );
   }
 
-  public override async chatInputRun(
-    interaction: Command.ChatInputCommandInteraction
-  ) {
+  public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
     // Clear any existing collectors/buttons the user may have from a previous command
     collectorsRefresh(interaction);
 
@@ -89,9 +77,7 @@ export class TriviaCommand extends Command {
           "sport_and_leisure",
         ]);
 
-    const difficulty = difficultyChoice
-      ? difficultyChoice
-      : randomItem(["easy", "medium", "hard"]);
+    const difficulty = difficultyChoice ? difficultyChoice : randomItem(["easy", "medium", "hard"]);
 
     try {
       const question = await this.getQuestion(category, difficulty);
@@ -99,10 +85,7 @@ export class TriviaCommand extends Command {
       // Create answer buttons. Use index-based custom IDs to avoid embedding the text in the ID.
       const answersRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
         ...question.answers.map((ans, idx) =>
-          new ButtonBuilder()
-            .setStyle(ButtonStyle.Primary)
-            .setLabel(ans)
-            .setCustomId(`${idx}-${interaction.user.id}`)
+          new ButtonBuilder().setStyle(ButtonStyle.Primary).setLabel(ans).setCustomId(`${idx}-${interaction.user.id}`)
         )
       );
 
@@ -138,21 +121,13 @@ export class TriviaCommand extends Command {
       });
       buttonCollector.set(interaction.user.id, collector);
 
-      const finishRound = async (
-        selectedIndex: number | null,
-        timedOut = false
-      ) => {
+      const finishRound = async (selectedIndex: number | null, timedOut = false) => {
         // Update buttons: mark correct as Success, selected as Danger when wrong, others as Secondary
         answersRow.components.forEach((comp, idx) => {
           const isCorrect = question.answers[idx] === question.correctAnswer;
           comp.setDisabled(true);
           if (isCorrect) comp.setStyle(ButtonStyle.Success);
-          else if (
-            selectedIndex !== null &&
-            idx === selectedIndex &&
-            !isCorrect
-          )
-            comp.setStyle(ButtonStyle.Danger);
+          else if (selectedIndex !== null && idx === selectedIndex && !isCorrect) comp.setStyle(ButtonStyle.Danger);
           else comp.setStyle(ButtonStyle.Secondary);
         });
 
@@ -164,10 +139,7 @@ export class TriviaCommand extends Command {
             components: [answersRow],
             content: `Timed out! The answer was \`${question.correctAnswer}\`.`,
           });
-        } else if (
-          selectedIndex !== null &&
-          question.answers[selectedIndex] === question.correctAnswer
-        ) {
+        } else if (selectedIndex !== null && question.answers[selectedIndex] === question.correctAnswer) {
           questionEmbed.setColor("Green");
           await interaction.editReply({
             embeds: [questionEmbed],
@@ -210,22 +182,14 @@ export class TriviaCommand extends Command {
     } catch (error) {
       const errorEmbed = new EmbedBuilder()
         .setColor("Red")
-        .setDescription(
-          "❌ | Failed to fetch trivia question. Please try again later."
-        );
+        .setDescription("❌ | Failed to fetch trivia question. Please try again later.");
       await interaction.editReply({ embeds: [errorEmbed] });
       throw error;
     }
   }
 
-  private async getQuestion(
-    category: string,
-    difficulty: string
-  ): Promise<TriviaQuestion> {
-    let fetched: TriviaFetchedQuestion = await this.fetchQuestion(
-      category,
-      difficulty
-    );
+  private async getQuestion(category: string, difficulty: string): Promise<TriviaQuestion> {
+    let fetched: TriviaFetchedQuestion = await this.fetchQuestion(category, difficulty);
 
     // Retry if any answer is too long for a button label (80 char limit)
     while (fetched.answers.some(a => a.length > 60)) {
@@ -252,18 +216,12 @@ export class TriviaCommand extends Command {
     };
   }
 
-  private async fetchQuestion(
-    category: string,
-    difficulty: string
-  ): Promise<TriviaFetchedQuestion> {
+  private async fetchQuestion(category: string, difficulty: string): Promise<TriviaFetchedQuestion> {
     const trivia = await fetchJson<TriviaApiItem[]>(
       `https://the-trivia-api.com/api/questions?categories=${category}&limit=1&difficulty=${difficulty}`
     );
 
-    const answers = [
-      trivia[0].correctAnswer,
-      ...trivia[0].incorrectAnswers.slice(0, 3),
-    ];
+    const answers = [trivia[0].correctAnswer, ...trivia[0].incorrectAnswers.slice(0, 3)];
 
     return {
       question: trivia[0].question,
