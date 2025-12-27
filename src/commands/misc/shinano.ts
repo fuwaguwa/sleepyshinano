@@ -25,8 +25,6 @@ const PAT_RESPONSES = ['"Aah... My ears are sensitive..."', '"Alas... This one\'
   ],
 })
 export class ShinanoCommand extends Subcommand {
-  // ==================== Command Registration ====================
-
   public override registerApplicationCommands(registry: Subcommand.Registry) {
     registry.registerChatInputCommand(builder =>
       builder
@@ -41,8 +39,6 @@ export class ShinanoCommand extends Subcommand {
         .addSubcommand(command => command.setName("help").setDescription("How to look for all Shinano commands!"))
     );
   }
-
-  // ==================== Subcommand Handlers ====================
 
   /**
    * /shinano ping - Show bot latency

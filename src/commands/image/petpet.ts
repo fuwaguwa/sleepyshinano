@@ -45,7 +45,7 @@ async function loadFrames(framesPath: string, frameCount: number): Promise<Image
   const p = (async (): Promise<Image[]> => {
     const frameFiles = Array.from({ length: frameCount }, (_, i) => path.join(framesPath, `pet${i}.gif`));
 
-    // verify files exist
+    // Verify files exist
     await Promise.all(
       frameFiles.map(async p => {
         try {

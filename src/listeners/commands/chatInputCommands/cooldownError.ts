@@ -7,7 +7,7 @@ import {
   type ListenerOptions,
   type UserError,
 } from "@sapphire/framework";
-import { MessageFlagsBitField } from "discord.js";
+import { EmbedBuilder, MessageFlagsBitField } from "discord.js";
 
 @ApplyOptions<ListenerOptions>({
   event: "chatInputCommandDenied",
@@ -20,11 +20,10 @@ export class CooldownErrorListener extends Listener<typeof Events.ChatInputComma
     const remaining = Reflect.get(Object(context), "remaining") as number;
     const retryTimestamp = Math.floor((Date.now() + remaining) / 1000);
 
-    const errorEmbed = {
-      title: "You're on cooldown!",
-      description: `You will be able to run the command again <t:${retryTimestamp}:R>`,
-      color: 0xff0000, // Red color
-    };
+    const errorEmbed = new EmbedBuilder()
+      .setColor("Red")
+      .setTitle("You're on cooldown!")
+      .setDescription(`You will be able to run the command again <t:${retryTimestamp}:R>`);
 
     if (interaction.deferred || interaction.replied) {
       return interaction.editReply({
