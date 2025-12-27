@@ -1,7 +1,16 @@
-import { type ChatInputCommandInteraction, Collection, type Interaction, type InteractionCollector } from "discord.js";
+import {
+  type ButtonInteraction,
+  type ChatInputCommandInteraction,
+  Collection,
+  EmbedBuilder,
+  type Interaction,
+  type InteractionCollector,
+  MessageFlagsBitField,
+} from "discord.js";
 
 export const buttonCollector: Collection<string, InteractionCollector<any>> = new Collection();
 export const paginationCollector: Collection<string, InteractionCollector<any>> = new Collection();
+export const buttonCooldown: Collection<string, number> = new Collection();
 
 /**
  * Refresh/clean up user collectors when they run a new command
@@ -20,4 +29,35 @@ export function collectorsRefresh(interaction: ChatInputCommandInteraction | Int
     if (collector && !collector.ended) collector.stop();
     paginationCollector.delete(interaction.user.id);
   }
+}
+
+/**
+ * Check the cooldown of an user (on buttons)
+ */
+export async function buttonCooldownCheck(id: string, interaction: ButtonInteraction): Promise<boolean> {
+  const userId = interaction.user.id;
+  if (buttonCooldown.has(`${id}${userId}`)) {
+    // 100% sure
+    const cms = buttonCooldown.get(`${id}${userId}`) as number;
+    const embed = new EmbedBuilder()
+      .setTitle("You're on cooldown!")
+      .setDescription(`You will be able to use the button again <t:${cms / 1000}:R>`)
+      .setColor("Red");
+    await interaction.reply({ embeds: [embed], flags: MessageFlagsBitField.Flags.Ephemeral });
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Set the cooldown for buttons
+ */
+export function buttonCooldownSet(id: string, interaction: ButtonInteraction) {
+  const userId = interaction.user.id;
+  if (process.env.OWNER_IDS?.split(",").includes(userId)) return; // No cooldown for bot owners
+
+  buttonCooldown.set(`${id}${userId}`, Date.now() + 5000);
+  setTimeout(() => {
+    buttonCooldown.delete(`${id}${userId}`);
+  }, 5000);
 }
