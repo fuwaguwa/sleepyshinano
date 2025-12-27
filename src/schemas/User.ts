@@ -1,6 +1,7 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
+import type { ShinanoUser } from "../typings/schemas/User";
 
-const userSchema = new mongoose.Schema({
+const userSchema = new Schema<ShinanoUser>({
   userId: {
     type: String,
     required: true,
