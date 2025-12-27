@@ -17,7 +17,7 @@ export class ChatInputCommandSuccessListener extends Listener {
         { upsert: true }
       );
     } catch (error) {
-      this.container.logger.error("Failed to create user entry: ", error);
+      throw error;
     }
   }
 }

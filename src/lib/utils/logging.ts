@@ -80,7 +80,6 @@ export function logSuccessfulCommand(
     user = payload.interaction.user;
     command = payload.command;
 
-    // Determine context based on interaction.context
     const context = payload.interaction.context;
     if (context === InteractionContextType.Guild && guild) {
       contextInfo = `${guild.name} (${guild.id})`;

@@ -208,13 +208,13 @@ export class TriviaCommand extends Command {
         }
       });
     } catch (error) {
-      this.container.logger.error("Failed to fetch trivia question:", error);
       const errorEmbed = new EmbedBuilder()
         .setColor("Red")
         .setDescription(
           "❌ | Failed to fetch trivia question. Please try again later."
         );
       await interaction.editReply({ embeds: [errorEmbed] });
+      throw error;
     }
   }
 

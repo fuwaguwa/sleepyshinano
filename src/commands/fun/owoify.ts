@@ -52,11 +52,11 @@ export class OwoifyCommand extends Command {
 
       await interaction.editReply({ embeds: [owoEmbed] });
     } catch (error) {
-      this.container.logger.error("Failed to owoify text:", error);
       const errorEmbed = new EmbedBuilder()
         .setColor("Red")
         .setDescription("❌ | Failed to owoify text. Please try again later.");
       await interaction.editReply({ embeds: [errorEmbed] });
+      throw error;
     }
   }
 }

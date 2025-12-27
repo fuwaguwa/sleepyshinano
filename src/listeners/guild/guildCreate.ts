@@ -25,7 +25,7 @@ export class GuildCreateListener extends Listener<typeof Events.GuildCreate> {
 
       await updateServerCount();
     } catch (error) {
-      this.container.logger.error("Error in guildCreate listener:", error);
+      throw error;
     }
   }
 }
