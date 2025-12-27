@@ -1,8 +1,5 @@
 import { ApplyOptions } from "@sapphire/decorators";
-import {
-  Subcommand,
-  type SubcommandOptions,
-} from "@sapphire/plugin-subcommands";
+import { Subcommand, type SubcommandOptions } from "@sapphire/plugin-subcommands";
 import {
   ApplicationIntegrationType,
   AttachmentBuilder,
@@ -17,7 +14,7 @@ import type { ImageSendOptions } from "../../typings/image";
   description: "Image Generation & Manipulation Commands",
   cooldownLimit: 1,
   cooldownDelay: 6500,
-  cooldownFilteredUsers: process.env.OWNER_IDS?.split(",") || [],
+  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS?.split(",") || [],
   preconditions: ["NotBlacklisted"],
   subcommands: [
     { name: "pixelate", chatInputRun: "subcommandPixelate" },
@@ -46,10 +43,7 @@ export class ImageCommand extends Subcommand {
       builder
         .setName(this.name)
         .setDescription(this.description)
-        .setIntegrationTypes([
-          ApplicationIntegrationType.GuildInstall,
-          ApplicationIntegrationType.UserInstall,
-        ])
+        .setIntegrationTypes([ApplicationIntegrationType.GuildInstall, ApplicationIntegrationType.UserInstall])
         .setContexts([
           InteractionContextType.Guild,
           InteractionContextType.BotDM,
@@ -59,12 +53,7 @@ export class ImageCommand extends Subcommand {
           command
             .setName("pixelate")
             .setDescription("Make someone avatar looks lewd")
-            .addUserOption(option =>
-              option
-                .setName("user")
-                .setDescription("User to pixelate")
-                .setRequired(false)
-            )
+            .addUserOption(option => option.setName("user").setDescription("User to pixelate").setRequired(false))
         )
         .addSubcommand(command =>
           command
@@ -85,30 +74,20 @@ export class ImageCommand extends Subcommand {
                 )
             )
             .addUserOption(option =>
-              option
-                .setName("user")
-                .setDescription("User you want to add the border to")
-                .setRequired(false)
+              option.setName("user").setDescription("User you want to add the border to").setRequired(false)
             )
         )
         .addSubcommand(command =>
           command
             .setName("no")
             .setDescription("No <item>?")
-            .addStringOption(option =>
-              option.setName("item").setDescription("Item.").setRequired(true)
-            )
+            .addStringOption(option => option.setName("item").setDescription("Item.").setRequired(true))
         )
         .addSubcommand(command =>
           command
             .setName("heart-crop")
             .setDescription("Crop someone avatar into a heart!")
-            .addUserOption(option =>
-              option
-                .setName("user")
-                .setDescription("User to be cropped")
-                .setRequired(false)
-            )
+            .addUserOption(option => option.setName("user").setDescription("User to be cropped").setRequired(false))
         )
         .addSubcommand(command =>
           command
@@ -131,32 +110,21 @@ export class ImageCommand extends Subcommand {
                 )
             )
             .addUserOption(option =>
-              option
-                .setName("user")
-                .setDescription("User to add the filter on")
-                .setRequired(false)
+              option.setName("user").setDescription("User to add the filter on").setRequired(false)
             )
         )
         .addSubcommand(command =>
           command
             .setName("oogway")
             .setDescription("Wise turtle")
-            .addStringOption(option =>
-              option
-                .setName("wisdom")
-                .setDescription("His wisdom.")
-                .setRequired(true)
-            )
+            .addStringOption(option => option.setName("wisdom").setDescription("His wisdom.").setRequired(true))
         )
         .addSubcommand(command =>
           command
             .setName("horny-card")
             .setDescription("Grant someone the horny card")
             .addUserOption(option =>
-              option
-                .setName("user")
-                .setDescription("The person receiving the card")
-                .setRequired(false)
+              option.setName("user").setDescription("The person receiving the card").setRequired(false)
             )
         )
         .addSubcommand(command =>
@@ -164,10 +132,7 @@ export class ImageCommand extends Subcommand {
             .setName("simp-card")
             .setDescription("Give someone the simp card. Shame on them")
             .addUserOption(option =>
-              option
-                .setName("user")
-                .setDescription("The person receiving the card")
-                .setRequired(false)
+              option.setName("user").setDescription("The person receiving the card").setRequired(false)
             )
         )
         .addSubcommand(command =>
@@ -175,135 +140,71 @@ export class ImageCommand extends Subcommand {
             .setName("namecard")
             .setDescription("Generate a Genshin namecard.")
             .addStringOption(option =>
-              option
-                .setName("birthday")
-                .setDescription("The birthday to display on the namecard.")
-                .setRequired(true)
+              option.setName("birthday").setDescription("The birthday to display on the namecard.").setRequired(true)
             )
             .addStringOption(option =>
-              option
-                .setName("signature")
-                .setDescription("The signature of the namecard")
-                .setRequired(true)
+              option.setName("signature").setDescription("The signature of the namecard").setRequired(true)
             )
             .addUserOption(option =>
-              option
-                .setName("user")
-                .setDescription("The user on the namecard")
-                .setRequired(false)
+              option.setName("user").setDescription("The user on the namecard").setRequired(false)
             )
         )
         .addSubcommand(command =>
           command
             .setName("comment")
             .setDescription("Generate a fake picture of a YouTube comment")
-            .addStringOption(option =>
-              option
-                .setName("content")
-                .setDescription("Comment content")
-                .setRequired(true)
-            )
-            .addUserOption(option =>
-              option
-                .setName("user")
-                .setDescription("The author")
-                .setRequired(false)
-            )
+            .addStringOption(option => option.setName("content").setDescription("Comment content").setRequired(true))
+            .addUserOption(option => option.setName("user").setDescription("The author").setRequired(false))
         )
         .addSubcommand(command =>
           command
             .setName("tweet")
             .setDescription("Generate a fake tweet")
             .addStringOption(option =>
-              option
-                .setName("display-name")
-                .setDescription("Display name of the user")
-                .setRequired(true)
+              option.setName("display-name").setDescription("Display name of the user").setRequired(true)
             )
             .addStringOption(option =>
-              option
-                .setName("content")
-                .setDescription("Content of the tweet")
-                .setRequired(true)
+              option.setName("content").setDescription("Content of the tweet").setRequired(true)
             )
+            .addIntegerOption(option => option.setName("replies").setDescription("Number of replies").setRequired(true))
             .addIntegerOption(option =>
-              option
-                .setName("replies")
-                .setDescription("Number of replies")
-                .setRequired(true)
+              option.setName("retweets").setDescription("Number of retweets").setRequired(true)
             )
-            .addIntegerOption(option =>
-              option
-                .setName("retweets")
-                .setDescription("Number of retweets")
-                .setRequired(true)
-            )
-            .addIntegerOption(option =>
-              option
-                .setName("likes")
-                .setDescription("Number of likes")
-                .setRequired(true)
-            )
+            .addIntegerOption(option => option.setName("likes").setDescription("Number of likes").setRequired(true))
             .addStringOption(option =>
               option
                 .setName("theme")
                 .setDescription("Theme of the tweet")
                 .setRequired(false)
-                .setChoices(
-                  { name: "Light", value: "light" },
-                  { name: "Dark", value: "dark" }
-                )
+                .setChoices({ name: "Light", value: "light" }, { name: "Dark", value: "dark" })
             )
-            .addUserOption(option =>
-              option
-                .setName("user")
-                .setDescription("The author")
-                .setRequired(false)
-            )
+            .addUserOption(option => option.setName("user").setDescription("The author").setRequired(false))
         )
         .addSubcommand(command =>
           command
             .setName("gay")
             .setDescription("Apply gay filter to avatar")
             .addUserOption(option =>
-              option
-                .setName("user")
-                .setDescription("User to apply filter to")
-                .setRequired(false)
+              option.setName("user").setDescription("User to apply filter to").setRequired(false)
             )
         )
         .addSubcommand(command =>
           command
             .setName("jail")
             .setDescription("Put someone in jail")
-            .addUserOption(option =>
-              option
-                .setName("user")
-                .setDescription("The criminal")
-                .setRequired(false)
-            )
+            .addUserOption(option => option.setName("user").setDescription("The criminal").setRequired(false))
         )
         .addSubcommand(command =>
           command
             .setName("wasted")
             .setDescription("GTA wasted effect")
-            .addUserOption(option =>
-              option
-                .setName("user")
-                .setDescription("The victim")
-                .setRequired(false)
-            )
+            .addUserOption(option => option.setName("user").setDescription("The victim").setRequired(false))
         )
         .addSubcommand(command =>
           command
             .setName("triggered")
             .setDescription("TRIGGERED")
-            .addUserOption(option =>
-              option
-                .setName("user")
-                .setDescription("Who's triggered?")
-                .setRequired(false)
-            )
+            .addUserOption(option => option.setName("user").setDescription("Who's triggered?").setRequired(false))
         )
     );
   }
@@ -311,9 +212,7 @@ export class ImageCommand extends Subcommand {
   /**
    * /image pixelate
    */
-  public async subcommandPixelate(
-    interaction: Subcommand.ChatInputCommandInteraction
-  ) {
+  public async subcommandPixelate(interaction: Subcommand.ChatInputCommandInteraction) {
     await this.initial(interaction);
     const link = this.sra("canvas/filter/pixelate");
 
@@ -323,9 +222,7 @@ export class ImageCommand extends Subcommand {
   /**
    * /image border
    */
-  public async subcommandBorder(
-    interaction: Subcommand.ChatInputCommandInteraction
-  ) {
+  public async subcommandBorder(interaction: Subcommand.ChatInputCommandInteraction) {
     await this.initial(interaction);
 
     const borderType = interaction.options.getString("border-type", true);
@@ -336,9 +233,7 @@ export class ImageCommand extends Subcommand {
   /**
    * /image no
    */
-  public async subcommandNo(
-    interaction: Subcommand.ChatInputCommandInteraction
-  ) {
+  public async subcommandNo(interaction: Subcommand.ChatInputCommandInteraction) {
     await this.initial(interaction);
 
     const text = interaction.options.getString("item", true);
@@ -350,9 +245,7 @@ export class ImageCommand extends Subcommand {
   /**
    * /image heart-crop
    */
-  public async subcommandHeartCrop(
-    interaction: Subcommand.ChatInputCommandInteraction
-  ) {
+  public async subcommandHeartCrop(interaction: Subcommand.ChatInputCommandInteraction) {
     await this.initial(interaction);
     const link = this.sra("canvas/misc/heart");
 
@@ -362,9 +255,7 @@ export class ImageCommand extends Subcommand {
   /**
    * /image filter
    */
-  public async subcommandFilter(
-    interaction: Subcommand.ChatInputCommandInteraction
-  ) {
+  public async subcommandFilter(interaction: Subcommand.ChatInputCommandInteraction) {
     await this.initial(interaction);
 
     const filter = interaction.options.getString("filter", true);
@@ -376,9 +267,7 @@ export class ImageCommand extends Subcommand {
   /**
    * /image oogway
    */
-  public async subcommandOogway(
-    interaction: Subcommand.ChatInputCommandInteraction
-  ) {
+  public async subcommandOogway(interaction: Subcommand.ChatInputCommandInteraction) {
     await this.initial(interaction);
 
     const type = Math.random() < 0.5 ? "1" : "2";
@@ -391,9 +280,7 @@ export class ImageCommand extends Subcommand {
   /**
    * /image horny-card
    */
-  public async subcommandHornyCard(
-    interaction: Subcommand.ChatInputCommandInteraction
-  ) {
+  public async subcommandHornyCard(interaction: Subcommand.ChatInputCommandInteraction) {
     await this.initial(interaction);
     const link = this.sra("canvas/misc/horny");
 
@@ -403,9 +290,7 @@ export class ImageCommand extends Subcommand {
   /**
    * /image simp-card
    */
-  public async subcommandSimpCard(
-    interaction: Subcommand.ChatInputCommandInteraction
-  ) {
+  public async subcommandSimpCard(interaction: Subcommand.ChatInputCommandInteraction) {
     await this.initial(interaction);
     const link = this.sra("canvas/misc/simpcard");
 
@@ -415,9 +300,7 @@ export class ImageCommand extends Subcommand {
   /**
    * /image namecard
    */
-  public async subcommandNamecard(
-    interaction: Subcommand.ChatInputCommandInteraction
-  ) {
+  public async subcommandNamecard(interaction: Subcommand.ChatInputCommandInteraction) {
     await this.initial(interaction);
 
     const birthday = interaction.options.getString("birthday", true);
@@ -425,9 +308,7 @@ export class ImageCommand extends Subcommand {
     const username = this.target.username;
 
     if (!/^(0?[1-9]|[12][0-9]|3[01])\/(0?[1-9]|1[0-2])$/.test(birthday)) {
-      const failedEmbed = new EmbedBuilder()
-        .setColor("Red")
-        .setDescription("❌ | Birthday must be in `DD/MM` format!");
+      const failedEmbed = new EmbedBuilder().setColor("Red").setDescription("❌ | Birthday must be in `DD/MM` format!");
       return interaction.editReply({ embeds: [failedEmbed] });
     }
 
@@ -443,9 +324,7 @@ export class ImageCommand extends Subcommand {
   /**
    * /image comment
    */
-  public async subcommandComment(
-    interaction: Subcommand.ChatInputCommandInteraction
-  ) {
+  public async subcommandComment(interaction: Subcommand.ChatInputCommandInteraction) {
     await this.initial(interaction);
 
     const content = interaction.options.getString("content", true);
@@ -461,9 +340,7 @@ export class ImageCommand extends Subcommand {
   /**
    * /image tweet
    */
-  public async subcommandTweet(
-    interaction: Subcommand.ChatInputCommandInteraction
-  ) {
+  public async subcommandTweet(interaction: Subcommand.ChatInputCommandInteraction) {
     await this.initial(interaction);
 
     const displayName = interaction.options.getString("display-name", true);
@@ -490,9 +367,7 @@ export class ImageCommand extends Subcommand {
   /**
    * /image gay, jail, wasted, triggered - Default overlay commands
    */
-  public async subcommandDefault(
-    interaction: Subcommand.ChatInputCommandInteraction
-  ) {
+  public async subcommandDefault(interaction: Subcommand.ChatInputCommandInteraction) {
     await this.initial(interaction);
 
     const subcommand = interaction.options.getSubcommand();
@@ -532,10 +407,7 @@ export class ImageCommand extends Subcommand {
    * Build a SomeRandomAPI URL with query parameters.
    * Automatically includes the target user's avatar if not provided.
    */
-  private sra(
-    endpoint: string,
-    params: Record<string, string | number | boolean | undefined> = {}
-  ) {
+  private sra(endpoint: string, params: Record<string, string | number | boolean | undefined> = {}) {
     const paramsWithAvatar = { avatar: this.avatar, ...params };
     return buildSraUrl(endpoint, paramsWithAvatar);
   }

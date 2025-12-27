@@ -13,7 +13,7 @@ const PAT_RESPONSES = ['"Aah... My ears are sensitive..."', '"Alas... This one\'
   preconditions: ["NotBlacklisted"],
   cooldownLimit: 1,
   cooldownDelay: 5000,
-  cooldownFilteredUsers: process.env.OWNER_IDS?.split(",") || [],
+  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS?.split(",") || [],
   subcommands: [
     { name: "ping", chatInputRun: "subcommandPing" },
     { name: "info", chatInputRun: "subcommandInfo" },
