@@ -104,14 +104,6 @@ export class PetpetCommand extends Command {
       const avatarImage = await loadImage(avatar);
       const canvas = createCanvas(SIZE, SIZE);
       const ctx = canvas.getContext("2d");
-      if (!ctx) {
-        const embed = new EmbedBuilder()
-          .setColor("Red")
-          .setDescription("❌ | Failed to create canvas context.")
-          .setFooter(createFooter(interaction.user));
-        await interaction.editReply({ embeds: [embed] });
-        return;
-      }
 
       const avatarSize = avatarImage.width;
       const frameCount = frames.length;
