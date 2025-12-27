@@ -12,13 +12,8 @@ import { MessageFlagsBitField } from "discord.js";
 @ApplyOptions<ListenerOptions>({
   event: "chatInputCommandDenied",
 })
-export class CooldownErrorListener extends Listener<
-  typeof Events.ChatInputCommandDenied
-> {
-  public override async run(
-    { context, identifier }: UserError,
-    { interaction }: ChatInputCommandDeniedPayload
-  ) {
+export class CooldownErrorListener extends Listener<typeof Events.ChatInputCommandDenied> {
+  public override async run({ context, identifier }: UserError, { interaction }: ChatInputCommandDeniedPayload) {
     if (Reflect.get(Object(context), "silent")) return;
     if (identifier !== Identifiers.PreconditionCooldown) return;
 
