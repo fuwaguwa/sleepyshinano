@@ -10,12 +10,12 @@ export interface TriviaApiItem {
   category: string;
 }
 
-export type TriviaFetchedQuestion = {
+export interface TriviaFetchedQuestion {
   question: string;
   difficulty: string;
   category: string;
   answers: string[]; // first item is the correct answer (pre-shuffle)
-};
+}
 
 export interface TriviaQuestion {
   question: string;
