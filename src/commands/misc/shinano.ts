@@ -227,7 +227,7 @@ export class ShinanoCommand extends Subcommand {
     const messageString = "</shinano support:1059059516081192961>";
     const message =
       `All of Shinano functions are indexed within the \`Apps & Commands\` button. Please use it to see all available Shinano commands! For more information you can join the support server via ${messageString}\n\n` +
-      "**NSFW commands are only available within NSFW channels! This include commands like /booru, /hanime, /nsfw**\n";
+      "**NSFW commands are only available within NSFW channels! This include commands like /gelbooru, /rule34, etc**\n";
 
     const responseEmbed = new EmbedBuilder()
       .setColor("#2b2d31")
