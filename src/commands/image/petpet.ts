@@ -82,7 +82,7 @@ export class PetpetCommand extends Command {
           InteractionContextType.BotDM,
           InteractionContextType.PrivateChannel,
         ])
-        .addUserOption(opt => opt.setName("user").setDescription("User to pet").setRequired(false))
+        .addUserOption(option => option.setName("user").setDescription("User to pet").setRequired(false))
     );
   }
 
