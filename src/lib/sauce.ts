@@ -1,4 +1,4 @@
-import type { InteractionDeferReplyOptions, InteractionReplyOptions } from "discord.js";
+import type { InteractionDeferReplyOptions, InteractionEditReplyOptions, InteractionReplyOptions } from "discord.js";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageFlagsBitField } from "discord.js";
 import sagiri from "sagiri";
 import type { LocalSauceResult, SauceOptions, SauceSortedLinks } from "../typings/sauce";
@@ -292,7 +292,7 @@ function sortLinksBySite(results: LocalSauceResult[]): SauceSortedLinks {
   return sorted;
 }
 
-function buildButtonRow(sortedLinks: SauceSortedLinks): ActionRowBuilder<ButtonBuilder> {
+function buildButtonRow(sortedLinks: SauceSortedLinks): ActionRowBuilder<ButtonBuilder> | null {
   const row = new ActionRowBuilder<ButtonBuilder>();
 
   for (const [siteName, linkData] of Object.entries(sortedLinks)) {
@@ -308,7 +308,7 @@ function buildButtonRow(sortedLinks: SauceSortedLinks): ActionRowBuilder<ButtonB
     row.addComponents(button);
   }
 
-  return row;
+  return row.components.length > 0 ? row : null;
 }
 
 // ============================================================================
@@ -382,20 +382,17 @@ export async function getSauce({ interaction, link, ephemeral = true }: SauceOpt
   });
 
   // Final reply
+  const replyOptions: InteractionReplyOptions = {
+    embeds: [resultEmbed],
+  };
+
+  if (buttonRow) replyOptions.components = [buttonRow];
+
   if (interaction.deferred || interaction.replied) {
-    await interaction.editReply({
-      embeds: [resultEmbed],
-      components: [buttonRow],
-    });
+    await interaction.editReply(replyOptions as InteractionEditReplyOptions);
     return;
   }
 
-  const replyOptions: InteractionReplyOptions = {
-    embeds: [resultEmbed],
-    components: [buttonRow],
-  };
-
   if (ephemeral) replyOptions.flags = MessageFlagsBitField.Flags.Ephemeral;
-
   await interaction.reply(replyOptions);
 }
