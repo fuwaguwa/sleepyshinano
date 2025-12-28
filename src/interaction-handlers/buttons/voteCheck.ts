@@ -23,7 +23,7 @@ export class VoteCheckButtonHandler extends InteractionHandler {
     if (buttonCooldownStatus) return;
 
     const userId = interaction.user.id;
-    const user = await User.findOne({ userId }).lean<ShinanoUser>()1;
+    const user = await User.findOne({ userId }).lean<ShinanoUser>();
 
     buttonCooldownSet("voteCheck", interaction);
 
