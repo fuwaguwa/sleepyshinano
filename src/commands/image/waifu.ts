@@ -6,6 +6,8 @@ import { fetchJson } from "../../lib/utils/http";
 
 import type { NekosBestResponse } from "../../typings/api/misc";
 
+const WAIFU_API_URL = "https://nekos.best/api/v2/waifu";
+
 @ApplyOptions<CommandOptions>({
   description: "Looking for waifus?",
   ...standardCommandOptions,
@@ -29,7 +31,7 @@ export class WaifuCommand extends Command {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {
-      const { results } = await fetchJson<NekosBestResponse>("https://nekos.best/api/v2/waifu");
+      const { results } = await fetchJson<NekosBestResponse>(WAIFU_API_URL);
       const imageUrl = results[0].url;
 
       const embed = new EmbedBuilder()

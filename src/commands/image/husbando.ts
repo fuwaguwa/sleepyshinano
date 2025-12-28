@@ -6,6 +6,8 @@ import { fetchJson } from "../../lib/utils/http";
 
 import type { NekosBestResponse } from "../../typings/api/misc";
 
+const HUSBANDO_API_URL = "https://nekos.best/api/v2/husbando";
+
 @ApplyOptions<CommandOptions>({
   description: "Looking for husbandos?",
   ...standardCommandOptions,
@@ -29,7 +31,7 @@ export class HusbandoCommand extends Command {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {
-      const { results } = await fetchJson<NekosBestResponse>("https://nekos.best/api/v2/husbando");
+      const { results } = await fetchJson<NekosBestResponse>(HUSBANDO_API_URL);
       const imageUrl = results[0].url;
 
       const embed = new EmbedBuilder()

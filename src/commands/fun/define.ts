@@ -6,6 +6,8 @@ import { fetchJson } from "../../lib/utils/http";
 
 import type { UrbanDictionaryResponse } from "../../typings/api/misc";
 
+const URBAN_DICTIONARY_API_URL = "https://api.urbandictionary.com/v0/define?term=";
+
 @ApplyOptions<CommandOptions>({
   description: "Get a word's definition from Urban Dictionary",
   ...standardCommandOptions,
@@ -35,7 +37,7 @@ export class DefineCommand extends Command {
 
     try {
       const definition = await fetchJson<UrbanDictionaryResponse>(
-        `https://api.urbandictionary.com/v0/define?term=${encodeURIComponent(word)}`
+        `${URBAN_DICTIONARY_API_URL}${encodeURIComponent(word)}`
       );
 
       if (definition.list.length === 0) {

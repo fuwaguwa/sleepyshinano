@@ -6,6 +6,8 @@ import { fetchJson } from "../../lib/utils/http";
 
 import type { CatApiResponse } from "../../typings/api/animal";
 
+const CAT_API_URL = "https://api.thecatapi.com/v1/images/search";
+
 @ApplyOptions<CommandOptions>({
   description: "Get an image of a cat!",
   ...standardCommandOptions,
@@ -29,7 +31,7 @@ export class CatCommand extends Command {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {
-      const [data] = await fetchJson<CatApiResponse[]>("https://api.thecatapi.com/v1/images/search");
+      const [data] = await fetchJson<CatApiResponse[]>(CAT_API_URL);
 
       const embed = new EmbedBuilder().setColor("Random").setImage(data.url).setFooter(createFooter(interaction.user));
 

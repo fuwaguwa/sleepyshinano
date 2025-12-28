@@ -4,8 +4,6 @@ import { ApplicationIntegrationType, EmbedBuilder, InteractionContextType } from
 import { getSauce } from "../../lib/sauce";
 import { isImageAndGif } from "../../lib/utils/misc";
 
-const ERROR_EMBED = new EmbedBuilder().setColor("Red");
-
 @ApplyOptions<CommandOptions>({
   description: "Find sauce for an image/GIF with SauceNAO",
   cooldownLimit: 1,
@@ -45,6 +43,7 @@ export class SauceCommand extends Command {
 
     const link = interaction.options.getString("link");
     const media = interaction.options.getAttachment("media");
+    const ERROR_EMBED = new EmbedBuilder().setColor("Red");
     let imageUrl: string;
 
     if (!link && !media) {

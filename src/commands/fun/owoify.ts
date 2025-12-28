@@ -6,6 +6,8 @@ import { fetchJson } from "../../lib/utils/http";
 
 import type { OwoifyResponse } from "../../typings/api/misc";
 
+const NEKOS_LIFE_API_URL = "https://nekos.life/api/v2/owoify?text=";
+
 @ApplyOptions<CommandOptions>({
   description: "Owoify your text",
   ...standardCommandOptions,
@@ -35,7 +37,7 @@ export class OwoifyCommand extends Command {
     }
 
     try {
-      const data = await fetchJson<OwoifyResponse>(`https://nekos.life/api/v2/owoify?text=${encodeURIComponent(text)}`);
+      const data = await fetchJson<OwoifyResponse>(`${NEKOS_LIFE_API_URL}${encodeURIComponent(text)}`);
 
       const owoEmbed = new EmbedBuilder().setColor("#2b2d31").setDescription(`> ${data.owo}\n\n- ${interaction.user}`);
 

@@ -3,7 +3,6 @@ import { Command, type CommandOptions } from "@sapphire/framework";
 import { ApplicationIntegrationType, EmbedBuilder, InteractionContextType } from "discord.js";
 import { createFooter, standardCommandOptions } from "../../lib/utils/command";
 import { buildSraUrl, fetchJson } from "../../lib/utils/http";
-
 import type { PandaApiResponse } from "../../typings/api/animal";
 
 @ApplyOptions<CommandOptions>({
