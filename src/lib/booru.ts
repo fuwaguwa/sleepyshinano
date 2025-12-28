@@ -124,7 +124,26 @@ export async function processBooruRequest({ interaction, tags, site, mode, noTag
     return;
   }
 
-  // Setup
+  // Check interaction context
+  const isGuildInteraction = interaction.guildId != null;
+  const isUserDM =
+    interaction.channel?.type === ChannelType.DM && interaction.channel.recipient?.id !== interaction.client.user.id;
+  const isGroupDM = interaction.channel?.type === ChannelType.GroupDM;
+  // Determine if Load More should be shown
+  let shouldShowLoadMore = true;
+
+  if (isUserDM || isGroupDM) {
+    // Hide load more in user DMs and group DMs
+    shouldShowLoadMore = false;
+  } else if (isGuildInteraction) {
+    // Check if bot is in the guild
+    const botIsInGuild = interaction.guild?.members.cache.has(interaction.client.user.id);
+    if (!botIsInGuild) {
+      shouldShowLoadMore = false;
+    }
+  }
+
+  // Setup buttons
   const links = new ActionRowBuilder<ButtonBuilder>().setComponents(
     new ButtonBuilder()
       .setStyle(ButtonStyle.Link)
@@ -133,13 +152,37 @@ export async function processBooruRequest({ interaction, tags, site, mode, noTag
       .setURL(config.baseUrl + result.id)
   );
 
-  const loadMore: ActionRowBuilder<ButtonBuilder> = new ActionRowBuilder<ButtonBuilder>().setComponents(
-    new ButtonBuilder()
-      .setStyle(ButtonStyle.Secondary)
-      .setLabel("Load More")
-      .setEmoji({ name: "🔄" })
-      .setCustomId(`loadMore-${interaction.user.id}`)
-  );
+  // Only create loadMore button if it should be shown
+  const components: ActionRowBuilder<ButtonBuilder>[] = [links];
+
+  if (shouldShowLoadMore) {
+    const loadMore = new ActionRowBuilder<ButtonBuilder>().setComponents(
+      new ButtonBuilder()
+        .setStyle(ButtonStyle.Secondary)
+        .setLabel("Load More")
+        .setEmoji({ name: "🔄" })
+        .setCustomId(`loadMore-${interaction.user.id}`)
+    );
+
+    // User vote check (only if showing load more)
+    const user = await User.findOne({ userId: interaction.user.id }).lean<ShinanoUser>();
+    const hasVoted =
+      process.env.COOL_PEOPLE_IDS!.split(",").includes(interaction.user.id) ||
+      (user?.voteTimestamp && Math.floor(Date.now() / 1000) - user.voteTimestamp <= 43200);
+
+    if (!hasVoted) {
+      loadMore.components[0].setLabel("Load More (Lower CD)").setDisabled(true);
+      loadMore.addComponents(
+        new ButtonBuilder()
+          .setStyle(ButtonStyle.Link)
+          .setLabel("Vote to use button!")
+          .setEmoji({ id: "1002849574517477447" })
+          .setURL("https://top.gg/bot/1002193298229829682/vote")
+      );
+    }
+
+    components.push(loadMore);
+  }
 
   // Validation
   const isValidSourceUrl = result.source && /^https?:\/\//i.test(result.source) && result.source.length <= 512;
@@ -163,34 +206,6 @@ export async function processBooruRequest({ interaction, tags, site, mode, noTag
     );
   }
 
-  // Check if in DM channel (but not with bot)
-  const isDMChannel =
-    (interaction.channel?.type === ChannelType.DM &&
-      interaction.channel.recipient?.id !== interaction.client.user.id) ||
-    interaction.channel?.type === ChannelType.GroupDM;
-
-  // User vote => unlock "Load More" button with faster cooldown (only if not in DM)
-  if (!isDMChannel) {
-    const user = await User.findOne({ userId: interaction.user.id }).lean<ShinanoUser>();
-    // 43200s = 12h
-    const hasVoted =
-      process.env.COOL_PEOPLE_IDS!.split(",").includes(interaction.user.id) ||
-      (user?.voteTimestamp && Math.floor(Date.now() / 1000) - user.voteTimestamp <= 43200);
-
-    if (!hasVoted) {
-      loadMore.components[0].setLabel("Load More (Lower CD)").setDisabled(true);
-      loadMore.addComponents(
-        new ButtonBuilder()
-          .setStyle(ButtonStyle.Link)
-          .setLabel("Vote to use button!")
-          .setEmoji({ id: "1002849574517477447" })
-          .setURL("https://top.gg/bot/1002193298229829682/vote")
-      );
-    }
-  } else {
-    loadMore.components[0].setLabel("Load more is disabled in DMs!").setDisabled(true);
-  }
-
   // Sending message
   const message = noTagsOnReply
     ? null
@@ -199,7 +214,7 @@ export async function processBooruRequest({ interaction, tags, site, mode, noTag
         .map(tag => `\`${tag}\``)
         .join(", ")}`;
 
-  const replyOptions: InteractionReplyOptions | InteractionEditReplyOptions = { components: [links, loadMore] };
+  const replyOptions: InteractionReplyOptions | InteractionEditReplyOptions = { components };
 
   if (isVideo) {
     replyOptions.content = message ? `${message}\n\n${result.file_url}` : result.file_url;
@@ -221,12 +236,12 @@ export async function processBooruRequest({ interaction, tags, site, mode, noTag
     ? interaction.followUp(replyOptions as InteractionReplyOptions)
     : interaction.editReply(replyOptions as InteractionEditReplyOptions));
 
-  // Don't set up collector in DM channels
-  if (isDMChannel) return;
+  // Only set up collector if Load More button is shown
+  if (!shouldShowLoadMore) return;
 
   const collector = chatMessage.createMessageComponentCollector({
     componentType: ComponentType.Button,
-    time: 35000, // 35s
+    time: 35000,
   });
   buttonCollector.set(interaction.user.id, collector);
 
@@ -245,8 +260,9 @@ export async function processBooruRequest({ interaction, tags, site, mode, noTag
 
       await i.deferUpdate();
 
+      const loadMore = components[1]; // Get the loadMore component
       loadMore.components[0].setDisabled(true);
-      await chatMessage.edit({ components: [links, loadMore] });
+      await chatMessage.edit({ components });
       await processBooruRequest({ interaction, tags, site, mode: "followUp", noTagsOnReply: noTagsOnReply ?? false });
 
       buttonCooldownSet("loadMore", i);
@@ -256,8 +272,9 @@ export async function processBooruRequest({ interaction, tags, site, mode, noTag
 
   collector.on("end", async (collected, reason) => {
     if (reason !== "done") {
+      const loadMore = components[1];
       loadMore.components[0].setDisabled(true);
-      await chatMessage.edit({ components: [links, loadMore] });
+      await chatMessage.edit({ components });
     }
   });
 }
