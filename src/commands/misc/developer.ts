@@ -146,17 +146,13 @@ export class DeveloperCommand extends Subcommand {
     // Check Top.gg database
     let topggVoteStatus = false;
     if (process.env.TOPGG_API_KEY) {
-      try {
-        const result = await fetchJson<TopggVoteCheck>(
-          `https://top.gg/api/bots/1002193298229829682/check?userId=${user.id}`,
-          {
-            headers: { Authorization: process.env.TOPGG_API_KEY },
-          }
-        );
-        topggVoteStatus = result.voted === 1;
-      } catch (error) {
-        throw error;
-      }
+      const result = await fetchJson<TopggVoteCheck>(
+        `https://top.gg/api/bots/1002193298229829682/check?userId=${user.id}`,
+        {
+          headers: { Authorization: process.env.TOPGG_API_KEY },
+        }
+      );
+      topggVoteStatus = result.voted === 1;
     }
 
     const voteEmbed = new EmbedBuilder().setColor("#2b2d31").addFields(
