@@ -1,6 +1,6 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { InteractionHandler, type InteractionHandlerOptions, InteractionHandlerTypes } from "@sapphire/framework";
-import { type ButtonInteraction, EmbedBuilder, MessageFlagsBitField, TextChannel } from "discord.js";
+import { type ButtonInteraction, EmbedBuilder, MessageFlagsBitField } from "discord.js";
 import { getSauce } from "../../lib/sauce";
 
 @ApplyOptions<InteractionHandlerOptions>({
@@ -22,8 +22,6 @@ export class GetSauceButtonHandler extends InteractionHandler {
         .setTimestamp();
       return interaction.reply({ embeds: [embed], flags: MessageFlagsBitField.Flags.Ephemeral });
     }
-
-    this.container.logger.debug(interaction.channel);
 
     const isEphButton = interaction.customId.split("-")[1] === "eph";
     // Check if this is a TextChannel
