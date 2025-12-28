@@ -14,24 +14,12 @@ export class MatchCommand extends Command {
       builder
         .setName(this.name)
         .setDescription(this.description)
-        .addUserOption(option =>
-          option
-            .setName("user1")
-            .setDescription("First person")
-            .setRequired(true)
-        )
-        .addUserOption(option =>
-          option
-            .setName("user2")
-            .setDescription("Second person")
-            .setRequired(true)
-        )
+        .addUserOption(option => option.setName("user1").setDescription("First person").setRequired(true))
+        .addUserOption(option => option.setName("user2").setDescription("Second person").setRequired(true))
     );
   }
 
-  public override async chatInputRun(
-    interaction: Command.ChatInputCommandInteraction
-  ) {
+  public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
     const user1 = interaction.options.getUser("user1", true);
     const user2 = interaction.options.getUser("user2", true);
 
@@ -42,9 +30,7 @@ export class MatchCommand extends Command {
     const loveEmbed = new EmbedBuilder()
       .setColor("Red")
       .setTitle("Love Percentage 💘")
-      .setDescription(
-        `${user1} and ${user2} love percentage: ${love}%\n\n${loveLevel}`
-      );
+      .setDescription(`${user1} and ${user2} love percentage: ${love}%\n\n${loveLevel}`);
 
     await interaction.reply({ embeds: [loveEmbed] });
   }

@@ -6,6 +6,8 @@ import { fetchJson } from "../../lib/utils/http";
 
 import type { DogApiResponse } from "../../typings/api/animal";
 
+const DOG_API_URL = "https://dog.ceo/api/breeds/image/random";
+
 @ApplyOptions<CommandOptions>({
   description: "Get an image of a dog!",
   ...standardCommandOptions,
@@ -29,7 +31,7 @@ export class DogCommand extends Command {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {
-      const { message } = await fetchJson<DogApiResponse>("https://dog.ceo/api/breeds/image/random");
+      const { message } = await fetchJson<DogApiResponse>(DOG_API_URL);
 
       const embed = new EmbedBuilder().setColor("Random").setImage(message).setFooter(createFooter(interaction.user));
 

@@ -5,6 +5,8 @@ import { createFooter, createImageActionRow, standardCommandOptions } from "../.
 import { fetchJson } from "../../lib/utils/http";
 import type { NekosBestResponse } from "../../typings/api/misc";
 
+const CATGIRL_API_URL = "https://nekos.best/api/v2/neko";
+
 @ApplyOptions<CommandOptions>({
   description: "Get a pic of a catgirl (SFW)",
   ...standardCommandOptions,
@@ -28,7 +30,7 @@ export class CatgirlCommand extends Command {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {
-      const { results } = await fetchJson<NekosBestResponse>("https://nekos.best/api/v2/neko");
+      const { results } = await fetchJson<NekosBestResponse>(CATGIRL_API_URL);
       const imageUrl = results[0].url;
 
       const embed = new EmbedBuilder()

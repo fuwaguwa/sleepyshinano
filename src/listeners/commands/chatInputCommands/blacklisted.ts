@@ -11,10 +11,7 @@ import { EmbedBuilder, MessageFlagsBitField } from "discord.js";
   event: "chatInputCommandDenied",
 })
 export class BlacklistedErrorListener extends Listener {
-  public override async run(
-    { context, identifier }: UserError,
-    { interaction }: ChatInputCommandDeniedPayload
-  ) {
+  public override async run({ context, identifier }: UserError, { interaction }: ChatInputCommandDeniedPayload) {
     if (Reflect.get(Object(context), "silent")) return;
     if (identifier !== "blacklisted") return;
 

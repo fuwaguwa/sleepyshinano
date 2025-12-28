@@ -1,11 +1,12 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder } from "discord.js";
-import { buttonCollector, collectorsRefresh } from "../../lib/collectors";
+import { buttonCollector } from "../../lib/collectors";
 import { fetchJson } from "../../lib/utils/http";
 import { randomItem } from "../../lib/utils/misc";
-
 import type { TriviaApiItem, TriviaFetchedQuestion, TriviaQuestion } from "../../typings/api/misc";
+
+const TRIVIA_API_URL = "https://the-trivia-api.com/api/questions";
 
 @ApplyOptions<CommandOptions>({
   description: "Trivia questions!",
@@ -53,9 +54,6 @@ export class TriviaCommand extends Command {
   }
 
   public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
-    // Clear any existing collectors/buttons the user may have from a previous command
-    collectorsRefresh(interaction);
-
     if (!interaction.deferred) await interaction.deferReply();
 
     const categoryChoice = interaction.options.getString("category");
@@ -218,7 +216,7 @@ export class TriviaCommand extends Command {
 
   private async fetchQuestion(category: string, difficulty: string): Promise<TriviaFetchedQuestion> {
     const trivia = await fetchJson<TriviaApiItem[]>(
-      `https://the-trivia-api.com/api/questions?categories=${category}&limit=1&difficulty=${difficulty}`
+      `${TRIVIA_API_URL}?categories=${category}&limit=1&difficulty=${difficulty}`
     );
 
     const answers = [trivia[0].correctAnswer, ...trivia[0].incorrectAnswers.slice(0, 3)];

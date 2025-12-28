@@ -6,6 +6,8 @@ import { fetchJson } from "../../lib/utils/http";
 
 import type { FoxApiResponse } from "../../typings/api/animal";
 
+const FOX_API_URL = "https://randomfox.ca/floof/";
+
 @ApplyOptions<CommandOptions>({
   description: "Generate an image of a fox!",
   ...standardCommandOptions,
@@ -29,7 +31,7 @@ export class FoxCommand extends Command {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {
-      const { image } = await fetchJson<FoxApiResponse>("https://randomfox.ca/floof/");
+      const { image } = await fetchJson<FoxApiResponse>(FOX_API_URL);
 
       const embed = new EmbedBuilder().setColor("Random").setImage(image).setFooter(createFooter(interaction.user));
 

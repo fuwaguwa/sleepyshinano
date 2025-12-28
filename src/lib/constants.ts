@@ -1,6 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 
-export const VOTE_LINK_BUTTON: ActionRowBuilder<ButtonBuilder> = new ActionRowBuilder<ButtonBuilder>().setComponents(
+export const VOTE_LINK_BUTTON = new ActionRowBuilder<ButtonBuilder>().setComponents(
   new ButtonBuilder()
     .setStyle(ButtonStyle.Link)
     .setLabel("Vote for Shinano!")
@@ -20,3 +20,27 @@ export const SAUCE_EMOJIS = {
 };
 
 export const LOADING_EMOJI = "<a:lod:1021265223707000923>";
+
+export const BOORU_BLACKLIST = [
+  "sort:random",
+  "-guro",
+  "-furry",
+  "-scat",
+  "-amputee",
+  "-vomit",
+  "-insect",
+  "-bestiality",
+  "-ryona",
+  "-death",
+  "-vore",
+  "-torture",
+  "-pokephilia",
+  "-animal_genitalia",
+  "-anthro",
+  "-goblin",
+  "-orc",
+  "-ai-generated",
+  "-ai-assisted",
+  "-ai_assisted",
+  "-ai_generated",
+];

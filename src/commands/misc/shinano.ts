@@ -59,8 +59,6 @@ export class ShinanoCommand extends Subcommand {
    * /shinano info - Show bot information
    */
   public async subcommandInfo(interaction: Subcommand.ChatInputCommandInteraction) {
-    const botId = this.container.client.user?.id || "1002193298229829682";
-
     const shinanoEmbed = new EmbedBuilder()
       .setColor("#2b2d31")
       .setTitle("Shinano")
@@ -77,7 +75,7 @@ export class ShinanoCommand extends Subcommand {
         .setEmoji({ name: "👋" })
         .setLabel("Invite Shinano!")
         .setURL(
-          `https://discord.com/api/oauth2/authorize?client_id=${botId}&permissions=137439332480&scope=bot%20applications.commands`
+          `https://discord.com/api/oauth2/authorize?client_id=1002193298229829682&permissions=137439332480&scope=bot%20applications.commands`
         ),
       new ButtonBuilder()
         .setStyle(ButtonStyle.Link)
@@ -96,7 +94,7 @@ export class ShinanoCommand extends Subcommand {
         .setStyle(ButtonStyle.Link)
         .setEmoji({ id: "1002849574517477447" })
         .setLabel("top.gg")
-        .setURL(`https://top.gg/bot/${botId}`)
+        .setURL(`https://top.gg/bot/1002193298229829682`)
     );
 
     await interaction.reply({
@@ -125,11 +123,9 @@ export class ShinanoCommand extends Subcommand {
   public async subcommandStats(interaction: Subcommand.ChatInputCommandInteraction) {
     if (!interaction.deferred) await interaction.deferReply();
 
-    const botId = this.container.client.user?.id || "1002193298229829682";
-
     let topggStats: TopggBotStats | null = null;
     try {
-      topggStats = await fetchJson<TopggBotStats>(`https://top.gg/api/bots/${botId}`, {
+      topggStats = await fetchJson<TopggBotStats>(`https://top.gg/api/bots/1002193298229829682`, {
         headers: { Authorization: process.env.TOPGG_API_KEY as string },
       });
     } catch (error) {

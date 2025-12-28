@@ -14,14 +14,10 @@ const DAD_JOKE_API = "https://icanhazdadjoke.com/";
 })
 export class DadjokeCommand extends Command {
   public override registerApplicationCommands(registry: Command.Registry) {
-    registry.registerChatInputCommand(builder =>
-      builder.setName(this.name).setDescription(this.description)
-    );
+    registry.registerChatInputCommand(builder => builder.setName(this.name).setDescription(this.description));
   }
 
-  public override async chatInputRun(
-    interaction: Command.ChatInputCommandInteraction
-  ) {
+  public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {
@@ -35,9 +31,7 @@ export class DadjokeCommand extends Command {
     } catch (error) {
       const errorEmbed = new EmbedBuilder()
         .setColor("Red")
-        .setDescription(
-          "❌ | Failed to fetch a dad joke. Please try again later."
-        );
+        .setDescription("❌ | Failed to fetch a dad joke. Please try again later.");
       await interaction.editReply({ embeds: [errorEmbed] });
       throw error;
     }

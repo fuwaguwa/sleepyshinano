@@ -12,22 +12,16 @@ import type { JokeResponse } from "../../typings/api/misc";
 })
 export class JokeCommand extends Command {
   public override registerApplicationCommands(registry: Command.Registry) {
-    registry.registerChatInputCommand(builder =>
-      builder.setName(this.name).setDescription(this.description)
-    );
+    registry.registerChatInputCommand(builder => builder.setName(this.name).setDescription(this.description));
   }
 
-  public override async chatInputRun(
-    interaction: Command.ChatInputCommandInteraction
-  ) {
+  public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {
       const data = await fetchJson<JokeResponse>(buildSraUrl("others/joke"));
 
-      const jokeEmbed = new EmbedBuilder()
-        .setColor("#2b2d31")
-        .setDescription(data.joke);
+      const jokeEmbed = new EmbedBuilder().setColor("#2b2d31").setDescription(data.joke);
 
       await interaction.editReply({ embeds: [jokeEmbed] });
     } catch (error) {
