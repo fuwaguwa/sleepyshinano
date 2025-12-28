@@ -31,6 +31,7 @@
     "dotenv": "^17.2.3",
     "gif-encoder-2": "^1.0.5",
     "mongoose": "^9.0.2",
+    "sagiri": "^4.3.0",
     "typescript": "^5.9.3"
   }
 }
