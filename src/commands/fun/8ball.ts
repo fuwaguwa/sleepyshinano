@@ -26,39 +26,25 @@ const RESPONSES = [
   "You may rely on it.",
 ] as const;
 
-const randomItem = <T>(array: readonly T[]): T =>
-  array[Math.floor(Math.random() * array.length)];
+const randomItem = <T>(array: readonly T[]): T => array[Math.floor(Math.random() * array.length)];
 @ApplyOptions<CommandOptions>({
   description: "Ask 8Ball",
   ...standardCommandOptions,
 })
 export class EightBallCommand extends Command {
-  // ==================== Command Registration ====================
-
   public override registerApplicationCommands(registry: Command.Registry) {
     registry.registerChatInputCommand(builder =>
       builder
         .setName(this.name)
         .setDescription(this.description)
-        .addStringOption(option =>
-          option
-            .setName("question")
-            .setDescription("Your question.")
-            .setRequired(true)
-        )
+        .addStringOption(option => option.setName("question").setDescription("Your question.").setRequired(true))
     );
   }
 
-  // ==================== Command Handlers ====================
-
-  public override async chatInputRun(
-    interaction: Command.ChatInputCommandInteraction
-  ) {
+  public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
     const question = interaction.options.getString("question", true);
 
-    const embed = new EmbedBuilder()
-      .setColor("#2b2d31")
-      .setDescription(`> **${question}**\n${randomItem(RESPONSES)}`);
+    const embed = new EmbedBuilder().setColor("#2b2d31").setDescription(`> **${question}**\n${randomItem(RESPONSES)}`);
 
     await interaction.reply({ embeds: [embed] });
   }

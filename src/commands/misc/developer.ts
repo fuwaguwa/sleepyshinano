@@ -3,11 +3,13 @@ import { ApplyOptions } from "@sapphire/decorators";
 import { Subcommand, type SubcommandOptions } from "@sapphire/plugin-subcommands";
 import {
   ActionRowBuilder,
+  ApplicationIntegrationType,
   ButtonBuilder,
   ButtonStyle,
   ComponentType,
   codeBlock,
   EmbedBuilder,
+  InteractionContextType,
   MessageFlagsBitField,
 } from "discord.js";
 import { buttonCollector } from "../../lib/collectors";
@@ -21,7 +23,7 @@ import type { TopggVoteCheck } from "../../typings/api/botListing";
   preconditions: ["OwnerOnly"],
   cooldownLimit: 1,
   cooldownDelay: 100000,
-  cooldownFilteredUsers: process.env.OWNER_IDS?.split(",") || [],
+  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS?.split(",") || [],
   subcommands: [
     { name: "eval", chatInputRun: "subcommandEval" },
     { name: "vote-check", chatInputRun: "subcommandVote" },
@@ -42,6 +44,12 @@ export class DeveloperCommand extends Subcommand {
       builder
         .setName(this.name)
         .setDescription("Developer-only commands")
+        .setIntegrationTypes([ApplicationIntegrationType.GuildInstall, ApplicationIntegrationType.UserInstall])
+        .setContexts([
+          InteractionContextType.Guild,
+          InteractionContextType.BotDM,
+          InteractionContextType.PrivateChannel,
+        ])
         .addSubcommand(command =>
           command
             .setName("eval")
@@ -138,17 +146,13 @@ export class DeveloperCommand extends Subcommand {
     // Check Top.gg database
     let topggVoteStatus = false;
     if (process.env.TOPGG_API_KEY) {
-      try {
-        const result = await fetchJson<TopggVoteCheck>(
-          `https://top.gg/api/bots/1002193298229829682/check?userId=${user.id}`,
-          {
-            headers: { Authorization: process.env.TOPGG_API_KEY },
-          }
-        );
-        topggVoteStatus = result.voted === 1;
-      } catch (error) {
-        throw error;
-      }
+      const result = await fetchJson<TopggVoteCheck>(
+        `https://top.gg/api/bots/1002193298229829682/check?userId=${user.id}`,
+        {
+          headers: { Authorization: process.env.TOPGG_API_KEY },
+        }
+      );
+      topggVoteStatus = result.voted === 1;
     }
 
     const voteEmbed = new EmbedBuilder().setColor("#2b2d31").addFields(

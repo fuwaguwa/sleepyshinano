@@ -45,7 +45,7 @@ async function loadFrames(framesPath: string, frameCount: number): Promise<Image
   const p = (async (): Promise<Image[]> => {
     const frameFiles = Array.from({ length: frameCount }, (_, i) => path.join(framesPath, `pet${i}.gif`));
 
-    // verify files exist
+    // Verify files exist
     await Promise.all(
       frameFiles.map(async p => {
         try {
@@ -82,7 +82,7 @@ export class PetpetCommand extends Command {
           InteractionContextType.BotDM,
           InteractionContextType.PrivateChannel,
         ])
-        .addUserOption(opt => opt.setName("user").setDescription("User to pet").setRequired(false))
+        .addUserOption(option => option.setName("user").setDescription("User to pet").setRequired(false))
     );
   }
 
@@ -104,14 +104,6 @@ export class PetpetCommand extends Command {
       const avatarImage = await loadImage(avatar);
       const canvas = createCanvas(SIZE, SIZE);
       const ctx = canvas.getContext("2d");
-      if (!ctx) {
-        const embed = new EmbedBuilder()
-          .setColor("Red")
-          .setDescription("❌ | Failed to create canvas context.")
-          .setFooter(createFooter(interaction.user));
-        await interaction.editReply({ embeds: [embed] });
-        return;
-      }
 
       const avatarSize = avatarImage.width;
       const frameCount = frames.length;

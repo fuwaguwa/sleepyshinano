@@ -11,7 +11,7 @@ import type { TriviaApiItem, TriviaFetchedQuestion, TriviaQuestion } from "../..
   description: "Trivia questions!",
   cooldownLimit: 1,
   cooldownDelay: 5000,
-  cooldownFilteredUsers: process.env.OWNER_IDS?.split(",") || [],
+  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS?.split(",") || [],
   preconditions: ["NotBlacklisted"],
 })
 export class TriviaCommand extends Command {
