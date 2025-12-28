@@ -3,11 +3,13 @@ import { ApplyOptions } from "@sapphire/decorators";
 import { Subcommand, type SubcommandOptions } from "@sapphire/plugin-subcommands";
 import {
   ActionRowBuilder,
+  ApplicationIntegrationType,
   ButtonBuilder,
   ButtonStyle,
   ComponentType,
   codeBlock,
   EmbedBuilder,
+  InteractionContextType,
   MessageFlagsBitField,
 } from "discord.js";
 import { buttonCollector } from "../../lib/collectors";
@@ -42,6 +44,12 @@ export class DeveloperCommand extends Subcommand {
       builder
         .setName(this.name)
         .setDescription("Developer-only commands")
+        .setIntegrationTypes([ApplicationIntegrationType.GuildInstall, ApplicationIntegrationType.UserInstall])
+        .setContexts([
+          InteractionContextType.Guild,
+          InteractionContextType.BotDM,
+          InteractionContextType.PrivateChannel,
+        ])
         .addSubcommand(command =>
           command
             .setName("eval")

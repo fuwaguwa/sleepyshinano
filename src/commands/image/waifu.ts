@@ -1,11 +1,7 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
-import { EmbedBuilder } from "discord.js";
-import {
-  createFooter,
-  createImageActionRow,
-  standardCommandOptions,
-} from "../../lib/utils/command";
+import { ApplicationIntegrationType, EmbedBuilder, InteractionContextType } from "discord.js";
+import { createFooter, createImageActionRow, standardCommandOptions } from "../../lib/utils/command";
 import { fetchJson } from "../../lib/utils/http";
 
 import type { NekosBestResponse } from "../../typings/api/misc";
@@ -17,19 +13,23 @@ import type { NekosBestResponse } from "../../typings/api/misc";
 export class WaifuCommand extends Command {
   public override registerApplicationCommands(registry: Command.Registry) {
     registry.registerChatInputCommand(builder =>
-      builder.setName(this.name).setDescription(this.description)
+      builder
+        .setName(this.name)
+        .setDescription(this.description)
+        .setIntegrationTypes([ApplicationIntegrationType.GuildInstall, ApplicationIntegrationType.UserInstall])
+        .setContexts([
+          InteractionContextType.Guild,
+          InteractionContextType.BotDM,
+          InteractionContextType.PrivateChannel,
+        ])
     );
   }
 
-  public override async chatInputRun(
-    interaction: Command.ChatInputCommandInteraction
-  ) {
+  public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {
-      const { results } = await fetchJson<NekosBestResponse>(
-        "https://nekos.best/api/v2/waifu"
-      );
+      const { results } = await fetchJson<NekosBestResponse>("https://nekos.best/api/v2/waifu");
       const imageUrl = results[0].url;
 
       const embed = new EmbedBuilder()
@@ -45,9 +45,7 @@ export class WaifuCommand extends Command {
     } catch (error) {
       const errorEmbed = new EmbedBuilder()
         .setColor("Red")
-        .setDescription(
-          "❌ | Failed to fetch a waifu. Please try again later."
-        );
+        .setDescription("❌ | Failed to fetch a waifu. Please try again later.");
       await interaction.editReply({ embeds: [errorEmbed] });
       throw error;
     }

@@ -1,6 +1,6 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
-import { EmbedBuilder } from "discord.js";
+import { ApplicationIntegrationType, EmbedBuilder, InteractionContextType } from "discord.js";
 import { standardCommandOptions } from "../../lib/utils/command";
 import { fetchJson } from "../../lib/utils/http";
 
@@ -16,18 +16,19 @@ export class DefineCommand extends Command {
       builder
         .setName(this.name)
         .setDescription(this.description)
+        .setIntegrationTypes([ApplicationIntegrationType.GuildInstall, ApplicationIntegrationType.UserInstall])
+        .setContexts([
+          InteractionContextType.Guild,
+          InteractionContextType.BotDM,
+          InteractionContextType.PrivateChannel,
+        ])
         .addStringOption(option =>
-          option
-            .setName("word")
-            .setDescription("The word you want to define")
-            .setRequired(true)
+          option.setName("word").setDescription("The word you want to define").setRequired(true)
         )
     );
   }
 
-  public override async chatInputRun(
-    interaction: Command.ChatInputCommandInteraction
-  ) {
+  public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
     if (!interaction.deferred) await interaction.deferReply();
 
     const word = interaction.options.getString("word", true);
@@ -40,9 +41,7 @@ export class DefineCommand extends Command {
       if (definition.list.length === 0) {
         const noResult = new EmbedBuilder()
           .setColor("Red")
-          .setDescription(
-            `❌ | I apologize, but no definition for \`${word}\` can be located...`
-          );
+          .setDescription(`❌ | I apologize, but no definition for \`${word}\` can be located...`);
         return interaction.editReply({ embeds: [noResult] });
       }
 
@@ -65,9 +64,7 @@ export class DefineCommand extends Command {
     } catch (error) {
       const errorEmbed = new EmbedBuilder()
         .setColor("Red")
-        .setDescription(
-          "❌ | Failed to fetch definition. Please try again later."
-        );
+        .setDescription("❌ | Failed to fetch definition. Please try again later.");
       await interaction.editReply({ embeds: [errorEmbed] });
       throw error;
     }
