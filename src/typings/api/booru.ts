@@ -122,4 +122,5 @@ export interface BooruSearchOptions {
   tags: string;
   site: BooruSite;
   mode?: "followUp";
+  noTagsOnReply?: boolean;
 }
