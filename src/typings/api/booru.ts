@@ -117,6 +117,20 @@ export type BooruSite = "gelbooru" | "rule34" | "safebooru";
 export type BooruPost = GelbooruPost | Rule34Post | SafebooruPost;
 export type BooruResponse = GelbooruPostResponse | Rule34PostResponse | SafebooruPostResponse;
 
+export interface SafebooruTagResponse {
+  tag: Array<{ name: string; count: number }>;
+}
+
+export interface Rule34TagResponse {
+  label: string;
+  value: string;
+  type: string;
+}
+
+export interface GelbooruTagResponse {
+  tag: Array<{ name: string; count: number }>;
+}
+
 export interface BooruSearchOptions {
   interaction: Command.ChatInputCommandInteraction | Subcommand.ChatInputCommandInteraction | ButtonInteraction;
   tags: string;

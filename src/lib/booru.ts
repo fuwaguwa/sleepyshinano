@@ -26,7 +26,8 @@ import { BOORU_BLACKLIST } from "./constants";
 
 const BOORU_CONFIG = {
   gelbooru: {
-    baseUrl: "https://gelbooru.com/index.php",
+    baseUrl: "https://gelbooru.com/index.php?page=post&s=view&id=",
+    apiUrl: "https://gelbooru.com/index.php",
     apiKey: process.env.GELBOORU_API_KEY!,
     userId: process.env.GELBOORU_USER_ID!,
     requiresAuth: true,
@@ -34,15 +35,17 @@ const BOORU_CONFIG = {
     needsProxy: true,
   },
   rule34: {
-    baseUrl: "https://api.rule34.xxx/index.php",
+    baseUrl: "https://rule34.xxx/index.php?page=post&s=view&id=",
+    apiUrl: "https://api.rule34.xxx/index.php",
     apiKey: process.env.RULE34_API_KEY,
     userId: process.env.RULE34_USER_ID,
-    requiresAuth: false,
+    requiresAuth: true,
     hasAttributes: false,
     needsProxy: true,
   },
   safebooru: {
-    baseUrl: "https://safebooru.org/index.php",
+    baseUrl: "https://safebooru.org/index.php?page=post&s=view&id=",
+    apiUrl: "https://safebooru.org/index.php",
     apiKey: undefined,
     userId: undefined,
     requiresAuth: false,
@@ -77,13 +80,13 @@ export async function queryBooru(site: BooruSite, tags: string): Promise<BooruPo
     params.append("user_id", config.userId);
   }
 
-  const url = `${config.baseUrl}?${params.toString()}`;
+  const url = `${config.apiUrl}?${params.toString()}`;
 
   let data: BooruResponse;
 
   if (config.needsProxy) {
     // Use curl subprocess for proxied requests
-    const result = await $`curl --socks5 127.0.0.1:40000 -s --compressed ${url}`.text();
+    const result = await $`curl --socks5 ${process.env.SOCKS_PROXY} -s --dns-servers 1.1.1.1 --http2 ${url}`.text();
     data = JSON.parse(result) as BooruResponse;
   } else {
     // Use native fetch for non-proxied requests
@@ -98,6 +101,7 @@ export async function queryBooru(site: BooruSite, tags: string): Promise<BooruPo
   }
 
   // Handle flat arrays (Rule34, Safebooru)
+  if (!data) return null;
   const arrayData = data as Rule34PostResponse | SafebooruPostResponse;
   if (arrayData.length === 0) return null;
 

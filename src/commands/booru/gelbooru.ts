@@ -29,6 +29,7 @@ export class GelbooruCommand extends Command {
             .setName("tags")
             .setDescription("Booru tags, seperate multiple tags with space. E.g: shinano_(azur_lane) thigh_strap")
             .setRequired(true)
+            .setAutocomplete(true)
         )
     );
   }
