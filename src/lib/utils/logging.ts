@@ -37,8 +37,7 @@ export async function updateServerCount() {
 
     // Update Top.gg
     if (process.env.TOPGG_API_KEY) {
-      const botId = container.client.user?.id;
-      await fetch(`https://top.gg/api/bots/${botId}/stats`, {
+      await fetch(`https://top.gg/api/bots/1002193298229829682/stats`, {
         method: "POST",
         headers: {
           Authorization: process.env.TOPGG_API_KEY,
