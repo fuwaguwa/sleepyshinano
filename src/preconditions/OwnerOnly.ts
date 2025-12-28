@@ -1,9 +1,5 @@
 import { AllFlowsPrecondition } from "@sapphire/framework";
-import type {
-  CommandInteraction,
-  ContextMenuCommandInteraction,
-  Message,
-} from "discord.js";
+import type { CommandInteraction, ContextMenuCommandInteraction, Message } from "discord.js";
 
 export class OwnerOnlyPrecondition extends AllFlowsPrecondition {
   public override async messageRun(message: Message) {
@@ -14,9 +10,7 @@ export class OwnerOnlyPrecondition extends AllFlowsPrecondition {
     return this.checkOwner(interaction.user.id);
   }
 
-  public override async contextMenuRun(
-    interaction: ContextMenuCommandInteraction
-  ) {
+  public override async contextMenuRun(interaction: ContextMenuCommandInteraction) {
     return this.checkOwner(interaction.user.id);
   }
 

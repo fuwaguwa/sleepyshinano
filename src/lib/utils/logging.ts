@@ -9,12 +9,7 @@ import type {
   ChatInputCommandSubcommandMappingMethod,
   ChatInputSubcommandSuccessPayload,
 } from "@sapphire/plugin-subcommands";
-import {
-  type Guild,
-  InteractionContextType,
-  type User,
-  type VoiceChannel,
-} from "discord.js";
+import { type Guild, InteractionContextType, type User, type VoiceChannel } from "discord.js";
 
 /**
  * Update server count on bot's listings and logging server
@@ -36,9 +31,7 @@ export async function updateServerCount() {
     // Update logging server
     if (loggingGuildId && loggingChannelId) {
       const guild = await container.client.guilds.fetch(loggingGuildId);
-      const channel = (await guild.channels.fetch(
-        loggingChannelId
-      )) as VoiceChannel;
+      const channel = (await guild.channels.fetch(loggingChannelId)) as VoiceChannel;
       await channel.setName(`Server Count: ${serverCount}`);
     }
 

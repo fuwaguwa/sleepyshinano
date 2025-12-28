@@ -16,9 +16,7 @@ export class InMainServerPrecondition extends Precondition {
     const mainGuildId = process.env.MAIN_GUILD_ID;
 
     if (!mainGuildId) {
-      this.container.logger.warn(
-        "MAIN_GUILD_ID not set, skipping server check"
-      );
+      this.container.logger.warn("MAIN_GUILD_ID not set, skipping server check");
       return this.ok();
     }
 

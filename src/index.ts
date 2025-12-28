@@ -7,8 +7,7 @@ import { connectToDatabase } from "./lib/utils/db";
 const client: SapphireClient<true> = new SapphireClient({
   baseUserDirectory: import.meta.dir,
   logger: {
-    level:
-      process.env.NODE_ENV === "production" ? LogLevel.Info : LogLevel.Debug,
+    level: process.env.NODE_ENV === "production" ? LogLevel.Info : LogLevel.Debug,
   },
   shards: "auto",
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],

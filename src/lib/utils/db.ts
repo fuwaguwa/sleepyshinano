@@ -46,9 +46,7 @@ export function startCatchers(client: SapphireClient) {
   // Database event handlers
   mongoose.connection.on("connecting", () => {
     connectingAttempt++;
-    client.logger.info(
-      `Connecting to database... (Attempt #${connectingAttempt})`
-    );
+    client.logger.info(`Connecting to database... (Attempt #${connectingAttempt})`);
   });
 
   mongoose.connection.on("connected", () => {

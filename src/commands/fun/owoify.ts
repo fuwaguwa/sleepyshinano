@@ -17,17 +17,12 @@ export class OwoifyCommand extends Command {
         .setName(this.name)
         .setDescription(this.description)
         .addStringOption(option =>
-          option
-            .setName("text")
-            .setDescription("The text you want to owoify (Limit: 200 chars)")
-            .setRequired(true)
+          option.setName("text").setDescription("The text you want to owoify (Limit: 200 chars)").setRequired(true)
         )
     );
   }
 
-  public override async chatInputRun(
-    interaction: Command.ChatInputCommandInteraction
-  ) {
+  public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
     if (!interaction.deferred) await interaction.deferReply();
 
     const text = interaction.options.getString("text", true);
@@ -35,20 +30,14 @@ export class OwoifyCommand extends Command {
     if (text.length > 200) {
       const invalidEmbed = new EmbedBuilder()
         .setColor("Red")
-        .setDescription(
-          "❌ | The `text` is constrained by a limit of 200 characters..."
-        );
+        .setDescription("❌ | The `text` is constrained by a limit of 200 characters...");
       return interaction.editReply({ embeds: [invalidEmbed] });
     }
 
     try {
-      const data = await fetchJson<OwoifyResponse>(
-        `https://nekos.life/api/v2/owoify?text=${encodeURIComponent(text)}`
-      );
+      const data = await fetchJson<OwoifyResponse>(`https://nekos.life/api/v2/owoify?text=${encodeURIComponent(text)}`);
 
-      const owoEmbed = new EmbedBuilder()
-        .setColor("#2b2d31")
-        .setDescription(`> ${data.owo}\n\n- ${interaction.user}`);
+      const owoEmbed = new EmbedBuilder().setColor("#2b2d31").setDescription(`> ${data.owo}\n\n- ${interaction.user}`);
 
       await interaction.editReply({ embeds: [owoEmbed] });
     } catch (error) {
