@@ -30,7 +30,7 @@ export class Rule34AutocompleteHandler extends InteractionHandler {
     const url = `https://api.rule34.xxx/autocomplete.php?q=${encodeURIComponent(lastTag)}`;
 
     try {
-      const result = await $`curl --socks5 ${process.env.SOCKS_PROXY} -s --dns-servers 1.1.1.1 --http2 ${url}`.text();
+      const result = await $`curl --socks5 ${process.env.SOCKS_PROXY} -s ${url}`.text();
       const data = JSON.parse(result) as Rule34TagResponse[];
 
       if (!data?.length) {

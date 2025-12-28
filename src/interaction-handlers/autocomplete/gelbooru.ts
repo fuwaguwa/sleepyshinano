@@ -41,7 +41,7 @@ export class GelbooruAutocompleteHandler extends InteractionHandler {
     const url = `https://gelbooru.com/index.php?${params.toString()}`;
 
     try {
-      const result = await $`curl --socks5 ${process.env.SOCKS_PROXY} -s --dns-servers 1.1.1.1 --http2 ${url}`.text();
+      const result = await $`curl --socks5 ${process.env.SOCKS_PROXY} -s ${url}`.text();
       const data = JSON.parse(result) as GelbooruTagResponse;
 
       if (!data.tag?.length) return this.some([{ name: `No tags found for "${lastTag}"`, value: focusedOption.value }]);
