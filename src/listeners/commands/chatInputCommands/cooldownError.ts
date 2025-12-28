@@ -20,20 +20,20 @@ export class CooldownErrorListener extends Listener<typeof Events.ChatInputComma
     const remaining = Reflect.get(Object(context), "remaining") as number;
     const retryTimestamp = Math.floor((Date.now() + remaining) / 1000);
 
-    const errorEmbed = new EmbedBuilder()
+    const ERROR_EMBED = new EmbedBuilder()
       .setColor("Red")
       .setTitle("You're on cooldown!")
       .setDescription(`You will be able to run the command again <t:${retryTimestamp}:R>`);
 
     if (interaction.deferred || interaction.replied) {
       return interaction.editReply({
-        embeds: [errorEmbed],
+        embeds: [ERROR_EMBED],
         allowedMentions: { users: [interaction.user.id], roles: [] },
       });
     }
 
     return interaction.reply({
-      embeds: [errorEmbed],
+      embeds: [ERROR_EMBED],
       allowedMentions: { users: [interaction.user.id], roles: [] },
       flags: MessageFlagsBitField.Flags.Ephemeral,
     });

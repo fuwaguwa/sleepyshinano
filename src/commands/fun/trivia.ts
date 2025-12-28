@@ -1,7 +1,7 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder } from "discord.js";
-import { buttonCollector, collectorsRefresh } from "../../lib/collectors";
+import { buttonCollector } from "../../lib/collectors";
 import { fetchJson } from "../../lib/utils/http";
 import { randomItem } from "../../lib/utils/misc";
 import type { TriviaApiItem, TriviaFetchedQuestion, TriviaQuestion } from "../../typings/api/misc";
@@ -54,9 +54,6 @@ export class TriviaCommand extends Command {
   }
 
   public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
-    // Clear any existing collectors/buttons the user may have from a previous command
-    collectorsRefresh(interaction);
-
     if (!interaction.deferred) await interaction.deferReply();
 
     const categoryChoice = interaction.options.getString("category");
