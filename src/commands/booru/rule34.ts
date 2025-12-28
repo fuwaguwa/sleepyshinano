@@ -18,7 +18,7 @@ export class GelbooruCommand extends Command {
         .setName(this.name)
         .setDescription(this.description)
         .setNSFW(true)
-        .setIntegrationTypes([ApplicationIntegrationType.GuildInstall, ApplicationIntegrationType.UserInstall])
+        .setIntegrationTypes([ApplicationIntegrationType.GuildInstall])
         .setContexts([
           InteractionContextType.Guild,
           InteractionContextType.BotDM,

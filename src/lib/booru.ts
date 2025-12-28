@@ -86,7 +86,7 @@ export async function queryBooru(site: BooruSite, tags: string): Promise<BooruPo
 
   if (config.needsProxy) {
     // Use curl subprocess for proxied requests
-    const result = await $`curl --socks5 ${process.env.SOCKS_PROXY} -s --dns-servers 1.1.1.1 --http2 ${url}`.text();
+    const result = await $`curl --socks5 ${process.env.SOCKS_PROXY} -s ${url}`.text();
     data = JSON.parse(result) as BooruResponse;
   } else {
     // Use native fetch for non-proxied requests
