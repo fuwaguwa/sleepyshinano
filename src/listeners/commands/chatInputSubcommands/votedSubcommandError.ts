@@ -1,18 +1,18 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import {
   type ChatInputCommandDeniedPayload,
-  type Events,
   Listener,
   type ListenerOptions,
   type UserError,
 } from "@sapphire/framework";
+import type { SubcommandPluginEvents } from "@sapphire/plugin-subcommands";
 import { EmbedBuilder, MessageFlagsBitField } from "discord.js";
 import { VOTE_LINK_BUTTON } from "../../../lib/constants";
 
 @ApplyOptions<ListenerOptions>({
   event: "chatInputCommandDenied",
 })
-export class VotedError extends Listener<typeof Events.ChatInputCommandDenied> {
+export class VotedError extends Listener<typeof SubcommandPluginEvents.ChatInputSubcommandDenied> {
   public override async run(
     { context, identifier, message }: UserError,
     { interaction }: ChatInputCommandDeniedPayload
