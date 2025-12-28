@@ -108,7 +108,7 @@ export async function queryBooru(site: BooruSite, tags: string): Promise<BooruPo
 /**
  * Process booru request from interaction
  */
-export async function processBooruRequest({ interaction, tags, site, mode }: BooruSearchOptions) {
+export async function processBooruRequest({ interaction, tags, site, mode, noTagsOnReply }: BooruSearchOptions) {
   if (!interaction.deferred) await interaction.deferReply();
 
   const config = BOORU_CONFIG[site];
@@ -188,25 +188,27 @@ export async function processBooruRequest({ interaction, tags, site, mode }: Boo
   }
 
   // Sending message
-  let message = "**Requested Tag(s)**: ";
-  message += tags
-    .split(" ")
-    .map(tag => `\`${tag}\``)
-    .join(", ");
+  const message = noTagsOnReply
+    ? null
+    : `**Requested Tag(s)**: ${tags
+        .split(" ")
+        .map(tag => `\`${tag}\``)
+        .join(", ")}`;
 
   const replyOptions: InteractionReplyOptions | InteractionEditReplyOptions = { components: [links, loadMore] };
-  let booruEmbed: EmbedBuilder;
+
   if (isVideo) {
-    replyOptions.content = `${message}\n\n${result.file_url}`;
+    replyOptions.content = message ? `${message}\n\n${result.file_url}` : result.file_url;
   } else {
-    booruEmbed = new EmbedBuilder()
+    const booruEmbed = new EmbedBuilder()
       .setColor("Random")
       .setImage(result.file_url)
-      .setDescription(message)
       .setFooter({
         text: `Requested by ${interaction.user.username}`,
         iconURL: interaction.user.displayAvatarURL({ forceStatic: false }),
       });
+
+    if (message) booruEmbed.setDescription(message);
 
     replyOptions.embeds = [booruEmbed];
   }
@@ -229,7 +231,7 @@ export async function processBooruRequest({ interaction, tags, site, mode }: Boo
 
     if (!isUserButton) {
       return i.reply({
-        content: "This button does not pertain to you!",
+        content: "This button does not belong to you!",
         flags: MessageFlagsBitField.Flags.Ephemeral,
       });
     }
@@ -241,7 +243,7 @@ export async function processBooruRequest({ interaction, tags, site, mode }: Boo
 
       loadMore.components[0].setDisabled(true);
       await chatMessage.edit({ components: [links, loadMore] });
-      await processBooruRequest({ interaction, tags, site, mode: "followUp" });
+      await processBooruRequest({ interaction, tags, site, mode: "followUp", noTagsOnReply: noTagsOnReply ?? false });
 
       buttonCooldownSet("loadMore", i);
       return collector.stop("done");
