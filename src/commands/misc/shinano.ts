@@ -1,6 +1,13 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Subcommand, type SubcommandOptions } from "@sapphire/plugin-subcommands";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
+import {
+  ActionRowBuilder,
+  ApplicationIntegrationType,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
+  InteractionContextType,
+} from "discord.js";
 import { fetchJson } from "../../lib/utils/http";
 import { randomItem } from "../../lib/utils/misc";
 
@@ -30,6 +37,12 @@ export class ShinanoCommand extends Subcommand {
       builder
         .setName("shinano")
         .setDescription("Shinano Utilities Commands")
+        .setIntegrationTypes([ApplicationIntegrationType.GuildInstall, ApplicationIntegrationType.UserInstall])
+        .setContexts([
+          InteractionContextType.Guild,
+          InteractionContextType.BotDM,
+          InteractionContextType.PrivateChannel,
+        ])
         .addSubcommand(command => command.setName("info").setDescription("Information about Shinano"))
         .addSubcommand(command => command.setName("ping").setDescription("Pong!"))
         .addSubcommand(command => command.setName("pat").setDescription("Headpats for the floof"))
