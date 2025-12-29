@@ -1,6 +1,6 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { InteractionHandler, type InteractionHandlerOptions, InteractionHandlerTypes } from "@sapphire/framework";
-import { $ } from "bun";
+import { fetch } from "bun-socks";
 import type { AutocompleteInteraction } from "discord.js";
 import type { Rule34TagResponse } from "../../typings/api/booru";
 
@@ -30,8 +30,8 @@ export class Rule34AutocompleteHandler extends InteractionHandler {
     const url = `https://api.rule34.xxx/autocomplete.php?q=${encodeURIComponent(lastTag)}`;
 
     try {
-      const result = await $`curl --socks5 ${process.env.SOCKS_PROXY} -s ${url}`.text();
-      const data = JSON.parse(result) as Rule34TagResponse[];
+      const response = await fetch(url, { proxy: process.env.SOCKS_PROXY });
+      const data = (await response.json()) as Rule34TagResponse[];
 
       if (!data?.length) {
         return this.some([{ name: `No tags found for "${lastTag}"`, value: focusedOption.value }]);

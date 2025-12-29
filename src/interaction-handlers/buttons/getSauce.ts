@@ -2,6 +2,7 @@ import { ApplyOptions } from "@sapphire/decorators";
 import { InteractionHandler, type InteractionHandlerOptions, InteractionHandlerTypes } from "@sapphire/framework";
 import { type ButtonInteraction, EmbedBuilder, MessageFlagsBitField } from "discord.js";
 import { getSauce } from "../../lib/sauce";
+import { isTextChannelNonNSFW } from "../../lib/utils/misc";
 
 @ApplyOptions<InteractionHandlerOptions>({
   interactionHandlerType: InteractionHandlerTypes.Button,
@@ -25,8 +26,7 @@ export class GetSauceButtonHandler extends InteractionHandler {
 
     const isEphButton = interaction.customId.split("-")[1] === "eph";
     // Check if this is a TextChannel
-    const isTextChannelNonNSFW = interaction.channel?.type === 0 && !interaction.channel.nsfw;
-    const ephemeral = isEphButton || isTextChannelNonNSFW;
+    const ephemeral = isEphButton || isTextChannelNonNSFW(interaction);
 
     await getSauce({ interaction, link, ephemeral });
   }

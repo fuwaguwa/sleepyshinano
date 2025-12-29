@@ -1,6 +1,6 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { InteractionHandler, type InteractionHandlerOptions, InteractionHandlerTypes } from "@sapphire/framework";
-import { $ } from "bun";
+import { fetch } from "bun-socks";
 import type { AutocompleteInteraction } from "discord.js";
 import type { GelbooruTagResponse } from "../../typings/api/booru";
 
@@ -41,8 +41,8 @@ export class GelbooruAutocompleteHandler extends InteractionHandler {
     const url = `https://gelbooru.com/index.php?${params.toString()}`;
 
     try {
-      const result = await $`curl --socks5 ${process.env.SOCKS_PROXY} -s ${url}`.text();
-      const data = JSON.parse(result) as GelbooruTagResponse;
+      const response = await fetch(url, { proxy: process.env.SOCKS_PROXY });
+      const data = (await response.json()) as GelbooruTagResponse;
 
       if (!data.tag?.length) return this.some([{ name: `No tags found for "${lastTag}"`, value: focusedOption.value }]);
 
