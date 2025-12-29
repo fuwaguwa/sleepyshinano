@@ -25,7 +25,9 @@ export class GelbooruCommand extends Command {
         .addStringOption(option =>
           option
             .setName("tags")
-            .setDescription("Booru tags, seperate multiple tags with space. E.g: shinano_(azur_lane) thigh_strap")
+            .setDescription(
+              "Autocomplete enabled. Seperate multiple tags with space. E.g: shinano_(azur_lane) thigh_strap"
+            )
             .setRequired(true)
             .setAutocomplete(true)
         )
