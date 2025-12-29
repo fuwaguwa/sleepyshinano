@@ -1,9 +1,8 @@
-import { $ } from "bun";
+import { fetch } from "bun-socks";
 import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  ChannelType,
   ComponentType,
   EmbedBuilder,
   type InteractionEditReplyOptions,
@@ -23,6 +22,7 @@ import type {
 import type { ShinanoUser } from "../typings/schemas/User";
 import { buttonCollector, buttonCooldownCheck, buttonCooldownSet } from "./collectors";
 import { BOORU_BLACKLIST } from "./constants";
+import { isGroupDM, isGuildInteraction, isUserDM } from "./utils/misc";
 
 const BOORU_CONFIG = {
   gelbooru: {
@@ -58,8 +58,11 @@ const noResultEmbed = new EmbedBuilder().setColor("Red").setDescription("❌ | N
 
 /**
  * Randomly produces one post from a booru site
- * NOTE: Using curl subprocess as workaround for Bun's SOCKS5 proxy issues
- * I have no clue how to fix this, this is my workaround for now.
+ */
+
+/**
+ * Randomly produces one post from a booru site
+ * Using Bun's native proxy support - no more curl subprocess! 🎉
  */
 export async function queryBooru(site: BooruSite, tags: string): Promise<BooruPost | null> {
   const config = BOORU_CONFIG[site];
@@ -82,17 +85,9 @@ export async function queryBooru(site: BooruSite, tags: string): Promise<BooruPo
 
   const url = `${config.apiUrl}?${params.toString()}`;
 
-  let data: BooruResponse;
-
-  if (config.needsProxy) {
-    // Use curl subprocess for proxied requests
-    const result = await $`curl --socks5 ${process.env.SOCKS_PROXY} -s ${url}`.text();
-    data = JSON.parse(result) as BooruResponse;
-  } else {
-    // Use native fetch for non-proxied requests
-    const response = await fetch(url);
-    data = (await response.json()) as BooruResponse;
-  }
+  const fetchOptions = config.needsProxy ? { proxy: process.env.SOCKS_PROXY } : {};
+  const response = await fetch(url, fetchOptions);
+  const data = (await response.json()) as BooruResponse;
 
   // Handle Gelbooru's @attributes wrapper
   if (config.hasAttributes) {
@@ -124,18 +119,13 @@ export async function processBooruRequest({ interaction, tags, site, mode, noTag
     return;
   }
 
-  // Check interaction context
-  const isGuildInteraction = interaction.guildId != null;
-  const isUserDM =
-    interaction.channel?.type === ChannelType.DM && interaction.channel.recipient?.id !== interaction.client.user.id;
-  const isGroupDM = interaction.channel?.type === ChannelType.GroupDM;
   // Determine if Load More should be shown
   let shouldShowLoadMore = true;
 
-  if (isUserDM || isGroupDM) {
+  if (isUserDM(interaction) || isGroupDM(interaction)) {
     // Hide load more in user DMs and group DMs
     shouldShowLoadMore = false;
-  } else if (isGuildInteraction) {
+  } else if (isGuildInteraction(interaction)) {
     // Check if bot is in the guild
     const botIsInGuild = interaction.guild?.members.cache.has(interaction.client.user.id);
     if (!botIsInGuild) {

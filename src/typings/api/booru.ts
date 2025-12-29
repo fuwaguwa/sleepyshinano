@@ -1,6 +1,4 @@
-import type { Command } from "@sapphire/framework";
-import type { Subcommand } from "@sapphire/plugin-subcommands";
-import type { ButtonInteraction } from "discord.js";
+import type { ProcessableInteraction } from "../interaction";
 
 export type GelbooruRating = "general" | "sensitive" | "questionable" | "explicit";
 
@@ -132,7 +130,7 @@ export interface GelbooruTagResponse {
 }
 
 export interface BooruSearchOptions {
-  interaction: Command.ChatInputCommandInteraction | Subcommand.ChatInputCommandInteraction | ButtonInteraction;
+  interaction: ProcessableInteraction;
   tags: string;
   site: BooruSite;
   mode?: "followUp";
