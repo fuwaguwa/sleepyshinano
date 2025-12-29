@@ -38,7 +38,7 @@ export class SafebooruAutocompleteHandler extends InteractionHandler {
     const url = `https://safebooru.org/index.php?${params.toString()}`;
 
     try {
-      const response = await fetch(url);
+      const response = await fetch(url, { proxy: process.env.SOCKS_PROXY });
       const xmlText = await response.text();
 
       // Parse XML to extract tag names
