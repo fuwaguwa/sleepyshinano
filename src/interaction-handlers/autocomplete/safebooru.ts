@@ -1,7 +1,6 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { InteractionHandler, type InteractionHandlerOptions, InteractionHandlerTypes } from "@sapphire/framework";
 import type { AutocompleteInteraction } from "discord.js";
-import type { SafebooruTagResponse } from "../../typings/api/booru";
 
 @ApplyOptions<InteractionHandlerOptions>({
   interactionHandlerType: InteractionHandlerTypes.Autocomplete,
