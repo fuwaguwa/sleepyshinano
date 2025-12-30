@@ -22,7 +22,7 @@ import type {
 import type { ShinanoUser } from "../typings/schemas/User";
 import { buttonCollector, buttonCooldownCheck, buttonCooldownSet } from "./collectors";
 import { BOORU_BLACKLIST } from "./constants";
-import { isGroupDM, isGuildInteraction, isUserDM } from "./utils/misc";
+import { getCurrentTimestamp, isGroupDM, isGuildInteraction, isUserDM } from "./utils/misc";
 
 const BOORU_CONFIG = {
   gelbooru: {
@@ -156,9 +156,13 @@ export async function processBooruRequest({ interaction, tags, site, mode, noTag
 
     // User vote check (only if showing load more)
     const user = await User.findOne({ userId: interaction.user.id }).lean<ShinanoUser>();
-    const hasVoted =
-      process.env.COOL_PEOPLE_IDS!.split(",").includes(interaction.user.id) ||
-      (user?.voteTimestamp && Math.floor(Date.now() / 1000) - user.voteTimestamp <= 43200);
+    const currentTime = getCurrentTimestamp();
+    let voteValid = false;
+
+    if (user && user.voteCreatedTimestamp && user.voteExpiredTimestamp)
+      voteValid = currentTime < user.voteExpiredTimestamp;
+
+    const hasVoted = process.env.COOL_PEOPLE_IDS!.split(",").includes(interaction.user.id) || voteValid;
 
     if (!hasVoted) {
       loadMore.components[0].setLabel("Load More (Lower CD)").setDisabled(true);

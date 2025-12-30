@@ -1,5 +1,6 @@
 import { Precondition } from "@sapphire/framework";
 import type { ChatInputCommandInteraction } from "discord.js";
+import { getCurrentTimestamp } from "../lib/utils/misc";
 import User from "../schemas/User";
 
 export class VotedPrecondition extends Precondition {
@@ -17,22 +18,17 @@ export class VotedPrecondition extends Precondition {
     const user = await User.findOne({ userId: interaction.user.id });
 
     // User hasn't voted yet
-    if (!user?.voteTimestamp) {
+    if (!user || !user.voteCreatedTimestamp || !user.voteExpiredTimestamp)
       return this.error({ message: "noVote", identifier: "votedError" });
-    }
 
-    const now = Math.floor(Date.now() / 1000);
-    const timeSinceVote = now - user.voteTimestamp;
-    const voteValidDuration = 43200; // 12 hours in seconds
+    const currentTime = getCurrentTimestamp();
 
     // Vote is still valid
-    if (timeSinceVote <= voteValidDuration) {
-      return this.ok();
-    }
+    if (currentTime < user.voteExpiredTimestamp) return this.ok();
 
     // Vote expired
     return this.error({
-      message: `exp-${user.voteTimestamp}`,
+      message: `exp-${user.voteCreatedTimestamp}`,
       identifier: "votedError",
     });
   }

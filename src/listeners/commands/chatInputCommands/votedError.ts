@@ -27,9 +27,9 @@ export class VotedError extends Listener<typeof Events.ChatInputCommandDenied> {
         "It seems that you have not cast your vote for me! Please do so with the option below!"
       );
     } else {
-      const voteTimestamp = message.split("-")[1];
+      const voteCreatedTimestamp = message.split("-")[1];
       errorEmbed.setDescription(
-        `Your last vote was <t:${voteTimestamp}:R>, you can now vote again using the button below!`
+        `Your last vote was <t:${voteCreatedTimestamp}:R>, you can now vote again using the button below!`
       );
     }
 
@@ -37,14 +37,14 @@ export class VotedError extends Listener<typeof Events.ChatInputCommandDenied> {
       return interaction.editReply({
         embeds: [errorEmbed],
         components: [VOTE_LINK_BUTTON],
-        allowedMentions: { users: [interaction.user.id], roles: [] },
+        allowedMentions: { users: [interaction.user.id] },
       });
     }
 
     return interaction.reply({
       embeds: [errorEmbed],
       components: [VOTE_LINK_BUTTON],
-      allowedMentions: { users: [interaction.user.id], roles: [] },
+      allowedMentions: { users: [interaction.user.id] },
       flags: MessageFlagsBitField.Flags.Ephemeral,
     });
   }

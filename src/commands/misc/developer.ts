@@ -14,8 +14,8 @@ import {
 } from "discord.js";
 import { buttonCollector } from "../../lib/collectors";
 import { fetchJson } from "../../lib/utils/http";
+import { getCurrentTimestamp } from "../../lib/utils/misc";
 import User from "../../schemas/User";
-
 import type { TopggVoteCheck } from "../../typings/api/botListing";
 
 @ApplyOptions<SubcommandOptions>({
@@ -144,10 +144,10 @@ export class DeveloperCommand extends Subcommand {
     let voteStatus: boolean | string = "N/A";
     let voteTime: number | string = "N/A";
 
-    if (voteUser?.voteTimestamp) {
-      const currentTime = Math.floor(Date.now() / 1000);
-      voteTime = voteUser.voteTimestamp;
-      voteStatus = currentTime - voteUser.voteTimestamp < 43200; // 12 hours
+    if (voteUser?.voteCreatedTimestamp && voteUser?.voteExpiredTimestamp) {
+      const currentTime = getCurrentTimestamp();
+      voteTime = voteUser.voteCreatedTimestamp;
+      voteStatus = currentTime >= voteUser.voteExpiredTimestamp;
     }
 
     // Check Top.gg database
@@ -215,7 +215,9 @@ export class DeveloperCommand extends Subcommand {
       }
 
       // Update database
-      voteUser.voteTimestamp = Math.floor(Date.now() / 1000);
+      const currentTime = getCurrentTimestamp();
+      voteUser.voteCreatedTimestamp = currentTime;
+      voteUser.voteExpiredTimestamp = currentTime + 12 * 60 * 60; // 12 hours
       await voteUser.save();
 
       const updatedEmbed = new EmbedBuilder().setColor("Green").setDescription("✅ | Updated the database!");
