@@ -80,6 +80,13 @@ export class TriviaCommand extends Command {
     try {
       const question = await this.getQuestion(category, difficulty);
 
+      if (!question || !question.answers) {
+        const errorEmbed = new EmbedBuilder()
+          .setColor("Red")
+          .setDescription("❌ | Failed to fetch trivia question. Please try again later.");
+        return await interaction.editReply({ embeds: [errorEmbed] });
+      }
+
       // Create answer buttons. Use index-based custom IDs to avoid embedding the text in the ID.
       const answersRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
         ...question.answers.map((ans, idx) =>
@@ -186,12 +193,15 @@ export class TriviaCommand extends Command {
     }
   }
 
-  private async getQuestion(category: string, difficulty: string): Promise<TriviaQuestion> {
-    let fetched: TriviaFetchedQuestion = await this.fetchQuestion(category, difficulty);
+  private async getQuestion(category: string, difficulty: string): Promise<TriviaQuestion | null> {
+    let fetched = await this.fetchQuestion(category, difficulty);
+
+    if (!fetched) return null;
 
     // Retry if any answer is too long for a button label (80 char limit)
     while (fetched.answers.some(a => a.length > 60)) {
       fetched = await this.fetchQuestion(category, difficulty);
+      if (!fetched) return null;
     }
 
     this.container.logger.debug(`Trivia Answer: ${fetched.answers[0]}`);
@@ -214,10 +224,12 @@ export class TriviaCommand extends Command {
     };
   }
 
-  private async fetchQuestion(category: string, difficulty: string): Promise<TriviaFetchedQuestion> {
+  private async fetchQuestion(category: string, difficulty: string): Promise<TriviaFetchedQuestion | null> {
     const trivia = await fetchJson<TriviaApiItem[]>(
       `${TRIVIA_API_URL}?categories=${category}&limit=1&difficulty=${difficulty}`
     );
+
+    if (!trivia) return null;
 
     const answers = [trivia[0].correctAnswer, ...trivia[0].incorrectAnswers.slice(0, 3)];
 

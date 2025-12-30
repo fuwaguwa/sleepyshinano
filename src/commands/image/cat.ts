@@ -31,9 +31,13 @@ export class CatCommand extends Command {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {
-      const [data] = await fetchJson<CatApiResponse[]>(CAT_API_URL);
+      const cat = await fetchJson<CatApiResponse[]>(CAT_API_URL);
+      if (!cat) throw new Error("Failed to fetch cat");
 
-      const embed = new EmbedBuilder().setColor("Random").setImage(data.url).setFooter(createFooter(interaction.user));
+      const embed = new EmbedBuilder()
+        .setColor("Random")
+        .setImage(cat[0].url)
+        .setFooter(createFooter(interaction.user));
 
       await interaction.editReply({ embeds: [embed] });
     } catch (error) {

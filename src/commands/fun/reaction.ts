@@ -164,7 +164,6 @@ export class ReactionCommand extends Subcommand {
     try {
       const description = this.getDescription(reaction, user, interaction.user);
       const imageLink = await this.getReactionImageLink(reaction);
-
       const reactionEmbed = new EmbedBuilder().setColor("Random").setDescription(description).setImage(imageLink);
 
       await interaction.editReply({ embeds: [reactionEmbed] });
@@ -185,8 +184,9 @@ export class ReactionCommand extends Subcommand {
     return template.replace("{user}", user.toString()).replace("{target}", target?.toString() ?? "");
   }
 
-  private async getReactionImageLink(reaction: string): Promise<string> {
+  private async getReactionImageLink(reaction: string): Promise<string | null> {
     const data = await fetchJson<NekosBestResponse>(`https://nekos.best/api/v2/${reaction}`);
+    if (!data || !data.results) return null;
     return data.results[0].url;
   }
 }

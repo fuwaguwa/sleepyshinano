@@ -31,9 +31,14 @@ export class DogCommand extends Command {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {
-      const { message } = await fetchJson<DogApiResponse>(DOG_API_URL);
+      const dog = await fetchJson<DogApiResponse>(DOG_API_URL);
 
-      const embed = new EmbedBuilder().setColor("Random").setImage(message).setFooter(createFooter(interaction.user));
+      if (!dog || !dog.message) throw new Error("Failed to fetch dog image");
+
+      const embed = new EmbedBuilder()
+        .setColor("Random")
+        .setImage(dog.message)
+        .setFooter(createFooter(interaction.user));
 
       await interaction.editReply({ embeds: [embed] });
     } catch (error) {

@@ -30,8 +30,11 @@ export class CatgirlCommand extends Command {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {
-      const { results } = await fetchJson<NekosBestResponse>(CATGIRL_API_URL);
-      const imageUrl = results[0].url;
+      const catgirl = await fetchJson<NekosBestResponse>(CATGIRL_API_URL);
+
+      if (!catgirl || !catgirl.results) throw new Error("Failed to fetch catgirl");
+
+      const imageUrl = catgirl.results[0].url;
 
       const embed = new EmbedBuilder()
         .setColor("Random")

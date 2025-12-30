@@ -31,8 +31,11 @@ export class WaifuCommand extends Command {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {
-      const { results } = await fetchJson<NekosBestResponse>(WAIFU_API_URL);
-      const imageUrl = results[0].url;
+      const waifu = await fetchJson<NekosBestResponse>(WAIFU_API_URL);
+
+      if (!waifu || !waifu.results) throw new Error("Failed to fetch waifu");
+
+      const imageUrl = waifu.results[0].url;
 
       const embed = new EmbedBuilder()
         .setColor("Random")

@@ -31,8 +31,11 @@ export class FoxgirlCommand extends Command {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {
-      const { results } = await fetchJson<NekosBestResponse>(FOXGIRL_API_URL);
-      const imageUrl = results[0].url;
+      const foxgirl = await fetchJson<NekosBestResponse>(FOXGIRL_API_URL);
+
+      if (!foxgirl || !foxgirl.results) throw new Error("Failed to fetch foxgirl");
+
+      const imageUrl = foxgirl.results[0].url;
 
       const embed = new EmbedBuilder()
         .setColor("Random")

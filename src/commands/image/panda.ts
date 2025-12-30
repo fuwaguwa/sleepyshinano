@@ -28,9 +28,14 @@ export class PandaCommand extends Command {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {
-      const { image } = await fetchJson<PandaApiResponse>(buildSraUrl("animal/panda"));
+      const panda = await fetchJson<PandaApiResponse>(buildSraUrl("animal/panda"));
 
-      const embed = new EmbedBuilder().setColor("Random").setImage(image).setFooter(createFooter(interaction.user));
+      if (!panda || !panda.image) throw new Error("Failed to fetch panda image");
+
+      const embed = new EmbedBuilder()
+        .setColor("Random")
+        .setImage(panda.image)
+        .setFooter(createFooter(interaction.user));
 
       await interaction.editReply({ embeds: [embed] });
     } catch (error) {
