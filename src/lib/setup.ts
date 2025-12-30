@@ -15,9 +15,6 @@ const requiredEnvVars = [
   "COOL_PEOPLE_IDS",
   "OWNER_IDS",
   "MONGODB_URI",
-  "TAILSCALE_AUTH_KEY",
-  "SERVER_HOST",
-  "SERVER_USER",
   "TOPGG_API_KEY",
   "GELBOORU_API_KEY",
   "GELBOORU_USER_ID",
@@ -29,9 +26,6 @@ const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
 
 if (missingEnvVars.length > 0) {
   console.error("❌ Missing required environment variables:");
-  missingEnvVars.forEach(envVar => {
-    console.log(`   - ${envVar}`);
-  });
   process.exit(1);
 }
 
