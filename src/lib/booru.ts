@@ -159,8 +159,7 @@ export async function processBooruRequest({ interaction, tags, site, mode, noTag
     const currentTime = getCurrentTimestamp();
     let voteValid = false;
 
-    if (user && user.voteCreatedTimestamp && user.voteExpiredTimestamp)
-      voteValid = currentTime < user.voteExpiredTimestamp;
+    if (user?.voteCreatedTimestamp && user.voteExpiredTimestamp) voteValid = currentTime < user.voteExpiredTimestamp;
 
     const hasVoted = process.env.COOL_PEOPLE_IDS.split(",").includes(interaction.user.id) || voteValid;
 

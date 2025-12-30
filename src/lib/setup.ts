@@ -29,7 +29,9 @@ const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
 
 if (missingEnvVars.length > 0) {
   console.error("❌ Missing required environment variables:");
-  missingEnvVars.forEach(envVar => console.error(`   - ${envVar}`));
+  missingEnvVars.forEach(envVar => {
+    console.log(`   - ${envVar}`);
+  });
   process.exit(1);
 }
 
