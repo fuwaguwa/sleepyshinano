@@ -6,7 +6,7 @@ import mongoose from "mongoose";
  */
 export async function connectToDatabase() {
   try {
-    await mongoose.connect(process.env.MONGODB_URI as string);
+    await mongoose.connect(process.env.MONGODB_URI);
     container.logger.info("Connected to MongoDB");
   } catch (error) {
     container.logger.error("Failed to connect to MongoDB:", error);

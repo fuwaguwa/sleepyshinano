@@ -7,7 +7,7 @@ import { processBooruRequest } from "../../lib/booru";
   description: "Search images on Gelbooru with specified tags.",
   cooldownLimit: 1,
   cooldownDelay: 15000,
-  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS?.split(",") || [],
+  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS.split(",") || [],
   preconditions: ["NotBlacklisted"],
   nsfw: true,
 })

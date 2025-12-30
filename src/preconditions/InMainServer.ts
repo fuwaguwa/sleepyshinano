@@ -4,7 +4,7 @@ import type { ChatInputCommandInteraction } from "discord.js";
 export class InMainServerPrecondition extends Precondition {
   public override async chatInputRun(interaction: ChatInputCommandInteraction) {
     // Check if user is in cool people list (bypass server requirement)
-    const coolPeopleIds = process.env.COOL_PEOPLE_IDS?.split(",") || [];
+    const coolPeopleIds = process.env.COOL_PEOPLE_IDS.split(",") || [];
     if (coolPeopleIds.includes(interaction.user.id)) {
       return this.ok();
     }

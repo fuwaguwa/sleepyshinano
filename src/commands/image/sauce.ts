@@ -8,7 +8,7 @@ import { isImageAndGif } from "../../lib/utils/misc";
   description: "Find sauce for an image/GIF with SauceNAO",
   cooldownLimit: 1,
   cooldownDelay: 15000,
-  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS?.split(",") || [],
+  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS.split(",") || [],
   preconditions: ["NotBlacklisted"],
 })
 export class SauceCommand extends Command {

@@ -28,8 +28,8 @@ const BOORU_CONFIG = {
   gelbooru: {
     baseUrl: "https://gelbooru.com/index.php?page=post&s=view&id=",
     apiUrl: "https://gelbooru.com/index.php",
-    apiKey: process.env.GELBOORU_API_KEY!,
-    userId: process.env.GELBOORU_USER_ID!,
+    apiKey: process.env.GELBOORU_API_KEY,
+    userId: process.env.GELBOORU_USER_ID,
     requiresAuth: true,
     hasAttributes: true,
     needsProxy: true,
@@ -162,7 +162,7 @@ export async function processBooruRequest({ interaction, tags, site, mode, noTag
     if (user && user.voteCreatedTimestamp && user.voteExpiredTimestamp)
       voteValid = currentTime < user.voteExpiredTimestamp;
 
-    const hasVoted = process.env.COOL_PEOPLE_IDS!.split(",").includes(interaction.user.id) || voteValid;
+    const hasVoted = process.env.COOL_PEOPLE_IDS.split(",").includes(interaction.user.id) || voteValid;
 
     if (!hasVoted) {
       loadMore.components[0].setLabel("Load More (Lower CD)").setDisabled(true);

@@ -15,7 +15,7 @@ export class OwnerOnlyPrecondition extends AllFlowsPrecondition {
   }
 
   private checkOwner(userId: string) {
-    const ownerIds = process.env.OWNER_IDS?.split(",") || [];
+    const ownerIds = process.env.OWNER_IDS.split(",") || [];
 
     return ownerIds.includes(userId)
       ? this.ok()

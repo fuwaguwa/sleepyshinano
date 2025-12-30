@@ -33,8 +33,8 @@ export class GelbooruAutocompleteHandler extends InteractionHandler {
       q: "index",
       json: "1",
       name_pattern: `${lastTag}%`,
-      api_key: process.env.GELBOORU_API_KEY!,
-      user_id: process.env.GELBOORU_USER_ID!,
+      api_key: process.env.GELBOORU_API_KEY,
+      user_id: process.env.GELBOORU_USER_ID,
       limit: "10",
     });
 

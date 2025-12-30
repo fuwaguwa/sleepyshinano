@@ -7,7 +7,7 @@ import { processBooruRequest } from "../../lib/booru";
   description: "Due to popular demands...",
   cooldownLimit: 1,
   cooldownDelay: 15000,
-  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS?.split(",") || [],
+  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS.split(",") || [],
   preconditions: ["NotBlacklisted"],
 })
 export class GelbooruCommand extends Command {

@@ -16,6 +16,6 @@
     "noEmit": false,
     "types": ["bun-types", "@types/node"]
   },
-  "include": ["src"],
+  "include": ["src", "env.d.ts"],
   "exclude": ["node_modules", "**/*.spec.ts"]
 }

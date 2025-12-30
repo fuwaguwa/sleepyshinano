@@ -23,7 +23,7 @@ import type { TopggVoteCheck } from "../../typings/api/botListing";
   preconditions: ["OwnerOnly"],
   cooldownLimit: 1,
   cooldownDelay: 100000,
-  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS?.split(",") || [],
+  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS.split(",") || [],
   subcommands: [
     { name: "eval", chatInputRun: "subcommandEval" },
     { name: "vote-check", chatInputRun: "subcommandVote" },
@@ -206,7 +206,7 @@ export class DeveloperCommand extends Subcommand {
 
     collector.on("collect", async i => {
       // Check if user is developer
-      const ownerIds = process.env.OWNER_IDS?.split(",") || [];
+      const ownerIds = process.env.OWNER_IDS.split(",") || [];
       if (!ownerIds.includes(i.user.id)) {
         return i.reply({
           content: "This button is only for developers!",
