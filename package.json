@@ -27,11 +27,11 @@
     "@sapphire/framework": "^5.5.0",
     "@sapphire/plugin-logger": "^4.1.0",
     "@sapphire/plugin-subcommands": "^7.0.1",
-    "bun-socks": "^1.0.1",
     "discord.js": "^14.25.1",
     "dotenv": "^17.2.3",
     "gif-encoder-2": "^1.0.5",
     "mongoose": "^9.0.2",
+    "netbun": "^0.2.1",
     "sagiri": "^4.3.0",
     "typescript": "^5.9.3"
   }

@@ -1,12 +1,14 @@
 import { container, type SapphireClient } from "@sapphire/framework";
 import mongoose from "mongoose";
+import Lewd from "../../schemas/Lewd";
+import type { FetchLewdOptions } from "../../typings/schemas/Lewd";
 
 /**
  * Connect to MongoDB database
  */
 export async function connectToDatabase() {
   try {
-    await mongoose.connect(process.env.MONGODB_URI as string);
+    await mongoose.connect(process.env.MONGODB_URI);
     container.logger.info("Connected to MongoDB");
   } catch (error) {
     container.logger.error("Failed to connect to MongoDB:", error);
@@ -75,4 +77,32 @@ export function startCatchers(client: SapphireClient) {
   mongoose.connection.on("error", err => {
     client.logger.error("Database error:", err);
   });
+}
+
+/**
+ * Fetch random lewd media from database
+ */
+export async function fetchRandomLewd(options: FetchLewdOptions = {}) {
+  const { category, isPremium, format, limit = 1 } = options;
+
+  // Build match query
+  const matchQuery: any = {};
+  if (category) matchQuery.category = category;
+  if (isPremium) matchQuery.premium = true;
+  if (format) matchQuery.format = format;
+
+  // Single optimized query - only fetch needed fields, uses existing category index
+  return Lewd.aggregate([
+    {
+      $match: matchQuery,
+    },
+    { $sample: { size: limit } },
+    {
+      $project: {
+        link: 1,
+        format: 1,
+        _id: 0,
+      },
+    },
+  ]);
 }

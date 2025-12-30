@@ -6,7 +6,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, type User } from "discord
 export const standardCommandOptions = {
   cooldownLimit: 1,
   cooldownDelay: 4500,
-  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS?.split(",") || [],
+  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS.split(",") || [],
   preconditions: ["NotBlacklisted"],
 } as const;
 

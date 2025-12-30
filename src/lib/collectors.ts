@@ -55,7 +55,7 @@ export async function buttonCooldownCheck(id: string, interaction: ButtonInterac
  */
 export function buttonCooldownSet(id: string, interaction: ButtonInteraction) {
   const userId = interaction.user.id;
-  if (process.env.OWNER_IDS?.split(",").includes(userId)) return; // No cooldown for bot owners
+  if (process.env.OWNER_IDS.split(",").includes(userId)) return; // No cooldown for bot owners
 
   buttonCooldown.set(`${id}${userId}`, Date.now() + BUTTON_COOLDOWN_MS);
   setTimeout(() => {

@@ -1,7 +1,7 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { InteractionHandler, type InteractionHandlerOptions, InteractionHandlerTypes } from "@sapphire/framework";
-import { fetch } from "bun-socks";
 import type { AutocompleteInteraction } from "discord.js";
+import { fetch } from "netbun";
 import type { GelbooruTagResponse } from "../../typings/api/booru";
 
 @ApplyOptions<InteractionHandlerOptions>({
@@ -33,8 +33,8 @@ export class GelbooruAutocompleteHandler extends InteractionHandler {
       q: "index",
       json: "1",
       name_pattern: `${lastTag}%`,
-      api_key: process.env.GELBOORU_API_KEY!,
-      user_id: process.env.GELBOORU_USER_ID!,
+      api_key: process.env.GELBOORU_API_KEY,
+      user_id: process.env.GELBOORU_USER_ID,
       limit: "10",
     });
 

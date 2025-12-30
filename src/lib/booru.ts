@@ -1,4 +1,3 @@
-import { fetch } from "bun-socks";
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -9,6 +8,7 @@ import {
   type InteractionReplyOptions,
   MessageFlagsBitField,
 } from "discord.js";
+import { fetch } from "netbun";
 import User from "../schemas/User";
 import type {
   BooruPost,
@@ -28,8 +28,8 @@ const BOORU_CONFIG = {
   gelbooru: {
     baseUrl: "https://gelbooru.com/index.php?page=post&s=view&id=",
     apiUrl: "https://gelbooru.com/index.php",
-    apiKey: process.env.GELBOORU_API_KEY!,
-    userId: process.env.GELBOORU_USER_ID!,
+    apiKey: process.env.GELBOORU_API_KEY,
+    userId: process.env.GELBOORU_USER_ID,
     requiresAuth: true,
     hasAttributes: true,
     needsProxy: true,
@@ -159,10 +159,9 @@ export async function processBooruRequest({ interaction, tags, site, mode, noTag
     const currentTime = getCurrentTimestamp();
     let voteValid = false;
 
-    if (user && user.voteCreatedTimestamp && user.voteExpiredTimestamp)
-      voteValid = currentTime < user.voteExpiredTimestamp;
+    if (user?.voteCreatedTimestamp && user.voteExpiredTimestamp) voteValid = currentTime < user.voteExpiredTimestamp;
 
-    const hasVoted = process.env.COOL_PEOPLE_IDS!.split(",").includes(interaction.user.id) || voteValid;
+    const hasVoted = process.env.COOL_PEOPLE_IDS.split(",").includes(interaction.user.id) || voteValid;
 
     if (!hasVoted) {
       loadMore.components[0].setLabel("Load More (Lower CD)").setDisabled(true);
@@ -240,6 +239,7 @@ export async function processBooruRequest({ interaction, tags, site, mode, noTag
   buttonCollector.set(interaction.user.id, collector);
 
   collector.on("collect", async i => {
+    if (i.customId.includes("getSauce")) return;
     const isUserButton = i.customId.endsWith(i.user.id);
 
     if (!isUserButton) {

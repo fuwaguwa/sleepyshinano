@@ -5,9 +5,10 @@ import { processBooruRequest } from "../../lib/booru";
 
 @ApplyOptions<CommandOptions>({
   description: "Search images on Rule34 with specified tags.",
+  fullCategory: ["NSFW", "Booru"],
   cooldownLimit: 1,
   cooldownDelay: 15000,
-  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS?.split(",") || [],
+  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS.split(",") || [],
   preconditions: ["NotBlacklisted"],
   nsfw: true,
 })

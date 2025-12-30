@@ -7,8 +7,9 @@ import {
   ButtonStyle,
   EmbedBuilder,
   InteractionContextType,
+  type TextChannel,
 } from "discord.js";
-import { randomItem } from "../../lib/utils/misc";
+import { isGroupDM, isUserDM, randomItem } from "../../lib/utils/misc";
 
 const PAT_RESPONSES = ['"Aah... My ears are sensitive..."', '"Alas... This one\'s ears are sensitive..."'] as const;
 
@@ -17,7 +18,7 @@ const PAT_RESPONSES = ['"Aah... My ears are sensitive..."', '"Alas... This one\'
   preconditions: ["NotBlacklisted"],
   cooldownLimit: 1,
   cooldownDelay: 5000,
-  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS?.split(",") || [],
+  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS.split(",") || [],
   subcommands: [
     { name: "ping", chatInputRun: "subcommandPing" },
     { name: "info", chatInputRun: "subcommandInfo" },
@@ -223,9 +224,24 @@ export class ShinanoCommand extends Subcommand {
    */
   public async subcommandHelp(interaction: Subcommand.ChatInputCommandInteraction) {
     const messageString = "</shinano support:1059059516081192961>";
-    const message =
+    let message =
       `All of Shinano functions are indexed within the \`Apps & Commands\` button. Please use it to see all available Shinano commands! For more information you can join the support server via ${messageString}\n\n` +
-      "**NSFW commands are only available within NSFW channels! This include commands like /gelbooru, /rule34, etc**\n";
+      "**NSFW commands are only available within NSFW channels! RUN THIS COMMAND IN A NSFW TO SEE MORE.\n";
+
+    console.log(!isGroupDM(interaction) && !isUserDM(interaction));
+    if (!isGroupDM(interaction) && !isUserDM(interaction) && (interaction.channel as TextChannel).nsfw) {
+      const commandStore = this.container.stores.get("commands");
+      const nsfwCommands = commandStore.filter(command => command.category === "NSFW");
+      const premiumNsfwCommands = commandStore.filter(command => command.category === "PremiumNSFW");
+      message = "\n**NSFW Commands:**\n";
+      nsfwCommands.forEach(command => {
+        message += `\`/${command.name}\` `;
+      });
+      message += "\n\n**Premium NSFW Commands (Requires Voting):**\n";
+      premiumNsfwCommands.forEach(command => {
+        message += `\`/${command.name}\` `;
+      });
+    }
 
     const responseEmbed = new EmbedBuilder()
       .setColor("#2b2d31")

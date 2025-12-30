@@ -39,6 +39,8 @@ export const BOORU_BLACKLIST = [
   "-anthro",
   "-goblin",
   "-orc",
+  "-loli",
+  "-shota",
   "-ai-generated",
   "-ai-assisted",
   "-ai_assisted",

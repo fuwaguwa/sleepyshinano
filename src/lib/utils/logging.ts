@@ -39,7 +39,7 @@ export async function updateServerCount() {
     await fetch(`https://top.gg/api/bots/1002193298229829682/stats`, {
       method: "POST",
       headers: {
-        Authorization: process.env.TOPGG_API_KEY!,
+        Authorization: process.env.TOPGG_API_KEY,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ server_count: serverCount }),

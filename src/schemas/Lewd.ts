@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
-import type { LewdImage } from "../typings/schemas/Lewd";
+import type { LewdMedia } from "../typings/schemas/Lewd";
 
-const LewdSchema = new Schema<LewdImage>({
+const LewdSchema = new Schema<LewdMedia>({
   category: {
     type: String,
     required: true,
