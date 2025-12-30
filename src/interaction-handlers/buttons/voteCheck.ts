@@ -3,11 +3,9 @@ import { InteractionHandler, type InteractionHandlerOptions, InteractionHandlerT
 import { type ButtonInteraction, EmbedBuilder, MessageFlagsBitField } from "discord.js";
 import { buttonCooldownCheck, buttonCooldownSet } from "../../lib/collectors";
 import { VOTE_LINK_BUTTON } from "../../lib/constants";
+import { getCurrentTimestamp } from "../../lib/utils/misc";
 import User from "../../schemas/User";
 import type { ShinanoUser } from "../../typings/schemas/User";
-
-const CANT_VOTE_EMBED = new EmbedBuilder().setColor("Red").setTimestamp();
-const CAN_VOTE_EMBED = new EmbedBuilder().setColor("Green").setTimestamp();
 
 @ApplyOptions<InteractionHandlerOptions>({
   interactionHandlerType: InteractionHandlerTypes.Button,
@@ -27,7 +25,10 @@ export class VoteCheckButtonHandler extends InteractionHandler {
 
     buttonCooldownSet("voteCheck", interaction);
 
-    if (!user?.voteTimestamp) {
+    const CANT_VOTE_EMBED = new EmbedBuilder().setColor("Red").setTimestamp();
+    const CAN_VOTE_EMBED = new EmbedBuilder().setColor("Green").setTimestamp();
+
+    if (!user?.voteCreatedTimestamp || !user?.voteExpiredTimestamp) {
       if (!user) {
         await User.findOneAndUpdate({ userId: userId }, { $setOnInsert: { userId: userId } }, { upsert: true });
       }
@@ -43,9 +44,11 @@ export class VoteCheckButtonHandler extends InteractionHandler {
       });
     }
 
-    if (Math.floor(Date.now() / 1000) - user.voteTimestamp > 43200) {
+    const currentTime = getCurrentTimestamp();
+
+    if (currentTime > user.voteExpiredTimestamp) {
       CAN_VOTE_EMBED.setDescription(
-        `Your last vote was <t:${user.voteTimestamp}:R>, you can now vote again using the button below!`
+        `Your last vote was <t:${user.voteCreatedTimestamp}:R>, you can now vote again using the button below!`
       );
 
       await interaction.reply({
@@ -55,7 +58,7 @@ export class VoteCheckButtonHandler extends InteractionHandler {
       });
     } else {
       CANT_VOTE_EMBED.setDescription(
-        `Your last vote was <t:${user.voteTimestamp}:R>, you can vote again <t:${user.voteTimestamp + 43200}:R>`
+        `Your last vote was <t:${user.voteCreatedTimestamp}:R>, you can vote again <t:${user.voteExpiredTimestamp}:R>`
       );
       await interaction.reply({
         embeds: [CANT_VOTE_EMBED],

@@ -32,3 +32,10 @@ export function isGroupDM(interaction: ProcessableInteraction) {
 export function isTextChannelNonNSFW(interaction: ProcessableInteraction) {
   return interaction.channel?.type === 0 && !interaction.channel.nsfw;
 }
+
+/**
+ * Unix timestamp in seconds
+ */
+export function getCurrentTimestamp() {
+  return Math.floor(Date.now() / 1000);
+}
