@@ -1,7 +1,7 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { InteractionHandler, type InteractionHandlerOptions, InteractionHandlerTypes } from "@sapphire/framework";
-import { fetch } from "bun-socks";
 import type { AutocompleteInteraction } from "discord.js";
+import { fetch } from "netbun";
 import type { Rule34TagResponse } from "../../typings/api/booru";
 
 @ApplyOptions<InteractionHandlerOptions>({

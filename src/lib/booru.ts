@@ -1,4 +1,3 @@
-import { fetch } from "bun-socks";
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -9,6 +8,7 @@ import {
   type InteractionReplyOptions,
   MessageFlagsBitField,
 } from "discord.js";
+import { fetch } from "netbun";
 import User from "../schemas/User";
 import type {
   BooruPost,
@@ -240,6 +240,7 @@ export async function processBooruRequest({ interaction, tags, site, mode, noTag
   buttonCollector.set(interaction.user.id, collector);
 
   collector.on("collect", async i => {
+    if (i.customId.includes("getSauce")) return;
     const isUserButton = i.customId.endsWith(i.user.id);
 
     if (!isUserButton) {

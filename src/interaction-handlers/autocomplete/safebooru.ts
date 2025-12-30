@@ -1,7 +1,7 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { InteractionHandler, type InteractionHandlerOptions, InteractionHandlerTypes } from "@sapphire/framework";
-import { fetch } from "bun-socks";
 import type { AutocompleteInteraction } from "discord.js";
+import { fetch } from "netbun";
 
 @ApplyOptions<InteractionHandlerOptions>({
   interactionHandlerType: InteractionHandlerTypes.Autocomplete,
@@ -38,7 +38,7 @@ export class SafebooruAutocompleteHandler extends InteractionHandler {
     const url = `https://safebooru.org/index.php?${params.toString()}`;
 
     try {
-      const response = await fetch(url, { proxy: process.env.SOCKS_PROXY });
+      const response = await fetch(url);
       const xmlText = await response.text();
 
       // Parse XML to extract tag names
