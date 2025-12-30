@@ -44,7 +44,6 @@ export class SauceCommand extends Command {
     const link = interaction.options.getString("link");
     const media = interaction.options.getAttachment("media");
     const ERROR_EMBED = new EmbedBuilder().setColor("Red");
-    let imageUrl: string;
 
     if (!link && !media) {
       ERROR_EMBED.setDescription("❌ | You must provide either a link or an attachment to search for sauce.");
@@ -52,7 +51,7 @@ export class SauceCommand extends Command {
     }
 
     // Link takes priority over attachment
-    link ? (imageUrl = link) : (imageUrl = media?.proxyURL as string);
+    const imageUrl = link ?? (media?.proxyURL as string);
 
     if (!isImageAndGif(imageUrl)) {
       ERROR_EMBED.setDescription("❌ | The provided link/attachment is not a valid image or GIF.");

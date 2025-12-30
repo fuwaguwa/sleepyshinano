@@ -31,8 +31,11 @@ export class HusbandoCommand extends Command {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {
-      const { results } = await fetchJson<NekosBestResponse>(HUSBANDO_API_URL);
-      const imageUrl = results[0].url;
+      const husbando = await fetchJson<NekosBestResponse>(HUSBANDO_API_URL);
+
+      if (!husbando || !husbando.results) throw new Error("Failed to fetch husbando");
+
+      const imageUrl = husbando.results[0].url;
 
       const embed = new EmbedBuilder()
         .setColor("Random")

@@ -40,6 +40,8 @@ export class DefineCommand extends Command {
         `${URBAN_DICTIONARY_API_URL}${encodeURIComponent(word)}`
       );
 
+      if (!definition || !definition.list) throw new Error("Invalid response from Urban Dictionary API");
+
       if (definition.list.length === 0) {
         const noResult = new EmbedBuilder()
           .setColor("Red")

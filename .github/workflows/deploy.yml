@@ -35,7 +35,7 @@ jobs:
             LOGGING_GUILD_ID=${{ secrets.LOGGING_GUILD_ID }}
             MONGODB_URI=${{ secrets.MONGODB_URI }}
             OWNER_IDS=${{ secrets.OWNER_IDS }}
-            TOP_GG_API_KEY=${{ secrets.TOP_GG_API_KEY }}
+            TOPGG_API_KEY=${{ secrets.TOPGG_API_KEY }}
             SAUCENAO_API_KEY=${{ secrets.SAUCENAO_API_KEY }}
             GELBOORU_API_KEY=${{ secrets.GELBOORU_API_KEY }}
             GELBOORU_USER_ID=${{ secrets.GELBOORU_USER_ID }}

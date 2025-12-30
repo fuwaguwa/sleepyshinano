@@ -21,6 +21,8 @@ export class JokeCommand extends Command {
     try {
       const data = await fetchJson<JokeResponse>(buildSraUrl("others/joke"));
 
+      if (!data) throw new Error("Cannot find joke.");
+
       const jokeEmbed = new EmbedBuilder().setColor("#2b2d31").setDescription(data.joke);
 
       await interaction.editReply({ embeds: [jokeEmbed] });

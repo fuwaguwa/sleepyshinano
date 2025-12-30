@@ -38,6 +38,8 @@ export class BannerCommand extends Command {
         headers: { Authorization: `Bot ${process.env.BOT_TOKEN}` },
       });
 
+      if (!data) throw new Error("Failed to fetch data from Discord API.");
+
       if (!data.banner) {
         const embed = new EmbedBuilder().setColor("Red").setDescription("❌ | User does not have a banner.");
         return interaction.editReply({ embeds: [embed] });

@@ -31,9 +31,11 @@ export class FoxCommand extends Command {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {
-      const { image } = await fetchJson<FoxApiResponse>(FOX_API_URL);
+      const fox = await fetchJson<FoxApiResponse>(FOX_API_URL);
 
-      const embed = new EmbedBuilder().setColor("Random").setImage(image).setFooter(createFooter(interaction.user));
+      if (!fox || !fox.image) throw new Error("Failed to fetch fox image");
+
+      const embed = new EmbedBuilder().setColor("Random").setImage(fox.image).setFooter(createFooter(interaction.user));
 
       await interaction.editReply({ embeds: [embed] });
     } catch (error) {

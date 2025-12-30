@@ -36,16 +36,14 @@ export async function updateServerCount() {
     }
 
     // Update Top.gg
-    if (process.env.TOPGG_API_KEY) {
-      await fetch(`https://top.gg/api/bots/1002193298229829682/stats`, {
-        method: "POST",
-        headers: {
-          Authorization: process.env.TOPGG_API_KEY,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ server_count: serverCount }),
-      });
-    }
+    await fetch(`https://top.gg/api/bots/1002193298229829682/stats`, {
+      method: "POST",
+      headers: {
+        Authorization: process.env.TOPGG_API_KEY!,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ server_count: serverCount }),
+    });
   } catch (error) {
     container.logger.error("Failed to update server count:", error);
   }

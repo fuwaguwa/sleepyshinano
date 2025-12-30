@@ -39,6 +39,8 @@ export class OwoifyCommand extends Command {
     try {
       const data = await fetchJson<OwoifyResponse>(`${NEKOS_LIFE_API_URL}${encodeURIComponent(text)}`);
 
+      if (!data || !data.owo) throw new Error("Failed to owoify");
+
       const owoEmbed = new EmbedBuilder().setColor("#2b2d31").setDescription(`> ${data.owo}\n\n- ${interaction.user}`);
 
       await interaction.editReply({ embeds: [owoEmbed] });

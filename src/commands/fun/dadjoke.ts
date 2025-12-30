@@ -21,10 +21,13 @@ export class DadjokeCommand extends Command {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {
-      const { joke } = await fetchJson<DadJokeResponse>(DAD_JOKE_API, {
+      const dadjoke = await fetchJson<DadJokeResponse>(DAD_JOKE_API, {
         headers: { Accept: "application/json" },
       });
 
+      if (!dadjoke || !dadjoke.joke) throw new Error("Cannot find dadjoke");
+
+      const joke = dadjoke.joke;
       const embed = new EmbedBuilder().setColor("Random").setDescription(joke);
 
       await interaction.editReply({ embeds: [embed] });
