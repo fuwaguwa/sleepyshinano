@@ -260,7 +260,7 @@ export async function processBooruRequest({ interaction, tags, site, mode, noTag
     }
   });
 
-  collector.on("end", async (collected, reason) => {
+  collector.on("end", async (_, reason) => {
     if (reason !== "done") {
       const loadMore = components[1];
       loadMore.components[0].setDisabled(true);
