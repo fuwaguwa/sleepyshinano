@@ -8,9 +8,7 @@ import {
   EmbedBuilder,
   InteractionContextType,
 } from "discord.js";
-import { fetchJson } from "../../lib/utils/http";
 import { randomItem } from "../../lib/utils/misc";
-import type { TopggBotStats } from "../../typings/api/botListing";
 
 const PAT_RESPONSES = ['"Aah... My ears are sensitive..."', '"Alas... This one\'s ears are sensitive..."'] as const;
 
@@ -75,7 +73,7 @@ export class ShinanoCommand extends Subcommand {
       .setColor("#2b2d31")
       .setTitle("Shinano")
       .setDescription(
-        "The Multi-Purpose Azur Lane Bot!\n" +
+        "floofy great fox\n" +
           "Developer: [**Fuwafuwa**](https://github.com/fuwaguwa)\n" +
           "Credits: On GitHub\n" +
           "Liking the bot so far? Please **vote** and leave Shinano a **rating** on **top.gg**!"
@@ -135,15 +133,6 @@ export class ShinanoCommand extends Subcommand {
   public async subcommandStats(interaction: Subcommand.ChatInputCommandInteraction) {
     if (!interaction.deferred) await interaction.deferReply();
 
-    let topggStats: TopggBotStats | null = null;
-    try {
-      topggStats = await fetchJson<TopggBotStats>(`https://top.gg/api/bots/1002193298229829682`, {
-        headers: { Authorization: process.env.TOPGG_API_KEY as string },
-      });
-    } catch (error) {
-      this.container.logger.error("Failed to fetch Top.gg stats:", error);
-    }
-
     // Calculate uptime
     const uptime = this.container.client.uptime || 0;
     let totalSeconds = uptime / 1000;
@@ -165,10 +154,7 @@ export class ShinanoCommand extends Subcommand {
         { name: "Uptime:", value: uptimeString },
         {
           name: "Bot Stats:",
-          value:
-            `Total Guilds: **${this.container.client.guilds.cache.size}**\n` +
-            (topggStats ? `Current Votes: **${topggStats.monthlyPoints || 0}**\n` : "") +
-            (topggStats ? `Total Votes: **${topggStats.points || 0}**\n` : ""),
+          value: `Total Guilds: **${this.container.client.guilds.cache.size}**\n`,
         }
       );
 

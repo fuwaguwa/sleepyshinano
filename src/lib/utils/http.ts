@@ -1,4 +1,4 @@
-import { client } from "../../index";
+import { container } from "@sapphire/framework";
 
 const SRA_BASE = "https://api.some-random-api.com/";
 
@@ -23,8 +23,8 @@ export function buildSraUrl(endpoint: string, params: Record<string, string | nu
 export async function fetchJson<T>(url: string, options?: RequestInit): Promise<T | null> {
   const response = await fetch(url, options);
   if (!response.ok) {
-    client.logger.error(response.status);
-    client.logger.error(response.statusText);
+    container.logger.error(response.status);
+    container.logger.error(response.statusText);
     return null;
   }
   return (await response.json()) as T;

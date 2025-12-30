@@ -134,6 +134,13 @@ export class DeveloperCommand extends Subcommand {
     // Check Shinano database
     const voteUser = await User.findOne({ userId: user.id });
 
+    if (!voteUser) {
+      const noDataEmbed = new EmbedBuilder()
+        .setColor("Red")
+        .setDescription("❌ | No vote data found for this user in the Shinano database!");
+      return interaction.editReply({ embeds: [noDataEmbed] });
+    }
+
     let voteStatus: boolean | string = "N/A";
     let voteTime: number | string = "N/A";
 
@@ -145,15 +152,21 @@ export class DeveloperCommand extends Subcommand {
 
     // Check Top.gg database
     let topggVoteStatus = false;
-    if (process.env.TOPGG_API_KEY) {
-      const result = await fetchJson<TopggVoteCheck>(
-        `https://top.gg/api/bots/1002193298229829682/check?userId=${user.id}`,
-        {
-          headers: { Authorization: process.env.TOPGG_API_KEY },
-        }
-      );
-      topggVoteStatus = result.voted === 1;
+    const result = await fetchJson<TopggVoteCheck>(
+      `https://top.gg/api/bots/1002193298229829682/check?userId=${user.id}`,
+      {
+        headers: { Authorization: process.env.TOPGG_API_KEY! },
+      }
+    );
+
+    if (!result) {
+      const errorEmbed = new EmbedBuilder()
+        .setColor("Red")
+        .setDescription("❌ | Failed to fetch vote data from Top.gg!");
+      return interaction.editReply({ embeds: [errorEmbed] });
     }
+
+    topggVoteStatus = result.voted === 1;
 
     const voteEmbed = new EmbedBuilder().setColor("#2b2d31").addFields(
       {
@@ -202,14 +215,8 @@ export class DeveloperCommand extends Subcommand {
       }
 
       // Update database
-      await User.findOneAndUpdate(
-        { userId: user.id },
-        {
-          $set: { lastVoteTimestamp: Math.floor(Date.now() / 1000) },
-          $setOnInsert: { userId: user.id },
-        },
-        { upsert: true }
-      );
+      voteUser.voteTimestamp = Math.floor(Date.now() / 1000);
+      await voteUser.save();
 
       const updatedEmbed = new EmbedBuilder().setColor("Green").setDescription("✅ | Updated the database!");
 
