@@ -216,10 +216,17 @@ export class DeveloperCommand extends Subcommand {
 
       // Update database
       const currentTime = getCurrentTimestamp();
-      voteUser.voteCreatedTimestamp = currentTime;
-      voteUser.voteExpiredTimestamp = currentTime + 12 * 60 * 60; // 12 hours
-      await voteUser.save();
-
+      await User.findOneAndUpdate(
+        { userId: user.id },
+        {
+          $set: {
+            voteCreatedTimestamp: currentTime,
+            voteExpiredTimestamp: currentTime + 12 * 60 * 60,
+          },
+          $setOnInsert: { userId: voteUser.userId },
+        },
+        { upsert: true }
+      );
       const updatedEmbed = new EmbedBuilder().setColor("Green").setDescription("✅ | Updated the database!");
 
       await i.reply({
