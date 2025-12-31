@@ -19,6 +19,15 @@ const userSchema = new Schema<ShinanoUser>({
     type: Number,
     default: 0,
   },
+  booruState: {
+    type: Map,
+    of: {
+      currentPage: { type: Number, default: 0 },
+      seenIds: { type: [Number], default: [] },
+      maxKnownPage: { type: Number, default: 0 },
+    },
+    default: new Map(),
+  },
 });
 
 export default mongoose.model("user", userSchema);

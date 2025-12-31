@@ -34,6 +34,15 @@ export class GelbooruCommand extends Command {
             .setRequired(true)
             .setAutocomplete(true)
         )
+        .addStringOption(option =>
+          option
+            .setName("mode")
+            .setDescription("Booru query mode. Default is Weighted")
+            .setChoices(
+              { name: "Random - get a random post", value: "random" },
+              { name: "Weighted - experimental: get high(er) quality post", value: "weighted" }
+            )
+        )
     );
   }
 
@@ -41,7 +50,14 @@ export class GelbooruCommand extends Command {
     if (!interaction.deferred) await interaction.deferReply();
 
     const tags = interaction.options.getString("tags", true);
+    const mode = interaction.options.getString("mode");
 
-    await processBooruRequest({ interaction, tags: tags.trim(), site: "gelbooru" });
+    await processBooruRequest({
+      interaction,
+      tags: tags.trim(),
+      site: "gelbooru",
+      noTagsOnReply: false,
+      useRandom: mode === "random",
+    });
   }
 }

@@ -57,20 +57,43 @@ const BOORU_CONFIG = {
 const noResultEmbed = new EmbedBuilder().setColor("Red").setDescription("❌ | No result found!");
 
 /**
- * Randomly produces one post from a booru site
+ * Weighting for better and non repeated results
  */
-export async function queryBooru(site: BooruSite, tags: string): Promise<BooruPost | null> {
+function weightedRandomByScore(posts: BooruPost[]): BooruPost {
+  const weights = posts.map(post => {
+    const score = post.score ?? 0;
+    return Math.max(1, Math.sqrt(Math.max(0, score)));
+  });
+
+  const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+  let random = Math.random() * totalWeight;
+
+  for (let i = 0; i < posts.length; i++) {
+    random -= weights[i];
+    if (random <= 0) return posts[i];
+  }
+
+  return posts[posts.length - 1];
+}
+
+/**
+ * Fetching posts from booru site
+ */
+async function fetchBooruPosts(site: BooruSite, tags: string, page: number, useRandom: boolean): Promise<BooruPost[]> {
   const config = BOORU_CONFIG[site];
-  const reqTags = [tags.trim(), ...BOORU_BLACKLIST].join(" ");
+
+  const blacklistWithoutSort = BOORU_BLACKLIST.filter(tag => !tag.startsWith("sort:"));
+  const sortTag = useRandom ? "sort:random" : "sort:score";
+  const reqTags = [tags.trim(), ...blacklistWithoutSort, sortTag].join(" ");
 
   const params = new URLSearchParams({
     page: "dapi",
     s: "post",
     q: "index",
     tags: reqTags,
-    limit: config.hasAttributes ? "1" : "100",
+    limit: "100",
     json: "1",
-    pid: "0",
+    pid: page.toString(),
   });
 
   if (config.requiresAuth && config.apiKey && config.userId) {
@@ -79,34 +102,120 @@ export async function queryBooru(site: BooruSite, tags: string): Promise<BooruPo
   }
 
   const url = `${config.apiUrl}?${params.toString()}`;
-
   const fetchOptions = config.needsProxy ? { proxy: process.env.SOCKS_PROXY } : {};
   const response = await fetch(url, fetchOptions);
   const data = (await response.json()) as BooruResponse;
 
-  // Handle Gelbooru's @attributes wrapper
   if (config.hasAttributes) {
     const gelbooruData = data as GelbooruPostResponse;
-    return gelbooruData.post?.[0] ?? null;
+    return gelbooruData.post ?? [];
   }
 
-  // Handle flat arrays (Rule34, Safebooru)
-  if (!data) return null;
-  const arrayData = data as Rule34PostResponse | SafebooruPostResponse;
-  if (arrayData.length === 0) return null;
+  return (data as Rule34PostResponse | SafebooruPostResponse) ?? [];
+}
 
-  const randomIndex = Math.floor(Math.random() * arrayData.length);
-  return arrayData[randomIndex];
+/**
+ * Randomly produces one post from a booru site
+ */
+export async function queryBooru(
+  site: BooruSite,
+  tags: string,
+  userId: string,
+  useRandom: boolean = true
+): Promise<BooruPost | null> {
+  // Random mode
+  if (useRandom) {
+    const posts = await fetchBooruPosts(site, tags, 0, true);
+    if (posts.length === 0) return null;
+    return posts[Math.floor(Math.random() * posts.length)];
+  }
+
+  // Weighted mode
+  const cacheKey = `${site}:${tags.trim()}`;
+
+  let user = await User.findOne({ userId });
+  if (!user) user = await User.create({ userId, booruState: new Map() });
+
+  const booruStateMap = user.booruState || new Map();
+  const state = booruStateMap.get(cacheKey) || { currentPage: 0, seenIds: [], maxKnownPage: 0 };
+
+  const posts = await fetchBooruPosts(site, tags, state.currentPage, false);
+
+  // If page doesn't exist, reset to page 0
+  if (posts.length === 0) {
+    state.currentPage = 0;
+    state.seenIds = [];
+    booruStateMap.set(cacheKey, state);
+    await User.updateOne({ userId }, { booruState: booruStateMap });
+    return queryBooru(site, tags, userId, useRandom);
+  }
+
+  // Update max known page if we've discovered a new one
+  if (state.currentPage > state.maxKnownPage) state.maxKnownPage = state.currentPage;
+
+  // Filter unseen posts
+  const seenSet = new Set(state.seenIds);
+  const unseenPosts = posts.filter(p => !seenSet.has(p.id));
+
+  // Current page exhausted
+  if (unseenPosts.length === 0) {
+    // Calculate top 35% of known pages (rounded up)
+    const topPageLimit = Math.ceil(state.maxKnownPage * 0.35);
+    const earlyPagesCount = Math.max(1, topPageLimit + 1); // +1 because page 0 exists
+
+    // 75% chance: Jump back to early pages (top 30%)
+    // 25% chance: Move to next page (explore further)
+    if (Math.random() < 0.75) {
+      // Weighted random selection of early pages
+      const earlyPages = Array.from({ length: earlyPagesCount }, (_, i) => i);
+      const weights = earlyPages.map(page => Math.exp(-page / 3));
+      const totalWeight = weights.reduce((a, b) => a + b, 0);
+
+      let random = Math.random() * totalWeight;
+      for (let i = 0; i < earlyPages.length; i++) {
+        random -= weights[i];
+        if (random <= 0) {
+          state.currentPage = i;
+          break;
+        }
+      }
+    } else {
+      // Continue exploring: go to next page
+      state.currentPage++;
+    }
+
+    state.seenIds = [];
+    booruStateMap.set(cacheKey, state);
+    await User.updateOne({ userId }, { booruState: booruStateMap });
+    return queryBooru(site, tags, userId, useRandom);
+  }
+
+  // Weighted selection
+  const selected = weightedRandomByScore(unseenPosts);
+  state.seenIds.push(selected.id);
+
+  // Save state
+  booruStateMap.set(cacheKey, state);
+  await User.updateOne({ userId }, { booruState: booruStateMap });
+
+  return selected;
 }
 
 /**
  * Process booru request from interaction
  */
-export async function processBooruRequest({ interaction, tags, site, mode, noTagsOnReply }: BooruSearchOptions) {
+export async function processBooruRequest({
+  interaction,
+  tags,
+  site,
+  mode,
+  noTagsOnReply = false,
+  useRandom,
+}: BooruSearchOptions) {
   if (!interaction.deferred) await interaction.deferReply();
 
   const config = BOORU_CONFIG[site];
-  const result = await queryBooru(site, tags);
+  const result = await queryBooru(site, tags, interaction.user.id, useRandom);
 
   // No result
   if (!result) {
@@ -252,7 +361,7 @@ export async function processBooruRequest({ interaction, tags, site, mode, noTag
       const loadMore = components[1]; // Get the loadMore component
       loadMore.components[0].setDisabled(true);
       await chatMessage.edit({ components });
-      await processBooruRequest({ interaction, tags, site, mode: "followUp", noTagsOnReply: noTagsOnReply ?? false });
+      await processBooruRequest({ interaction, tags, site, mode: "followUp", noTagsOnReply: noTagsOnReply, useRandom });
 
       buttonCooldownSet("loadMore", i);
       return collector.stop("done");

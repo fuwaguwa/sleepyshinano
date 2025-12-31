@@ -22,7 +22,6 @@ export const SAUCE_EMOJIS = {
 export const LOADING_EMOJI = "<a:lod:1021265223707000923>";
 
 export const BOORU_BLACKLIST = [
-  "sort:random",
   "-guro",
   "-furry",
   "-scat",
@@ -37,8 +36,6 @@ export const BOORU_BLACKLIST = [
   "-pokephilia",
   "-animal_genitalia",
   "-anthro",
-  "-goblin",
-  "-orc",
   "-loli",
   "-shota",
   "-ai-generated",

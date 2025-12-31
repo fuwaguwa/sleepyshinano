@@ -34,14 +34,30 @@ export class GelbooruCommand extends Command {
             .setRequired(true)
             .setAutocomplete(true)
         )
+        .addStringOption(option =>
+          option
+            .setName("mode")
+            .setDescription("Booru query mode. Default is Weighted")
+            .setChoices(
+              { name: "Random - get a random post", value: "random" },
+              { name: "Weighted - experimental: get high(er) quality post", value: "weighted" }
+            )
+        )
     );
   }
 
   public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
     if (!interaction.deferred) await interaction.deferReply();
+    const mode = interaction.options.getString("mode");
 
     const tags = interaction.options.getString("tags", true);
 
-    await processBooruRequest({ interaction, tags: tags.trim(), site: "rule34" });
+    await processBooruRequest({
+      interaction,
+      tags: tags.trim(),
+      site: "rule34",
+      noTagsOnReply: false,
+      useRandom: mode === "random",
+    });
   }
 }
