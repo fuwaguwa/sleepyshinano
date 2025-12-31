@@ -59,11 +59,6 @@ const noResultEmbed = new EmbedBuilder().setColor("Red").setDescription("❌ | N
 /**
  * Randomly produces one post from a booru site
  */
-
-/**
- * Randomly produces one post from a booru site
- * Using Bun's native proxy support - no more curl subprocess! 🎉
- */
 export async function queryBooru(site: BooruSite, tags: string): Promise<BooruPost | null> {
   const config = BOORU_CONFIG[site];
   const reqTags = [tags.trim(), ...BOORU_BLACKLIST].join(" ");

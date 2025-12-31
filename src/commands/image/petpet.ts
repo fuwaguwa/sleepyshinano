@@ -14,7 +14,7 @@ const FRAMES_PATH = path.resolve(process.cwd(), "data", "petpet");
 const FRAME_COUNT = 10; // number of pet frames
 
 /**
- * read all chunks from a Readable stream and concat them into one Buffer.
+ * Read all chunks from a Readable stream and concat them into one Buffer.
  */
 async function collectStream(stream: Readable): Promise<Buffer> {
   return new Promise<Buffer>((resolve, reject) => {
@@ -31,7 +31,6 @@ const framesLoading = new Map<string, Promise<Image[]>>();
 
 /**
  * Loading frames from cache
- * Race condition considered
  */
 async function loadFrames(framesPath: string, frameCount: number): Promise<Image[]> {
   const key = `${framesPath}:${frameCount}`;
