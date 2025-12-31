@@ -286,8 +286,7 @@ export class DeveloperCommand extends Subcommand {
       return interaction.editReply({ embeds: [notBlacklisted] });
     }
 
-    // Remove blacklist field from document
-    await user.updateOne({ $unset: { blacklisted: "" } });
+    await user.updateOne({ $unset: { blacklisted: false } });
 
     const success = new EmbedBuilder()
       .setColor("Green")
