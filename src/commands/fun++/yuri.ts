@@ -1,8 +1,6 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
 import { processBooruRequest } from "../../lib/booru";
-import { randomItem } from "../../lib/utils/misc";
-import type { BooruSite } from "../../typings/api/booru";
 
 @ApplyOptions<CommandOptions>({
   description: "Lesbians",
@@ -23,8 +21,6 @@ export class GelbooruCommand extends Command {
   public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
     if (!interaction.deferred) await interaction.deferReply();
 
-    const category = randomItem<BooruSite>(["gelbooru", "rule34"]);
-
-    await processBooruRequest({ interaction, tags: "yuri", site: category, noTagsOnReply: true });
+    await processBooruRequest({ interaction, tags: "yuri", site: "gelbooru", noTagsOnReply: true });
   }
 }

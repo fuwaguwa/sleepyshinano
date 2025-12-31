@@ -5,7 +5,7 @@ import { randomItem } from "../../lib/utils/misc";
 import type { BooruSite } from "../../typings/api/booru";
 
 @ApplyOptions<CommandOptions>({
-  description: "I swear this is also implemented due to popular demands",
+  description: "Golden-Wait I mean White Shower",
   fullCategory: ["NSFW", "Booru"],
   cooldownLimit: 1,
   cooldownDelay: 15000,
@@ -25,6 +25,6 @@ export class GelbooruCommand extends Command {
 
     const category = randomItem<BooruSite>(["gelbooru", "rule34"]);
 
-    await processBooruRequest({ interaction, tags: "feet_focus -yaoi", site: category, noTagsOnReply: true });
+    await processBooruRequest({ interaction, tags: "cum_in_pussy", site: category, noTagsOnReply: true });
   }
 }
