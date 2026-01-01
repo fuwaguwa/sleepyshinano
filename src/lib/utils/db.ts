@@ -1,7 +1,7 @@
 import { container, type SapphireClient } from "@sapphire/framework";
 import mongoose from "mongoose";
 import Lewd from "../../schemas/Lewd";
-import type { FetchLewdOptions } from "../../typings/schemas/Lewd";
+import type { FetchLewdOptions } from ".././../typings/lewd";
 
 /**
  * Connect to MongoDB database
@@ -82,23 +82,19 @@ export function startCatchers(client: SapphireClient) {
 /**
  * Fetch random lewd media from database
  */
-export async function fetchRandomLewd(options: FetchLewdOptions = {}) {
-  const { category, isPremium, format, limit = 1 } = options;
-
-  // Build match query
-  const matchQuery: any = {};
-  if (category) matchQuery.category = category;
-  if (isPremium) matchQuery.premium = true;
-  if (format) matchQuery.format = format;
-
-  // Single optimized query - only fetch needed fields, uses existing category index
+export async function fetchRandomLewd({ category, isPremium, format, limit = 1 }: FetchLewdOptions = {}) {
   return Lewd.aggregate([
     {
-      $match: matchQuery,
+      $match: {
+        ...(category && { category }),
+        ...(isPremium && { premium: true }),
+        ...(format && { format }),
+      },
     },
     { $sample: { size: limit } },
     {
       $project: {
+        category: 1,
         link: 1,
         format: 1,
         _id: 0,

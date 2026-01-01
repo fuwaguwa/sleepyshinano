@@ -19,7 +19,6 @@ import type {
   Rule34PostResponse,
   SafebooruPostResponse,
 } from "../typings/api/booru";
-import type { ShinanoUser } from "../typings/schemas/User";
 import { buttonCollector, buttonCooldownCheck, buttonCooldownSet } from "./collectors";
 import { BOORU_BLACKLIST } from "./constants";
 import { getCurrentTimestamp, isGroupDM, isGuildInteraction, isUserDM } from "./utils/misc";
@@ -259,7 +258,7 @@ export async function processBooruRequest({
     );
 
     // User vote check (only if showing load more)
-    const user = await User.findOne({ userId: interaction.user.id }).lean<ShinanoUser>();
+    const user = await User.findOne({ userId: interaction.user.id }).lean();
     const currentTime = getCurrentTimestamp();
     let voteValid = false;
 
