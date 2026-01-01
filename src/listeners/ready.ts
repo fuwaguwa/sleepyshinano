@@ -1,7 +1,7 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Events, Listener, type ListenerOptions } from "@sapphire/framework";
 import { ActivityType } from "discord.js";
-import { ShinanoAutoLewd } from "../lib/auto";
+import { ShinanoAutoLewd } from "../structures/Autolewd";
 import { startCatchers } from "../lib/utils/db";
 import { updateServerCount } from "../lib/utils/logging";
 

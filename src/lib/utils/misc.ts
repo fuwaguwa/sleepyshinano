@@ -1,5 +1,6 @@
 import { ChannelType } from "discord.js";
 import type { ProcessableInteraction } from "../../typings/interaction";
+import type { LewdCategory } from "../../typings/lewd";
 
 /**
  * Pick a random item from an array
@@ -38,4 +39,11 @@ export function isTextChannelNonNSFW(interaction: ProcessableInteraction) {
  */
 export function getCurrentTimestamp() {
   return Math.floor(Date.now() / 1000);
+}
+
+/**
+ * Get a random lewd category
+ */
+export function getRandomLewdCategory(): LewdCategory {
+  return randomItem<LewdCategory>(["hoyo", "kemonomimi", "misc", "shipgirls", "undies"]);
 }
