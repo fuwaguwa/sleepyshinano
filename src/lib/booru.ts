@@ -163,9 +163,9 @@ export async function queryBooru(
     const topPageLimit = Math.ceil(state.maxKnownPage * 0.35);
     const earlyPagesCount = Math.max(1, topPageLimit + 1); // +1 because page 0 exists
 
-    // 75% chance: Jump back to early pages (top 30%)
-    // 25% chance: Move to next page (explore further)
-    if (Math.random() < 0.75) {
+    // 80% chance: Jump back to early pages (top 30%)
+    // 20% chance: Move to next page (explore further)
+    if (Math.random() < 0.8) {
       // Weighted random selection of early pages
       const earlyPages = Array.from({ length: earlyPagesCount }, (_, i) => i);
       const weights = earlyPages.map(page => Math.exp(-page / 3));
