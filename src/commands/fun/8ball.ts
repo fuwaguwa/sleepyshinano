@@ -2,6 +2,7 @@ import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
 import { EmbedBuilder } from "discord.js";
 import { standardCommandOptions } from "../../lib/utils/command";
+import { randomItem } from "../../lib/utils/misc";
 
 const RESPONSES = [
   "As I see it, yes.",
@@ -26,7 +27,6 @@ const RESPONSES = [
   "You may rely on it.",
 ] as const;
 
-const randomItem = <T>(array: readonly T[]): T => array[Math.floor(Math.random() * array.length)];
 @ApplyOptions<CommandOptions>({
   description: "Ask 8Ball",
   ...standardCommandOptions,
