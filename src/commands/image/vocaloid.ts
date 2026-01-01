@@ -9,7 +9,6 @@ import { ApplicationIntegrationType, InteractionContextType } from "discord.js";
   cooldownDelay: 15000,
   cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS.split(",") || [],
   preconditions: ["NotBlacklisted"],
-  nsfw: true,
 })
 export class GelbooruCommand extends Command {
   public override registerApplicationCommands(registry: Command.Registry) {
