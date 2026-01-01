@@ -1,11 +1,9 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
 import { processBooruRequest } from "../../lib/booru";
-import { randomItem } from "../../lib/utils/misc";
-import type { BooruSite } from "../../typings/api/booru";
 
 @ApplyOptions<CommandOptions>({
-  description: "Golden-Wait I mean White Shower",
+  description: "You already know what this is.",
   fullCategory: ["NSFW", "Booru"],
   cooldownLimit: 1,
   cooldownDelay: 15000,
@@ -23,8 +21,6 @@ export class GelbooruCommand extends Command {
   public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
     if (!interaction.deferred) await interaction.deferReply();
 
-    const category = randomItem<BooruSite>(["gelbooru", "rule34"]);
-
-    await processBooruRequest({ interaction, tags: "cum_in_pussy", site: category, noTagsOnReply: true });
+    await processBooruRequest({ interaction, tags: "cum_in_pussy", site: "gelbooru", noTagsOnReply: true });
   }
 }
