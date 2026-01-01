@@ -43,3 +43,5 @@ export const BOORU_BLACKLIST = [
   "-ai_assisted",
   "-ai_generated",
 ];
+
+export const MAIN_GUILD_ID = "1020960562710052895";
