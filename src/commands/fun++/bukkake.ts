@@ -21,6 +21,11 @@ export class GelbooruCommand extends Command {
   public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
     if (!interaction.deferred) await interaction.deferReply();
 
-    await processBooruRequest({ interaction, tags: "bukkake -yaoi", site: "gelbooru", noTagsOnReply: true });
+    await processBooruRequest({
+      interaction,
+      tags: "bukkake -yaoi",
+      site: "gelbooru",
+      noTagsOnReply: true,
+    });
   }
 }

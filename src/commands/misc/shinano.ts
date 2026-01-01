@@ -228,7 +228,6 @@ export class ShinanoCommand extends Subcommand {
       `All of Shinano functions are indexed within the \`Apps & Commands\` button. Please use it to see all available Shinano commands! For more information you can join the support server via ${messageString}\n\n` +
       "**NSFW commands are only available within NSFW channels! RUN THIS COMMAND IN A NSFW TO SEE MORE.**\n";
 
-    console.log(!isGroupDM(interaction) && !isUserDM(interaction));
     if (!isGroupDM(interaction) && !isUserDM(interaction) && (interaction.channel as TextChannel).nsfw) {
       const commandStore = this.container.stores.get("commands");
       const nsfwCommands = commandStore.filter(command => command.category === "NSFW");
