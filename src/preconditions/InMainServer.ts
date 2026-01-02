@@ -7,7 +7,7 @@ export class InMainServerPrecondition extends Precondition {
     const coolPeopleIds = process.env.COOL_PEOPLE_IDS.split(",") || [];
     if (coolPeopleIds.includes(interaction.user.id)) return this.ok();
 
-    return await this.checkMutualServer(interaction);
+    return this.checkMutualServer(interaction);
   }
 
   private async checkMutualServer(interaction: ChatInputCommandInteraction) {
@@ -15,7 +15,7 @@ export class InMainServerPrecondition extends Precondition {
 
     try {
       const guild = await this.container.client.guilds.fetch(MAIN_GUILD_ID);
-      const _ = await guild.members.fetch(interaction.user.id);
+      await guild.members.fetch(interaction.user.id);
       return this.ok();
     } catch (_) {
       return this.error({ identifier: "inMainServerError" });
