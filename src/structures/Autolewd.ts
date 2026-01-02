@@ -8,19 +8,18 @@ import User from "../schemas/User";
 import type { LewdCategory, LewdMedia } from "../typings/lewd";
 
 export class ShinanoAutoLewd {
-  private interval: NodeJS.Timeout | null = null;
-
   public async startLewdPosting() {
     container.logger.info("Initialized lewd posting...");
 
     const isDevelopment = process.env.NODE_ENV === "development";
     const intervalTime = isDevelopment ? 5000 : 300000;
-
-    if (this.interval) clearInterval(this.interval);
+    container.logger.debug(`NODE_ENV: ${process.env.NODE_ENV}, isDevelopment: ${isDevelopment}`);
 
     await this.processAutoLewd(isDevelopment);
-    this.interval = setInterval(async () => {
+    setInterval(async () => {
       await this.processAutoLewd(isDevelopment);
+
+      container.logger.debug(await Autolewd.findOne({ guildId: "1002188153685295204" }).lean());
     }, intervalTime);
   }
 
@@ -40,7 +39,8 @@ export class ShinanoAutoLewd {
       const embed = new EmbedBuilder()
         .setColor("Random")
         .setImage(media.link)
-        .setFooter({ text: "Category: " + media.category });
+        .setFooter({ text: "Category: " + media.category })
+        .setTimestamp();
 
       await channel.send({ embeds: [embed] });
     }
@@ -100,7 +100,7 @@ export class ShinanoAutoLewd {
             const errorEmbed = new EmbedBuilder()
               .setColor("Red")
               .setDescription(
-                "❌ | This channel is NOT NSFW, please make this channel age-restricted and run /autolewd again"
+                "❌ | This channel is NOT NSFW, please make this channel age-restricted and run `/autolewd` again"
               );
 
             await channel.send({ embeds: [errorEmbed] });
@@ -116,14 +116,17 @@ export class ShinanoAutoLewd {
             container.logger.info(
               `User ${autolewd.userId} is not in main server, deleting entry of ${autolewd.guildId}`
             );
+            await Autolewd.deleteOne({ _id: autolewd._id });
             continue;
           }
 
           // Check vote status
           const user = await User.findOne({ userId: autolewd.userId });
           const currentTimestamp = getCurrentTimestamp();
+          const isLowkACoolGuy = process.env.COOL_PEOPLE_IDS.split(",").includes(autolewd.userId);
+          const validVote = user?.voteExpiredTimestamp && user.voteExpiredTimestamp >= currentTimestamp;
 
-          if (!user || (user.voteExpiredTimestamp || 0) < currentTimestamp) {
+          if (!isLowkACoolGuy && !validVote) {
             if (!autolewd.sentNotVotedWarning) {
               const links = new ActionRowBuilder<ButtonBuilder>().addComponents(
                 new ButtonBuilder()
@@ -149,8 +152,9 @@ export class ShinanoAutoLewd {
                 components: [links],
               });
 
-              await Autolewd.updateOne({ userId: autolewd.userId }, { sentNotVotedWarning: true });
+              await Autolewd.updateOne({ _id: autolewd._id }, { sentNotVotedWarning: true });
             }
+            continue;
           }
 
           const category: LewdCategory =
@@ -164,14 +168,6 @@ export class ShinanoAutoLewd {
       }
     } catch (error) {
       container.logger.error("Autolewd processing error:", error);
-    }
-  }
-
-  public async stopLewdPosting() {
-    if (this.interval) {
-      clearInterval(this.interval);
-      this.interval = null;
-      container.logger.info("Autolewd posting has been stopped.");
     }
   }
 }

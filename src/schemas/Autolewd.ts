@@ -1,20 +1,18 @@
 import mongoose, { Schema } from "mongoose";
 
 const autoLewdSchema = new Schema({
-  userId: {
-    type: String,
-    required: true,
-    unique: true,
-  },
   guildId: {
     type: String,
     required: true,
     unique: true,
   },
+  userId: {
+    type: String,
+    required: true,
+  },
   channelId: {
     type: String,
     required: true,
-    unique: true,
   },
   category: {
     type: String,
