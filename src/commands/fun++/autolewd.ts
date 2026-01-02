@@ -133,7 +133,7 @@ async function setupCollector(options: AutolewdCollectorOptions) {
 
 @ApplyOptions<CommandOptions>({
   description: "Automatically post lewd stuff into a channel",
-  fullCategory: ["NSFW"],
+  fullCategory: ["PremiumNSFW"],
   cooldownLimit: 1,
   cooldownDelay: 15000,
   cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS.split(","),
