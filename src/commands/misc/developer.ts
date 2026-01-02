@@ -23,7 +23,7 @@ import type { TopggVoteCheck } from "../../typings/api/botListing";
   preconditions: ["OwnerOnly"],
   cooldownLimit: 1,
   cooldownDelay: 100000,
-  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS.split(",") || [],
+  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS.split(","),
   subcommands: [
     { name: "eval", chatInputRun: "subcommandEval" },
     { name: "vote-check", chatInputRun: "subcommandVote" },

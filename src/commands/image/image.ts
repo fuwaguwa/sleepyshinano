@@ -14,7 +14,7 @@ import type { ImageSendOptions } from "../../typings/image";
   description: "Image Generation & Manipulation Commands",
   cooldownLimit: 1,
   cooldownDelay: 6500,
-  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS.split(",") || [],
+  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS.split(","),
   preconditions: ["NotBlacklisted"],
   subcommands: [
     { name: "pixelate", chatInputRun: "subcommandPixelate" },

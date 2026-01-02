@@ -10,7 +10,7 @@ import { randomItem } from "../../lib/utils/misc";
   preconditions: ["NotBlacklisted", "Voted"],
   cooldownLimit: 1,
   cooldownDelay: 30000,
-  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS.split(",") || [],
+  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS.split(","),
   subcommands: [
     { name: "hoyo", chatInputRun: "subcommandDefault" },
     { name: "kemonomimi", chatInputRun: "subcommandDefault" },

@@ -5,7 +5,7 @@ import User from "../schemas/User";
 
 export class VotedPrecondition extends Precondition {
   public override async chatInputRun(interaction: ChatInputCommandInteraction) {
-    const coolPeopleIds = process.env.COOL_PEOPLE_IDS.split(",") || [];
+    const coolPeopleIds = process.env.COOL_PEOPLE_IDS.split(",");
     if (coolPeopleIds.includes(interaction.user.id)) return this.ok();
 
     return this.checkVote(interaction);

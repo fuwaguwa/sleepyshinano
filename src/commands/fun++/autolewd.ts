@@ -136,7 +136,7 @@ async function setupCollector(options: AutolewdCollectorOptions) {
   fullCategory: ["NSFW"],
   cooldownLimit: 1,
   cooldownDelay: 15000,
-  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS.split(",") || [],
+  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS.split(","),
   preconditions: ["NotBlacklisted", "Voted", "InMainServer"],
   nsfw: true,
 })

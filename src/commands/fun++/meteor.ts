@@ -9,7 +9,7 @@ import { fetchRandomLewd } from "../../lib/utils/db";
   preconditions: ["NotBlacklisted", "Voted"],
   cooldownLimit: 1,
   cooldownDelay: 300000,
-  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS.split(",") || [],
+  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS.split(","),
   subcommands: [
     { name: "shower", chatInputRun: "subcommandShower", preconditions: ["InMainServer"] },
     {

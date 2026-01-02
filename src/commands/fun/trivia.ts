@@ -12,7 +12,7 @@ const TRIVIA_API_URL = "https://the-trivia-api.com/api/questions";
   description: "Trivia questions!",
   cooldownLimit: 1,
   cooldownDelay: 5000,
-  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS.split(",") || [],
+  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS.split(","),
   preconditions: ["NotBlacklisted"],
 })
 export class TriviaCommand extends Command {

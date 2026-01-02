@@ -10,7 +10,7 @@ import type { DiscordUserResponse } from "../../typings/api/misc";
   preconditions: ["NotBlacklisted"],
   cooldownLimit: 1,
   cooldownDelay: 3000,
-  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS.split(",") || [],
+  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS.split(","),
 })
 export class BannerCommand extends Command {
   public override registerApplicationCommands(registry: Command.Registry) {
