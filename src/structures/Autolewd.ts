@@ -18,8 +18,6 @@ export class ShinanoAutoLewd {
     await this.processAutoLewd(isDevelopment);
     setInterval(async () => {
       await this.processAutoLewd(isDevelopment);
-
-      container.logger.debug(await Autolewd.findOne({ guildId: "1002188153685295204" }).lean());
     }, intervalTime);
   }
 

@@ -1,5 +1,4 @@
-import type { Command } from "@sapphire/framework";
-import type { ButtonInteraction, Message } from "discord.js";
+import type { ButtonInteraction, ChatInputCommandInteraction, Message } from "discord.js";
 
 export type LewdCategory = "hoyo" | "kemonomimi" | "misc" | "shipgirls" | "undies";
 
@@ -26,14 +25,14 @@ export interface AutolewdButtonOptions {
 
 export interface AutolewdHandleButtonOptions {
   buttonInteraction: ButtonInteraction;
-  commandInteraction: Command.ChatInputCommandInteraction;
+  commandInteraction: ChatInputCommandInteraction;
   category: LewdCategory | "random";
   isUpdate: boolean;
 }
 
 export interface AutolewdCollectorOptions {
   response: Message;
-  interaction: Command.ChatInputCommandInteraction;
+  interaction: ChatInputCommandInteraction;
   category: LewdCategory | "random";
   isUpdate: boolean;
   showEnable: boolean;

@@ -1,6 +1,11 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
-import { ApplicationIntegrationType, EmbedBuilder, InteractionContextType } from "discord.js";
+import {
+  ApplicationIntegrationType,
+  type ChatInputCommandInteraction,
+  EmbedBuilder,
+  InteractionContextType,
+} from "discord.js";
 import { createFooter, standardCommandOptions } from "../../lib/utils/command";
 import { buildSraUrl, fetchJson } from "../../lib/utils/http";
 import type { PandaApiResponse } from "../../typings/api/animal";
@@ -24,7 +29,7 @@ export class PandaCommand extends Command {
     );
   }
 
-  public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+  public override async chatInputRun(interaction: ChatInputCommandInteraction) {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {

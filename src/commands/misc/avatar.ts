@@ -1,6 +1,11 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
-import { ApplicationIntegrationType, EmbedBuilder, InteractionContextType } from "discord.js";
+import {
+  ApplicationIntegrationType,
+  type ChatInputCommandInteraction,
+  EmbedBuilder,
+  InteractionContextType,
+} from "discord.js";
 
 @ApplyOptions<CommandOptions>({
   description: "Get an user's avatar",
@@ -25,7 +30,7 @@ export class AvatarCommand extends Command {
     );
   }
 
-  public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+  public override async chatInputRun(interaction: ChatInputCommandInteraction) {
     const user = interaction.options.getUser("user") || interaction.user;
 
     const baseUrl = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}`;

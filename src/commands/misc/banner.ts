@@ -1,6 +1,11 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
-import { ApplicationIntegrationType, EmbedBuilder, InteractionContextType } from "discord.js";
+import {
+  ApplicationIntegrationType,
+  type ChatInputCommandInteraction,
+  EmbedBuilder,
+  InteractionContextType,
+} from "discord.js";
 import { fetchJson } from "../../lib/utils/http";
 
 import type { DiscordUserResponse } from "../../typings/api/misc";
@@ -28,7 +33,7 @@ export class BannerCommand extends Command {
     );
   }
 
-  public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+  public override async chatInputRun(interaction: ChatInputCommandInteraction) {
     const user = interaction.options.getUser("user") || interaction.user;
 
     if (!interaction.deferred) await interaction.deferReply();

@@ -4,7 +4,13 @@ import type { Readable } from "node:stream";
 import { createCanvas, type Image, loadImage } from "@napi-rs/canvas";
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
-import { ApplicationIntegrationType, AttachmentBuilder, EmbedBuilder, InteractionContextType } from "discord.js";
+import {
+  ApplicationIntegrationType,
+  AttachmentBuilder,
+  type ChatInputCommandInteraction,
+  EmbedBuilder,
+  InteractionContextType,
+} from "discord.js";
 import GIFEncoder from "gif-encoder-2";
 import { createFooter, standardCommandOptions } from "../../lib/utils/command";
 
@@ -85,7 +91,7 @@ export class PetpetCommand extends Command {
     );
   }
 
-  public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+  public override async chatInputRun(interaction: ChatInputCommandInteraction) {
     if (!interaction.deferred) await interaction.deferReply();
 
     const target = interaction.options.getUser("user") || interaction.user;

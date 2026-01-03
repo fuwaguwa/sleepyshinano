@@ -1,12 +1,15 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
-import { ApplicationIntegrationType, EmbedBuilder, InteractionContextType } from "discord.js";
+import {
+  ApplicationIntegrationType,
+  type ChatInputCommandInteraction,
+  EmbedBuilder,
+  InteractionContextType,
+} from "discord.js";
+import { DOG_API_URL } from "../../lib/constants";
 import { createFooter, standardCommandOptions } from "../../lib/utils/command";
 import { fetchJson } from "../../lib/utils/http";
-
 import type { DogApiResponse } from "../../typings/api/animal";
-
-const DOG_API_URL = "https://dog.ceo/api/breeds/image/random";
 
 @ApplyOptions<CommandOptions>({
   description: "Get an image of a dog!",
@@ -27,7 +30,7 @@ export class DogCommand extends Command {
     );
   }
 
-  public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+  public override async chatInputRun(interaction: ChatInputCommandInteraction) {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {

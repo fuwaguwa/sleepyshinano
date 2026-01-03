@@ -1,12 +1,15 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
-import { ApplicationIntegrationType, EmbedBuilder, InteractionContextType } from "discord.js";
+import {
+  ApplicationIntegrationType,
+  type ChatInputCommandInteraction,
+  EmbedBuilder,
+  InteractionContextType,
+} from "discord.js";
+import { CAT_API_URL } from "../../lib/constants";
 import { createFooter, standardCommandOptions } from "../../lib/utils/command";
 import { fetchJson } from "../../lib/utils/http";
-
 import type { CatApiResponse } from "../../typings/api/animal";
-
-const CAT_API_URL = "https://api.thecatapi.com/v1/images/search";
 
 @ApplyOptions<CommandOptions>({
   description: "Get an image of a cat!",
@@ -27,7 +30,7 @@ export class CatCommand extends Command {
     );
   }
 
-  public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+  public override async chatInputRun(interaction: ChatInputCommandInteraction) {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {

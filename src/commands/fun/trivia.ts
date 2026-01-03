@@ -1,6 +1,13 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder } from "discord.js";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  type ChatInputCommandInteraction,
+  ComponentType,
+  EmbedBuilder,
+} from "discord.js";
 import { buttonCollector } from "../../lib/collectors";
 import { fetchJson } from "../../lib/utils/http";
 import { randomItem } from "../../lib/utils/misc";
@@ -53,7 +60,7 @@ export class TriviaCommand extends Command {
     );
   }
 
-  public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+  public override async chatInputRun(interaction: ChatInputCommandInteraction) {
     if (!interaction.deferred) await interaction.deferReply();
 
     const categoryChoice = interaction.options.getString("category");

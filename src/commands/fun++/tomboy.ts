@@ -1,6 +1,6 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
-import { ApplicationIntegrationType, InteractionContextType } from "discord.js";
+import { ApplicationIntegrationType, type ChatInputCommandInteraction, InteractionContextType } from "discord.js";
 import { processBooruRequest } from "../../lib/booru";
 
 @ApplyOptions<CommandOptions>({
@@ -28,7 +28,7 @@ export class GelbooruCommand extends Command {
     );
   }
 
-  public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+  public override async chatInputRun(interaction: ChatInputCommandInteraction) {
     if (!interaction.deferred) await interaction.deferReply();
 
     await processBooruRequest({ interaction, tags: "tomboy", site: "gelbooru", noTagsOnReply: true });

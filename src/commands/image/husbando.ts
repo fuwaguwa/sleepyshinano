@@ -1,12 +1,15 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
-import { ApplicationIntegrationType, EmbedBuilder, InteractionContextType } from "discord.js";
+import {
+  ApplicationIntegrationType,
+  type ChatInputCommandInteraction,
+  EmbedBuilder,
+  InteractionContextType,
+} from "discord.js";
+import { HUSBANDO_API_URL } from "../../lib/constants";
 import { createFooter, createImageActionRow, standardCommandOptions } from "../../lib/utils/command";
 import { fetchJson } from "../../lib/utils/http";
-
 import type { NekosBestResponse } from "../../typings/api/misc";
-
-const HUSBANDO_API_URL = "https://nekos.best/api/v2/husbando";
 
 @ApplyOptions<CommandOptions>({
   description: "Looking for husbandos?",
@@ -27,7 +30,7 @@ export class HusbandoCommand extends Command {
     );
   }
 
-  public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+  public override async chatInputRun(interaction: ChatInputCommandInteraction) {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {

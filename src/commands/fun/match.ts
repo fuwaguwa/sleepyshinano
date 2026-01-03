@@ -1,6 +1,6 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
-import { EmbedBuilder } from "discord.js";
+import { ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
 import { standardCommandOptions } from "../../lib/utils/command";
 
 @ApplyOptions<CommandOptions>({
@@ -19,7 +19,7 @@ export class MatchCommand extends Command {
     );
   }
 
-  public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+  public override async chatInputRun(interaction: ChatInputCommandInteraction) {
     const user1 = interaction.options.getUser("user1", true);
     const user2 = interaction.options.getUser("user2", true);
 

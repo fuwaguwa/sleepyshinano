@@ -1,8 +1,7 @@
-import type { Command } from "@sapphire/framework";
 import type { Subcommand } from "@sapphire/plugin-subcommands";
-import type { ButtonInteraction } from "discord.js";
+import type { ButtonInteraction, ChatInputCommandInteraction } from "discord.js";
 
 export type ProcessableInteraction =
-  | Command.ChatInputCommandInteraction
+  | ChatInputCommandInteraction
   | Subcommand.ChatInputCommandInteraction
   | ButtonInteraction;

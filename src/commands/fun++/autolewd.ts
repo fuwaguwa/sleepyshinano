@@ -6,6 +6,7 @@ import {
   ButtonBuilder,
   ButtonStyle,
   ChannelType,
+  type ChatInputCommandInteraction,
   ComponentType,
   EmbedBuilder,
   InteractionContextType,
@@ -166,7 +167,7 @@ export class AutolewdCommand extends Command {
     );
   }
 
-  public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+  public override async chatInputRun(interaction: ChatInputCommandInteraction) {
     if (!interaction.deferred) await interaction.deferReply();
 
     if (interaction.channel?.type !== ChannelType.GuildText) {

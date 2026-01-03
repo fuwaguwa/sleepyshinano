@@ -1,6 +1,6 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
-import { EmbedBuilder } from "discord.js";
+import { type ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
 import { standardCommandOptions } from "../../lib/utils/command";
 import { buildSraUrl, fetchJson } from "../../lib/utils/http";
 
@@ -15,7 +15,7 @@ export class JokeCommand extends Command {
     registry.registerChatInputCommand(builder => builder.setName(this.name).setDescription(this.description));
   }
 
-  public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+  public override async chatInputRun(interaction: ChatInputCommandInteraction) {
     if (!interaction.deferred) await interaction.deferReply();
 
     try {
