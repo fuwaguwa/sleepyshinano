@@ -28,9 +28,7 @@ export class VoteCheckButtonHandler extends InteractionHandler {
     const CAN_VOTE_EMBED = new EmbedBuilder().setColor("Green").setTimestamp();
 
     if (!user?.voteCreatedTimestamp || !user?.voteExpiredTimestamp) {
-      if (!user) {
-        await User.findOneAndUpdate({ userId: userId }, { $setOnInsert: { userId: userId } }, { upsert: true });
-      }
+      if (!user) await User.findOneAndUpdate({ userId }, { $set: { userId } }, { upsert: true });
 
       CANT_VOTE_EMBED.setDescription(
         "It seems that you have not cast your vote for me! Please do so with the option below!"

@@ -22,7 +22,7 @@ import type { TopggVoteCheck } from "../../typings/api/botListing";
   description: "N/A",
   preconditions: ["OwnerOnly"],
   cooldownLimit: 1,
-  cooldownDelay: 100000,
+  cooldownDelay: 10000000,
   cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS.split(","),
   subcommands: [
     { name: "eval", chatInputRun: "subcommandEval" },
@@ -220,10 +220,10 @@ export class DeveloperCommand extends Subcommand {
         { userId: user.id },
         {
           $set: {
+            userId: user.id,
             voteCreatedTimestamp: currentTime,
             voteExpiredTimestamp: currentTime + 12 * 60 * 60,
           },
-          $setOnInsert: { userId: voteUser.userId },
         },
         { upsert: true }
       );
@@ -264,7 +264,7 @@ export class DeveloperCommand extends Subcommand {
     // Add to blacklist
     await User.findOneAndUpdate(
       { userId: targetUser.id },
-      { $set: { blacklisted: true }, $setOnInsert: { userId: targetUser.id } },
+      { $set: { blacklisted: true }, $setOnInsert: { userId: targetUser.id, blacklisted: true } },
       { upsert: true }
     );
 
@@ -288,12 +288,13 @@ export class DeveloperCommand extends Subcommand {
     // Check if user exists and is blacklisted
     const user = await User.findOne({ userId: targetUser.id });
 
-    if (!user || !user.blacklisted) {
+    if (!user?.blacklisted) {
       const notBlacklisted = new EmbedBuilder().setColor("Red").setDescription("User is not blacklisted!");
       return interaction.editReply({ embeds: [notBlacklisted] });
     }
 
-    await user.updateOne({ $unset: { blacklisted: false } });
+    user.blacklisted = false;
+    await user.save();
 
     const success = new EmbedBuilder()
       .setColor("Green")

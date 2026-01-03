@@ -7,10 +7,6 @@ export class ChatInputCommandSuccessListener extends Listener {
     logSuccessfulCommand(payload);
 
     // Create user entry if they don't exist yet
-    await User.findOneAndUpdate(
-      { userId: payload.interaction.user.id },
-      { $setOnInsert: { userId: payload.interaction.user.id } },
-      { upsert: true }
-    );
+    await User.updateOne({ userId: payload.interaction.user.id }, { $setOnInsert: {} }, { upsert: true });
   }
 }
