@@ -27,6 +27,7 @@ export class Autolewd {
   @prop({
     required: true,
     enum: ["random", ...LEWD_CATEGORIES],
+    type: String,
   })
   public category!: LewdCategory | "random";
 
