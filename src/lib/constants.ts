@@ -53,3 +53,6 @@ export const FOX_API_URL = "https://randomfox.ca/floof/";
 export const FOXGIRL_API_URL = "https://nekos.best/api/v2/kitsune";
 export const HUSBANDO_API_URL = "https://nekos.best/api/v2/husbando";
 export const WAIFU_API_URL = "https://nekos.best/api/v2/waifu";
+
+export const LEWD_CATEGORIES = ["hoyo", "kemonomimi", "misc", "shipgirls", "undies"] as const;
+export const LEWD_FORMAT = ["image", "animated"];

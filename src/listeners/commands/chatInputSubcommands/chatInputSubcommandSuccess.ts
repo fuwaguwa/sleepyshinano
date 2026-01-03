@@ -7,7 +7,7 @@ import type {
 } from "@sapphire/plugin-subcommands";
 import type { Interaction } from "discord.js";
 import { logSuccessfulCommand } from "../../../lib/utils/logging";
-import User from "../../../schemas/User";
+import { UserModel } from "../../../models/User";
 
 export class ChatInputSubcommandSuccessListener extends Listener<
   typeof SubcommandPluginEvents.ChatInputSubcommandSuccess
@@ -20,7 +20,7 @@ export class ChatInputSubcommandSuccessListener extends Listener<
     logSuccessfulCommand(payload, subcommand);
 
     // Create user entry if they don't exist yet
-    await User.updateOne({ userId: payload.interaction.user.id }, { $setOnInsert: {} }, { upsert: true });
+    await UserModel.updateOne({ userId: payload.interaction.user.id }, { $setOnInsert: {} }, { upsert: true });
   }
 
   public override onLoad() {

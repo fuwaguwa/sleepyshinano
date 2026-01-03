@@ -9,7 +9,7 @@ import {
   MessageFlagsBitField,
 } from "discord.js";
 import { fetch } from "netbun";
-import User from "../schemas/User";
+import { UserModel } from "../models/User";
 import type {
   BooruPost,
   BooruResponse,
@@ -19,6 +19,7 @@ import type {
   Rule34PostResponse,
   SafebooruPostResponse,
 } from "../typings/api/booru";
+import type { ShinanoUser } from "../typings/user";
 import { buttonCollector, buttonCooldownCheck, buttonCooldownSet } from "./collectors";
 import { BOORU_BLACKLIST } from "./constants";
 import { getCurrentTimestamp, isGroupDM, isGuildInteraction, isUserDM } from "./utils/misc";
@@ -132,8 +133,8 @@ export async function queryBooru(
   // Weighted mode
   const cacheKey = `${site}:${tags.trim()}`;
 
-  let user = await User.findOne({ userId });
-  if (!user) user = await User.create({ userId, booruState: new Map() });
+  let user = await UserModel.findOne({ userId });
+  if (!user) user = await UserModel.create({ userId, booruState: new Map() });
 
   const booruStateMap = user.booruState || new Map();
   const state = booruStateMap.get(cacheKey) || { currentPage: 0, seenIds: [], maxKnownPage: 0 };
@@ -145,7 +146,8 @@ export async function queryBooru(
     state.currentPage = 0;
     state.seenIds = [];
     booruStateMap.set(cacheKey, state);
-    await User.updateOne({ userId }, { booruState: booruStateMap });
+    user.booruState = booruStateMap;
+    await user.save();
     return queryBooru(site, tags, userId, useRandom);
   }
 
@@ -185,7 +187,8 @@ export async function queryBooru(
 
     state.seenIds = [];
     booruStateMap.set(cacheKey, state);
-    await User.updateOne({ userId }, { booruState: booruStateMap });
+    user.booruState = booruStateMap;
+    await user.save();
     return queryBooru(site, tags, userId, useRandom);
   }
 
@@ -195,7 +198,8 @@ export async function queryBooru(
 
   // Save state
   booruStateMap.set(cacheKey, state);
-  await User.updateOne({ userId }, { booruState: booruStateMap });
+  user.booruState = booruStateMap;
+  await user.save();
 
   return selected;
 }
@@ -258,7 +262,7 @@ export async function processBooruRequest({
     );
 
     // User vote check (only if showing load more)
-    const user = await User.findOne({ userId: interaction.user.id }).lean();
+    const user = await UserModel.findOne({ userId: interaction.user.id }).lean<ShinanoUser>();
     const currentTime = getCurrentTimestamp();
     let voteValid = false;
 

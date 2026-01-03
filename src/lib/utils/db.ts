@@ -1,7 +1,7 @@
 import { container, type SapphireClient } from "@sapphire/framework";
 import mongoose from "mongoose";
-import Lewd from "../../schemas/Lewd";
-import type { FetchLewdOptions } from ".././../typings/lewd";
+import { LewdModel } from "../../models/Lewd";
+import type { FetchLewdOptions, LewdResult } from ".././../typings/lewd";
 
 /**
  * Connect to MongoDB database
@@ -83,7 +83,7 @@ export function startCatchers(client: SapphireClient) {
  * Fetch random lewd media from database
  */
 export async function fetchRandomLewd({ category, isPremium, format, limit = 1 }: FetchLewdOptions = {}) {
-  return Lewd.aggregate([
+  return LewdModel.aggregate<LewdResult>([
     {
       $match: {
         ...(category && { category }),

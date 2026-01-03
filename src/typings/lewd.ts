@@ -1,19 +1,34 @@
 import type { ButtonInteraction, ChatInputCommandInteraction, Message } from "discord.js";
+import type { Types } from "mongoose";
+import type { LEWD_CATEGORIES, LEWD_FORMAT } from "../lib/constants";
 
-export type LewdCategory = "hoyo" | "kemonomimi" | "misc" | "shipgirls" | "undies";
+export type LewdCategory = (typeof LEWD_CATEGORIES)[number];
+export type LewdFormat = (typeof LEWD_FORMAT)[number];
 
 export interface FetchLewdOptions {
   category?: LewdCategory | null;
   isPremium?: boolean;
-  format?: "image" | "animated";
+  format?: LewdFormat;
   limit?: number;
 }
 
-export interface LewdMedia {
+export interface LewdResult {
   category: LewdCategory;
-  premium: boolean;
   link: string;
-  format: "image" | "animated";
+  format: LewdFormat;
+}
+
+export interface LewdMedia extends LewdResult {
+  premium: boolean;
+}
+
+export interface AutolewdDocument {
+  _id: Types.ObjectId | string;
+  guildId: string;
+  channelId: string;
+  userId: string;
+  category: LewdCategory | "random";
+  sentNotVotedWarning: boolean;
 }
 
 export interface AutolewdButtonOptions {

@@ -14,10 +14,11 @@ import {
   PermissionsBitField,
 } from "discord.js";
 import { buttonCollector } from "../../lib/collectors";
-import Autolewd from "../../schemas/Autolewd";
+import { AutolewdModel } from "../../models/Autolewd";
 import type {
   AutolewdButtonOptions,
   AutolewdCollectorOptions,
+  AutolewdDocument,
   AutolewdHandleButtonOptions,
   LewdCategory,
 } from "../../typings/lewd";
@@ -55,7 +56,7 @@ async function handleButtons(options: AutolewdHandleButtonOptions) {
   const action = buttonInteraction.customId.split("-")[0];
 
   if (action === "ALDisable") {
-    await Autolewd.deleteOne({ guildId: commandInteraction.guildId });
+    await AutolewdModel.deleteOne({ guildId: commandInteraction.guildId });
 
     const embed = new EmbedBuilder().setColor("Green").setDescription("✅ | Autolewd has been disabled!");
 
@@ -63,7 +64,7 @@ async function handleButtons(options: AutolewdHandleButtonOptions) {
   }
 
   // Enable/Update autolewd
-  await Autolewd.updateOne(
+  await AutolewdModel.updateOne(
     { guildId: commandInteraction.guild!.id },
     {
       $set: {
@@ -179,7 +180,7 @@ export class AutolewdCommand extends Command {
     }
 
     const category = (interaction.options.getString("category") as LewdCategory) || "random";
-    const existingDoc = await Autolewd.findOne({ guildId: interaction.guildId }).lean();
+    const existingDoc = await AutolewdModel.findOne({ guildId: interaction.guildId }).lean<AutolewdDocument>();
 
     let embed: EmbedBuilder;
     let showEnable: boolean;

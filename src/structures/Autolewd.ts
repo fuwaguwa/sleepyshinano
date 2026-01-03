@@ -3,8 +3,8 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, type Guild,
 import { MAIN_GUILD_ID } from "../lib/constants";
 import { fetchRandomLewd } from "../lib/utils/db";
 import { getCurrentTimestamp, getRandomLewdCategory } from "../lib/utils/misc";
-import Autolewd from "../schemas/Autolewd";
-import User from "../schemas/User";
+import { AutolewdModel } from "../models/Autolewd";
+import { UserModel } from "../models/User";
 import type { LewdCategory, LewdMedia } from "../typings/lewd";
 
 export class ShinanoAutoLewd {
@@ -13,7 +13,6 @@ export class ShinanoAutoLewd {
 
     const isDevelopment = process.env.NODE_ENV === "development";
     const intervalTime = isDevelopment ? 5000 : 300000;
-    container.logger.debug(`NODE_ENV: ${process.env.NODE_ENV}, isDevelopment: ${isDevelopment}`);
 
     await this.processAutoLewd(isDevelopment);
     setInterval(async () => {
@@ -67,7 +66,7 @@ export class ShinanoAutoLewd {
       if (isDevelopment) return this.processDevelopmentMode();
 
       const mainGuild = await container.client.guilds.fetch(MAIN_GUILD_ID);
-      const autolewds = await Autolewd.find().lean();
+      const autolewds = await AutolewdModel.find();
 
       for (const autolewd of autolewds) {
         try {
@@ -77,7 +76,7 @@ export class ShinanoAutoLewd {
             guild = await container.client.guilds.fetch(autolewd.guildId);
           } catch (_) {
             container.logger.info(`Guild ${autolewd.guildId} not found, deleting entry...`);
-            await Autolewd.deleteOne({ _id: autolewd._id });
+            await autolewd.deleteOne();
             continue;
           }
 
@@ -89,7 +88,7 @@ export class ShinanoAutoLewd {
             container.logger.info(
               `Channel ${autolewd.channelId} is not text-based, deleting entry of ${autolewd.guildId}...`
             );
-            await Autolewd.deleteOne({ _id: autolewd._id });
+            await autolewd.deleteOne();
             continue;
           }
 
@@ -102,7 +101,7 @@ export class ShinanoAutoLewd {
               );
 
             await channel.send({ embeds: [errorEmbed] });
-            await Autolewd.deleteOne({ _id: autolewd._id });
+            await autolewd.deleteOne();
             container.logger.info(`Channel ${autolewd.channelId} is not NSFW, deleting entry of ${autolewd.guildId}`);
             continue;
           }
@@ -114,12 +113,12 @@ export class ShinanoAutoLewd {
             container.logger.info(
               `User ${autolewd.userId} is not in main server, deleting entry of ${autolewd.guildId}`
             );
-            await Autolewd.deleteOne({ _id: autolewd._id });
+            await autolewd.deleteOne();
             continue;
           }
 
           // Check vote status
-          const user = await User.findOne({ userId: autolewd.userId });
+          const user = await UserModel.findOne({ userId: autolewd.userId });
           const currentTimestamp = getCurrentTimestamp();
           const isLowkACoolGuy = process.env.COOL_PEOPLE_IDS.split(",").includes(autolewd.userId);
           const validVote = user?.voteExpiredTimestamp && user.voteExpiredTimestamp >= currentTimestamp;
@@ -150,7 +149,8 @@ export class ShinanoAutoLewd {
                 components: [links],
               });
 
-              await Autolewd.updateOne({ _id: autolewd._id }, { sentNotVotedWarning: true });
+              autolewd.sentNotVotedWarning = true;
+              await autolewd.save();
             }
             continue;
           }

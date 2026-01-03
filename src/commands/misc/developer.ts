@@ -15,8 +15,9 @@ import {
 import { buttonCollector } from "../../lib/collectors";
 import { fetchJson } from "../../lib/utils/http";
 import { getCurrentTimestamp } from "../../lib/utils/misc";
-import User from "../../schemas/User";
+import { UserModel } from "../../models/User";
 import type { TopggVoteCheck } from "../../typings/api/botListing";
+import type { ShinanoUser } from "../../typings/user";
 
 @ApplyOptions<SubcommandOptions>({
   description: "N/A",
@@ -132,7 +133,7 @@ export class DeveloperCommand extends Subcommand {
     const user = interaction.options.getUser("user", true);
 
     // Check Shinano database
-    const voteUser = await User.findOne({ userId: user.id });
+    const voteUser = await UserModel.findOne({ userId: user.id }).lean<ShinanoUser>();
 
     if (!voteUser) {
       const noDataEmbed = new EmbedBuilder()
@@ -205,8 +206,7 @@ export class DeveloperCommand extends Subcommand {
     buttonCollector.set(interaction.user.id, collector);
 
     collector.on("collect", async i => {
-      // Check if user is developer
-      const ownerIds = process.env.OWNER_IDS.split(",") || [];
+      const ownerIds = process.env.OWNER_IDS.split(",");
       if (!ownerIds.includes(i.user.id)) {
         return i.reply({
           content: "This button is only for developers!",
@@ -216,7 +216,7 @@ export class DeveloperCommand extends Subcommand {
 
       // Update database
       const currentTime = getCurrentTimestamp();
-      await User.findOneAndUpdate(
+      await UserModel.findOneAndUpdate(
         { userId: user.id },
         {
           $set: {
@@ -251,8 +251,7 @@ export class DeveloperCommand extends Subcommand {
 
     const targetUser = interaction.options.getUser("user", true);
 
-    // Check if user exists and is already blacklisted
-    const user = await User.findOne({ userId: targetUser.id });
+    const user = await UserModel.findOne({ userId: targetUser.id });
 
     if (user?.blacklisted) {
       const alreadyBlacklisted = new EmbedBuilder()
@@ -262,9 +261,9 @@ export class DeveloperCommand extends Subcommand {
     }
 
     // Add to blacklist
-    await User.findOneAndUpdate(
+    await UserModel.findOneAndUpdate(
       { userId: targetUser.id },
-      { $set: { blacklisted: true }, $setOnInsert: { userId: targetUser.id, blacklisted: true } },
+      { $set: { blacklisted: true }, $setOnInsert: { userId: targetUser.id } },
       { upsert: true }
     );
 
@@ -286,7 +285,7 @@ export class DeveloperCommand extends Subcommand {
     const targetUser = interaction.options.getUser("user", true);
 
     // Check if user exists and is blacklisted
-    const user = await User.findOne({ userId: targetUser.id });
+    const user = await UserModel.findOne({ userId: targetUser.id });
 
     if (!user?.blacklisted) {
       const notBlacklisted = new EmbedBuilder().setColor("Red").setDescription("User is not blacklisted!");
@@ -313,7 +312,7 @@ export class DeveloperCommand extends Subcommand {
     const targetUser = interaction.options.getUser("user", true);
 
     // Check if user exists
-    const user = await User.findOne({ userId: targetUser.id });
+    const user = await UserModel.findOne({ userId: targetUser.id }).lean<ShinanoUser>();
 
     if (user?.blacklisted) {
       const blacklisted = new EmbedBuilder()

@@ -4,7 +4,8 @@ import { type ButtonInteraction, EmbedBuilder, MessageFlagsBitField } from "disc
 import { buttonCooldownCheck, buttonCooldownSet } from "../../lib/collectors";
 import { VOTE_LINK_BUTTON } from "../../lib/constants";
 import { getCurrentTimestamp } from "../../lib/utils/misc";
-import User from "../../schemas/User";
+import { UserModel } from "../../models/User";
+import type { ShinanoUser } from "../../typings/user";
 
 @ApplyOptions<InteractionHandlerOptions>({
   interactionHandlerType: InteractionHandlerTypes.Button,
@@ -20,7 +21,7 @@ export class VoteCheckButtonHandler extends InteractionHandler {
     if (buttonCooldownStatus) return;
 
     const userId = interaction.user.id;
-    const user = await User.findOne({ userId }).lean();
+    const user = await UserModel.findOne({ userId }).lean<ShinanoUser>();
 
     buttonCooldownSet("voteCheck", interaction);
 
@@ -28,7 +29,7 @@ export class VoteCheckButtonHandler extends InteractionHandler {
     const CAN_VOTE_EMBED = new EmbedBuilder().setColor("Green").setTimestamp();
 
     if (!user?.voteCreatedTimestamp || !user?.voteExpiredTimestamp) {
-      if (!user) await User.findOneAndUpdate({ userId }, { $set: { userId } }, { upsert: true });
+      if (!user) await UserModel.findOneAndUpdate({ userId }, { $set: { userId } }, { upsert: true });
 
       CANT_VOTE_EMBED.setDescription(
         "It seems that you have not cast your vote for me! Please do so with the option below!"

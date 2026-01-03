@@ -1,7 +1,7 @@
 import { Precondition } from "@sapphire/framework";
 import type { ChatInputCommandInteraction } from "discord.js";
 import { getCurrentTimestamp } from "../lib/utils/misc";
-import User from "../schemas/User";
+import { UserModel } from "../models/User";
 
 export class VotedPrecondition extends Precondition {
   public override async chatInputRun(interaction: ChatInputCommandInteraction) {
@@ -12,10 +12,10 @@ export class VotedPrecondition extends Precondition {
   }
 
   private async checkVote(interaction: ChatInputCommandInteraction) {
-    const user = await User.findOne({ userId: interaction.user.id });
+    const user = await UserModel.findOne({ userId: interaction.user.id });
 
     // User hasn't voted yet
-    if (!user || !user.voteCreatedTimestamp || !user.voteExpiredTimestamp)
+    if (!user?.voteCreatedTimestamp || !user?.voteExpiredTimestamp)
       return this.error({ message: "noVote", identifier: "votedError" });
 
     const currentTime = getCurrentTimestamp();
