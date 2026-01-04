@@ -19,7 +19,7 @@ import type {
   Rule34PostResponse,
   SafebooruPostResponse,
 } from "../typings/api/booru";
-import type { ShinanoUser } from "../typings/user";
+import type { ShinanoUser } from "../typings/models/User";
 import { buttonCollector, buttonCooldownCheck, buttonCooldownSet } from "./collectors";
 import { BOORU_BLACKLIST } from "./constants";
 import { getCurrentTimestamp, isGroupDM, isGuildInteraction, isUserDM } from "./utils/misc";

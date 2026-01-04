@@ -17,7 +17,7 @@ import { fetchJson } from "../../lib/utils/http";
 import { getCurrentTimestamp } from "../../lib/utils/misc";
 import { UserModel } from "../../models/User";
 import type { TopggVoteCheck } from "../../typings/api/botListing";
-import type { ShinanoUser } from "../../typings/user";
+import type { ShinanoUser } from "../../typings/models/User";
 
 @ApplyOptions<SubcommandOptions>({
   description: "N/A",

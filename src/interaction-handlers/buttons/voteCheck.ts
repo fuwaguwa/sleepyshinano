@@ -5,7 +5,7 @@ import { buttonCooldownCheck, buttonCooldownSet } from "../../lib/collectors";
 import { VOTE_LINK_BUTTON } from "../../lib/constants";
 import { getCurrentTimestamp } from "../../lib/utils/misc";
 import { UserModel } from "../../models/User";
-import type { ShinanoUser } from "../../typings/user";
+import type { ShinanoUser } from "../../typings/models/User";
 
 @ApplyOptions<InteractionHandlerOptions>({
   interactionHandlerType: InteractionHandlerTypes.Button,
