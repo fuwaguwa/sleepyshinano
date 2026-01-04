@@ -1,0 +1,35 @@
+import { ApplyOptions } from "@sapphire/decorators";
+import { Listener, type ListenerOptions, type UserError } from "@sapphire/framework";
+import type { ChatInputSubcommandDeniedPayload, SubcommandPluginEvents } from "@sapphire/plugin-subcommands";
+import { EmbedBuilder, MessageFlagsBitField } from "discord.js";
+
+@ApplyOptions<ListenerOptions>({
+  event: "chatInputSubcommandDenied",
+})
+export class MissingClientPermissionSubcommandListener extends Listener<
+  typeof SubcommandPluginEvents.ChatInputSubcommandDenied
+> {
+  public override async run({ context }: UserError, { interaction }: ChatInputSubcommandDeniedPayload) {
+    if (Reflect.get(Object(context), "silent")) return;
+
+    const missing = Reflect.get(Object(context), "missing") as string[];
+    if (!missing || missing.length === 0) return;
+
+    const errorEmbed = new EmbedBuilder()
+      .setColor("Red")
+      .setDescription(`❌ | Shinano is currently missing the following permission(s): ${missing.join(", ")}`);
+
+    if (interaction.deferred || interaction.replied) {
+      return interaction.editReply({
+        embeds: [errorEmbed],
+        allowedMentions: { users: [interaction.user.id], roles: [] },
+      });
+    }
+
+    return interaction.reply({
+      embeds: [errorEmbed],
+      allowedMentions: { users: [interaction.user.id], roles: [] },
+      flags: MessageFlagsBitField.Flags.Ephemeral,
+    });
+  }
+}

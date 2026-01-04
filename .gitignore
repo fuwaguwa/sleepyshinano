@@ -1,0 +1,8 @@
+.idea
+node_modules
+dist
+.env.development
+.env.production
+bun.lock
+
+

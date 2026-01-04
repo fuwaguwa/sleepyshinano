@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "lib": ["ESNext"],              
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "rootDir": "src",
+    "outDir": "dist",
+    "strict": true,
+    "skipLibCheck": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "noEmit": false,
+    "types": ["bun-types", "@types/node"]
+  },
+  "include": ["src", "env.d.ts"],
+  "exclude": ["node_modules", "**/*.spec.ts"]
+}
