@@ -54,8 +54,6 @@ const BOORU_CONFIG = {
   },
 } as const;
 
-const noResultEmbed = new EmbedBuilder().setColor("Red").setDescription("❌ | No result found!");
-
 /**
  * Weighting for better and non repeated results
  */
@@ -222,6 +220,7 @@ export async function processBooruRequest({
 
   // No result
   if (!result) {
+    const noResultEmbed = new EmbedBuilder().setColor("Red").setDescription("❌ | No result found!");
     await interaction.editReply({ embeds: [noResultEmbed] });
     return;
   }
