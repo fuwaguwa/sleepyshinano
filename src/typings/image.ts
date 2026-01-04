@@ -5,3 +5,9 @@ export interface ImageSendOptions {
   image?: Buffer;
   link?: string;
 }
+
+export interface ImageQuoteOptions {
+  text: string;
+  username: string;
+  avatarUrl: string;
+}
