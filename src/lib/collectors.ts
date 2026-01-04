@@ -17,14 +17,12 @@ const BUTTON_COOLDOWN_MS = 5000;
  * Refresh/clean up user collectors when they run a new command
  */
 export function collectorsRefresh(interaction: ChatInputCommandInteraction | Interaction) {
-  // Stop and remove existing button collectors for this user
   if (buttonCollector.has(interaction.user.id)) {
     const collector = buttonCollector.get(interaction.user.id);
     if (collector && !collector.ended) collector.stop();
     buttonCollector.delete(interaction.user.id);
   }
 
-  // Stop and remove existing pagination collectors for this user
   if (paginationCollector.has(interaction.user.id)) {
     const collector = paginationCollector.get(interaction.user.id);
     if (collector && !collector.ended) collector.stop();
@@ -38,7 +36,6 @@ export function collectorsRefresh(interaction: ChatInputCommandInteraction | Int
 export async function buttonCooldownCheck(id: string, interaction: ButtonInteraction): Promise<boolean> {
   const userId = interaction.user.id;
   if (buttonCooldown.has(`${id}${userId}`)) {
-    // 100% sure
     const cms = buttonCooldown.get(`${id}${userId}`) as number;
     const embed = new EmbedBuilder()
       .setTitle("You're on cooldown!")
