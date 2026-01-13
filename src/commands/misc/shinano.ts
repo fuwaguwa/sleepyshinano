@@ -9,8 +9,8 @@ import {
   InteractionContextType,
   type TextChannel,
 } from "discord.js";
-import { isGroupDM, isUserDM, randomItem } from "../../lib/utils/misc";
 import { TOPGG_BASE_URL, TOPGG_EMOJI_ID, TOPGG_VOTE_URL } from "../../lib/constants";
+import { isGroupDM, isUserDM, randomItem } from "../../lib/utils/misc";
 
 const PAT_RESPONSES = ['"Aah... My ears are sensitive..."', '"Alas... This one\'s ears are sensitive..."'] as const;
 
