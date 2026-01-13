@@ -1,6 +1,6 @@
 import { container } from "@sapphire/framework";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, type Guild, type TextChannel } from "discord.js";
-import { MAIN_GUILD_ID } from "../lib/constants";
+import { MAIN_GUILD_ID, TOPGG_EMOJI_ID, TOPGG_VOTE_URL } from "../lib/constants";
 import { fetchRandomLewd } from "../lib/utils/db";
 import { getCurrentTimestamp, getRandomLewdCategory } from "../lib/utils/misc";
 import { AutolewdModel } from "../models/Autolewd";
@@ -45,25 +45,25 @@ export class ShinanoAutoLewd {
     return true;
   }
 
-  private async processDevelopmentMode() {
-    const testGuildId = "1002156534270267442";
-    const testChannelId = "1456301697512116295";
-
-    try {
-      const guild = await container.client.guilds.fetch(testGuildId);
-      const channel = await guild.channels.fetch(testChannelId);
-
-      await this.sendLewdToChannel(channel as TextChannel, "hoyo");
-
-      // if (success) container.logger.info(`Sent autolewd to dev channel`);
-    } catch (error) {
-      container.logger.error("Error in dev autolewd:", error);
-    }
-  }
+  // private async processDevelopmentMode() {
+  //   const testGuildId = "1002156534270267442";
+  //   const testChannelId = "1456301697512116295";
+  //
+  //   try {
+  //     const guild = await container.client.guilds.fetch(testGuildId);
+  //     const channel = await guild.channels.fetch(testChannelId);
+  //
+  //     await this.sendLewdToChannel(channel as TextChannel, "hoyo");
+  //
+  //     // if (success) container.logger.info(`Sent autolewd to dev channel`);
+  //   } catch (error) {
+  //     container.logger.error("Error in dev autolewd:", error);
+  //   }
+  // }
 
   private async processAutoLewd(isDevelopment: boolean) {
     try {
-      if (isDevelopment) return this.processDevelopmentMode();
+      if (isDevelopment) return; //this.processDevelopmentMode();
 
       const mainGuild = await container.client.guilds.fetch(MAIN_GUILD_ID);
       const autolewds = await AutolewdModel.find();
@@ -129,8 +129,8 @@ export class ShinanoAutoLewd {
                 new ButtonBuilder()
                   .setStyle(ButtonStyle.Link)
                   .setLabel("Vote on top.gg")
-                  .setEmoji({ id: "1002849574517477447" })
-                  .setURL(`https://top.gg/bot/1002193298229829682/vote`),
+                  .setEmoji({ id: TOPGG_EMOJI_ID })
+                  .setURL(TOPGG_VOTE_URL),
                 new ButtonBuilder()
                   .setStyle(ButtonStyle.Secondary)
                   .setLabel("Check top.gg Vote")
