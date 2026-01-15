@@ -42,7 +42,7 @@ export async function buttonCooldownCheck(id: string, interaction: ButtonInterac
     const cms = buttonCooldown.get(`${id}${userId}`) as number;
     const embed = new EmbedBuilder()
       .setTitle("You're on cooldown!")
-      .setDescription(`You will be able to use the button again <t:${cms / 1000}:R>`)
+      .setDescription(`You will be able to use the button again <t:${Math.floor(cms / 1000)}:R>`)
       .setColor("Red");
     await interaction.reply({ embeds: [embed], flags: MessageFlagsBitField.Flags.Ephemeral });
     return true;

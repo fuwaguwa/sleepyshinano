@@ -9,6 +9,7 @@ import {
   InteractionContextType,
   type TextChannel,
 } from "discord.js";
+import { TOPGG_BASE_URL, TOPGG_EMOJI_ID, TOPGG_VOTE_URL } from "../../lib/constants";
 import { isGroupDM, isUserDM, randomItem } from "../../lib/utils/misc";
 
 const PAT_RESPONSES = ['"Aah... My ears are sensitive..."', '"Alas... This one\'s ears are sensitive..."'] as const;
@@ -103,9 +104,9 @@ export class ShinanoCommand extends Subcommand {
     const linkButtons = new ActionRowBuilder<ButtonBuilder>().setComponents(
       new ButtonBuilder()
         .setStyle(ButtonStyle.Link)
-        .setEmoji({ id: "1002849574517477447" })
+        .setEmoji({ id: TOPGG_EMOJI_ID })
         .setLabel("top.gg")
-        .setURL(`https://top.gg/bot/1002193298229829682`)
+        .setURL(TOPGG_BASE_URL)
     );
 
     await interaction.reply({
@@ -204,8 +205,8 @@ export class ShinanoCommand extends Subcommand {
       new ButtonBuilder()
         .setStyle(ButtonStyle.Link)
         .setLabel("Vote on top.gg")
-        .setEmoji({ id: "1002849574517477447" })
-        .setURL(`https://top.gg/bot/1002193298229829682/vote`),
+        .setEmoji({ id: TOPGG_EMOJI_ID })
+        .setURL(TOPGG_VOTE_URL),
       new ButtonBuilder()
         .setStyle(ButtonStyle.Secondary)
         .setLabel("Check top.gg Vote")
