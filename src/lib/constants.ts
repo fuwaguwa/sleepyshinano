@@ -96,7 +96,7 @@ export const BOORU_CONFIG: BooruConfigMap = {
 export const BOORU_QUERY = {
   limit: 100,
   collectorTimeoutMs: 35000,
-  maxFetchRetries: 3,
+  maxFetchRetries: 1, // 3 if something happned with the ISP
   maxSourceUrlLength: 512,
 } as const;
 
