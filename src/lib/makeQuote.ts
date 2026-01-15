@@ -1,12 +1,14 @@
+import fs from "node:fs/promises";
+import path from "node:path";
 import sharp from "sharp";
 import type { ImageQuoteOptions } from "../typings/image";
 
 const IMAGE_WIDTH = 1200;
 const IMAGE_HEIGHT = 675;
-const AVATAR_WIDTH_PERCENT = 0.47;
+const AVATAR_WIDTH_PERCENT = 0.52;
 const TEXT_CENTER_PERCENT = 0.3;
 const TEXT_MAX_WIDTH = 520;
-const OVERLAY_URL = "https://files.catbox.moe/hxdt7f.png";
+const OVERLAY_PATH = path.join(process.cwd(), "data", "makeQuote", "overlay.png");
 
 export async function createQuoteImage({ text, username, avatarUrl }: ImageQuoteOptions): Promise<Buffer> {
   const avatarResponse = await fetch(avatarUrl);
@@ -17,8 +19,7 @@ export async function createQuoteImage({ text, username, avatarUrl }: ImageQuote
     .grayscale()
     .toBuffer();
 
-  const overlayResponse = await fetch(OVERLAY_URL);
-  const overlayBuffer = Buffer.from(await overlayResponse.arrayBuffer());
+  const overlayBuffer = await fs.readFile(OVERLAY_PATH);
 
   const calculateFontSize = (textLength: number): number => {
     if (textLength < 30) return 48;
