@@ -229,8 +229,6 @@ async function fetchBooruPosts(site: BooruSite, tags: string, page: number, useR
     sortTag,
   ].join(" ");
 
-  console.log(reqTags);
-
   const params = new URLSearchParams({
     page: "dapi",
     s: "post",
