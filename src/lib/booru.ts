@@ -220,7 +220,16 @@ function selectNextPage(state: MutableBooruState): BooruPageSelectionResult {
 async function fetchBooruPosts(site: BooruSite, tags: string, page: number, useRandom: boolean): Promise<BooruPost[]> {
   const config = BOORU_CONFIG[site];
   const sortTag = useRandom ? "sort:random" : "sort:score";
-  const reqTags = [tags.trim(), ...BOORU_BLACKLIST, sortTag].join(" ");
+  const reqTags = [
+    ...tags
+      .trim()
+      .split(" ")
+      .filter(tag => !tag.startsWith("sort:")),
+    ...BOORU_BLACKLIST,
+    sortTag,
+  ].join(" ");
+
+  console.log(reqTags);
 
   const params = new URLSearchParams({
     page: "dapi",
@@ -247,7 +256,6 @@ async function fetchBooruPosts(site: BooruSite, tags: string, page: number, useR
 
       // GelbooruPostResponse | Rule34Post[] | SafebooruPost[]
       const data: unknown = await response.json();
-      console.log(data);
       return parseApiResponse(data, config.hasAttributes);
     } catch {
       if (attempt === BOORU_QUERY.maxFetchRetries - 1) return [];
