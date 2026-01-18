@@ -12,7 +12,7 @@ export class ShinanoAutobooru {
     container.logger.info("Initialized autobooru posting...");
 
     const isDevelopment = process.env.NODE_ENV === "development";
-    const intervalTime = isDevelopment ? 5000 : 600000;
+    const intervalTime = isDevelopment ? 5000 : 60000;
 
     await this.processAutobooru(isDevelopment);
     setInterval(async () => {
