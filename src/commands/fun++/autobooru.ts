@@ -19,6 +19,7 @@ import type { BooruSite } from "../../typings/api/booru";
 import type { AutobooruCollectorOptions, AutobooruHandleButtonsOptions } from "../../typings/booru";
 import type { AutolewdButtonOptions } from "../../typings/lewd";
 import type { AutobooruDocument } from "../../typings/models/Autobooru";
+import { fetchBooruPosts } from "../../lib/booru";
 
 function createButtons(options: AutolewdButtonOptions) {
   const { showEnable, showDisable, disabled = false, userId } = options;
@@ -137,7 +138,7 @@ async function setupCollector(options: AutobooruCollectorOptions) {
   cooldownLimit: 1,
   cooldownDelay: 15000,
   cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS.split(","),
-  preconditions: ["NotBlacklisted", "Voted", "InMainServer"],
+  preconditions: ["NotBlacklisted", "Voted"],
   nsfw: true,
 })
 export class AutobooruCommand extends Command {
@@ -189,6 +190,17 @@ export class AutobooruCommand extends Command {
     const site = interaction.options.getString("site", true) as BooruSite;
     const tags = interaction.options.getString("tags", true);
     const mode = interaction.options.getString("mode");
+
+    const testQuery = await fetchBooruPosts(site, tags, 0, mode === "random");
+    if (testQuery.length === 0) {
+      const errorEmbed = new EmbedBuilder()
+        .setColor("Red")
+        .setDescription(
+          "❌ | No posts were found with the provided tags. Please check your tags and try again.\n\n" +
+            "HINT: Try running `/gelbooru` or `/rule34`, the autocomplete helps you validate your tags, and then you can use them here!"
+        );
+      return interaction.editReply({ embeds: [errorEmbed] });
+    }
 
     const filteredTags = cleanBooruTags(tags);
     const existingDoc = await AutobooruModel.findOne({ guildId: interaction.guildId }).lean<AutobooruDocument>();
