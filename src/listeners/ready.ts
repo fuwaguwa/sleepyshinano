@@ -24,9 +24,9 @@ export class ReadyListener extends Listener {
     startCatchers(this.container.client);
 
     const lewd = new ShinanoAutolewd();
-    await lewd.startLewdPosting();
-
     const booru = new ShinanoAutobooru();
+
+    await lewd.startLewdPosting();
     await booru.startBooruPosting();
   }
 }
