@@ -9,6 +9,7 @@ import {
   InteractionContextType,
   type TextChannel,
 } from "discord.js";
+import { processBooruRequest } from "../../lib/booru";
 import { TOPGG_BASE_URL, TOPGG_EMOJI_ID, TOPGG_VOTE_URL } from "../../lib/constants";
 import { isGroupDM, isUserDM, randomItem } from "../../lib/utils/misc";
 
@@ -28,6 +29,7 @@ const PAT_RESPONSES = ['"Aah... My ears are sensitive..."', '"Alas... This one\'
     { name: "support", chatInputRun: "subcommandSupport" },
     { name: "vote", chatInputRun: "subcommandVote" },
     { name: "help", chatInputRun: "subcommandHelp" },
+    { name: "image", chatInputRun: "subcommandImage" },
   ],
 })
 export class ShinanoCommand extends Subcommand {
@@ -49,6 +51,7 @@ export class ShinanoCommand extends Subcommand {
         .addSubcommand(command => command.setName("support").setDescription("Got a problem? Run this command!"))
         .addSubcommand(command => command.setName("vote").setDescription("Vote for Shinano, or check your vote status"))
         .addSubcommand(command => command.setName("help").setDescription("How to look for all Shinano commands!"))
+        .addSubcommand(command => command.setName("image").setDescription("Get a random image of Shinano"))
     );
   }
 
@@ -251,5 +254,14 @@ export class ShinanoCommand extends Subcommand {
       );
 
     await interaction.reply({ embeds: [responseEmbed] });
+  }
+
+  /**
+   * /shinaono image - Get a random image of Shinano
+   */
+  public async subcommandImage(interaction: Subcommand.ChatInputCommandInteraction) {
+    if (!interaction.deferred) await interaction.deferReply();
+
+    await processBooruRequest({ interaction, tags: "shinano_(azur_lane)", site: "safebooru", noTagsOnReply: true });
   }
 }

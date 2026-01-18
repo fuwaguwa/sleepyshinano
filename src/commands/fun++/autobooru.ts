@@ -12,6 +12,7 @@ import {
   MessageFlagsBitField,
   PermissionsBitField,
 } from "discord.js";
+import { fetchBooruPosts } from "../../lib/booru";
 import { buttonCollector } from "../../lib/collectors";
 import { cleanBooruTags } from "../../lib/utils/misc";
 import { AutobooruModel } from "../../models/Autobooru";
@@ -19,7 +20,6 @@ import type { BooruSite } from "../../typings/api/booru";
 import type { AutobooruCollectorOptions, AutobooruHandleButtonsOptions } from "../../typings/booru";
 import type { AutolewdButtonOptions } from "../../typings/lewd";
 import type { AutobooruDocument } from "../../typings/models/Autobooru";
-import { fetchBooruPosts } from "../../lib/booru";
 
 function createButtons(options: AutolewdButtonOptions) {
   const { showEnable, showDisable, disabled = false, userId } = options;

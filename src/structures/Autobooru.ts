@@ -12,7 +12,7 @@ export class ShinanoAutobooru {
     container.logger.info("Initialized autobooru posting...");
 
     const isDevelopment = process.env.NODE_ENV === "development";
-    const intervalTime = isDevelopment ? 5000 : 600000;
+    const intervalTime = isDevelopment ? 5000 : 60000;
 
     await this.processAutobooru(isDevelopment);
     setInterval(async () => {
@@ -77,7 +77,7 @@ export class ShinanoAutobooru {
         "rule34"
       );
     } catch (error) {
-      container.logger.error("Error in dev autolewd:", error);
+      container.logger.error("Error in dev autobooru:", error);
     }
   }
 
@@ -115,7 +115,7 @@ export class ShinanoAutobooru {
             const errorEmbed = new EmbedBuilder()
               .setColor("Red")
               .setDescription(
-                "❌ | This channel is NOT NSFW, please make this channel age-restricted and run `/autolewd` again"
+                "❌ | This channel is NOT NSFW, please make this channel age-restricted and run `/autobooru` again"
               );
 
             await channel.send({ embeds: [errorEmbed] });
