@@ -7,16 +7,16 @@ import { AutolewdModel } from "../models/Autolewd";
 import { UserModel } from "../models/User";
 import type { LewdCategory, LewdMedia } from "../typings/lewd";
 
-export class ShinanoAutoLewd {
+export class ShinanoAutolewd {
   public async startLewdPosting() {
     container.logger.info("Initialized lewd posting...");
 
     const isDevelopment = process.env.NODE_ENV === "development";
-    const intervalTime = isDevelopment ? 5000 : 300000;
+    const intervalTime = isDevelopment ? 5000 : 600000;
 
-    await this.processAutoLewd(isDevelopment);
+    await this.processAutolewd(isDevelopment);
     setInterval(async () => {
-      await this.processAutoLewd(isDevelopment);
+      await this.processAutolewd(isDevelopment);
     }, intervalTime);
   }
 
@@ -45,25 +45,25 @@ export class ShinanoAutoLewd {
     return true;
   }
 
-  // private async processDevelopmentMode() {
-  //   const testGuildId = "1002156534270267442";
-  //   const testChannelId = "1456301697512116295";
-  //
-  //   try {
-  //     const guild = await container.client.guilds.fetch(testGuildId);
-  //     const channel = await guild.channels.fetch(testChannelId);
-  //
-  //     await this.sendLewdToChannel(channel as TextChannel, "hoyo");
-  //
-  //     // if (success) container.logger.info(`Sent autolewd to dev channel`);
-  //   } catch (error) {
-  //     container.logger.error("Error in dev autolewd:", error);
-  //   }
-  // }
+  private async processDevelopmentMode() {
+    const testGuildId = "1002188153685295204";
+    const testChannelId = "1455798633936191529";
 
-  private async processAutoLewd(isDevelopment: boolean) {
     try {
-      if (isDevelopment) return; //this.processDevelopmentMode();
+      const guild = await container.client.guilds.fetch(testGuildId);
+      const channel = await guild.channels.fetch(testChannelId);
+
+      await this.sendLewdToChannel(channel as TextChannel, "hoyo");
+
+      // if (success) container.logger.info(`Sent autolewd to dev channel`);
+    } catch (error) {
+      container.logger.error("Error in dev autolewd:", error);
+    }
+  }
+
+  private async processAutolewd(isDevelopment: boolean) {
+    try {
+      if (isDevelopment) return; // this.processDevelopmentMode();
 
       const mainGuild = await container.client.guilds.fetch(MAIN_GUILD_ID);
       const autolewds = await AutolewdModel.find();
@@ -75,7 +75,7 @@ export class ShinanoAutoLewd {
           try {
             guild = await container.client.guilds.fetch(autolewd.guildId);
           } catch (_) {
-            container.logger.info(`Guild ${autolewd.guildId} not found, deleting entry...`);
+            container.logger.info(`Autolewd: Guild ${autolewd.guildId} not found, deleting entry...`);
             await autolewd.deleteOne();
             continue;
           }
@@ -86,7 +86,7 @@ export class ShinanoAutoLewd {
             channel = (await guild.channels.fetch(autolewd.channelId)) as TextChannel;
           } catch (_) {
             container.logger.info(
-              `Channel ${autolewd.channelId} is not text-based, deleting entry of ${autolewd.guildId}...`
+              `Autolewd: Channel ${autolewd.channelId} is not text-based, deleting entry of ${autolewd.guildId}...`
             );
             await autolewd.deleteOne();
             continue;
@@ -102,7 +102,9 @@ export class ShinanoAutoLewd {
 
             await channel.send({ embeds: [errorEmbed] });
             await autolewd.deleteOne();
-            container.logger.info(`Channel ${autolewd.channelId} is not NSFW, deleting entry of ${autolewd.guildId}`);
+            container.logger.info(
+              `Autolewd: Channel ${autolewd.channelId} is not NSFW, deleting entry of ${autolewd.guildId}`
+            );
             continue;
           }
 
@@ -111,7 +113,7 @@ export class ShinanoAutoLewd {
             await mainGuild.members.fetch(autolewd.userId);
           } catch (_) {
             container.logger.info(
-              `User ${autolewd.userId} is not in main server, deleting entry of ${autolewd.guildId}`
+              `Autolewd: User ${autolewd.userId} is not in main server, deleting entry of ${autolewd.guildId}`
             );
             await autolewd.deleteOne();
             continue;
@@ -123,43 +125,44 @@ export class ShinanoAutoLewd {
           const isLowkACoolGuy = process.env.COOL_PEOPLE_IDS.split(",").includes(autolewd.userId);
           const validVote = user?.voteExpiredTimestamp && user.voteExpiredTimestamp >= currentTimestamp;
 
-          if (!isLowkACoolGuy && !validVote) {
-            if (!autolewd.sentNotVotedWarning) {
-              const links = new ActionRowBuilder<ButtonBuilder>().addComponents(
-                new ButtonBuilder()
-                  .setStyle(ButtonStyle.Link)
-                  .setLabel("Vote on top.gg")
-                  .setEmoji({ id: TOPGG_EMOJI_ID })
-                  .setURL(TOPGG_VOTE_URL),
-                new ButtonBuilder()
-                  .setStyle(ButtonStyle.Secondary)
-                  .setLabel("Check top.gg Vote")
-                  .setEmoji({ name: "🔍" })
-                  .setCustomId("voteCheck")
-              );
+          if (!isLowkACoolGuy && !validVote && !autolewd.sentNotVotedWarning) {
+            const links = new ActionRowBuilder<ButtonBuilder>().addComponents(
+              new ButtonBuilder()
+                .setStyle(ButtonStyle.Link)
+                .setLabel("Vote on top.gg")
+                .setEmoji({ id: TOPGG_EMOJI_ID })
+                .setURL(TOPGG_VOTE_URL),
+              new ButtonBuilder()
+                .setStyle(ButtonStyle.Secondary)
+                .setLabel("Check top.gg Vote")
+                .setEmoji({ name: "🔍" })
+                .setCustomId("voteCheck")
+            );
 
-              const voteBro = new EmbedBuilder()
-                .setColor("Red")
-                .setTitle("Vote expired!")
-                .setDescription("❌ | Please vote for Shinano to continue posting!");
+            const voteBro = new EmbedBuilder()
+              .setColor("Red")
+              .setTitle("Vote expired!")
+              .setDescription("❌ | Please vote for Shinano to continue posting!");
 
-              await channel.send({
-                content: `<@${autolewd.userId}>,`,
-                embeds: [voteBro],
-                components: [links],
-              });
+            await channel.send({
+              content: `<@${autolewd.userId}>,`,
+              embeds: [voteBro],
+              components: [links],
+            });
 
-              autolewd.sentNotVotedWarning = true;
-              await autolewd.save();
-            }
-            continue;
+            autolewd.sentNotVotedWarning = true;
+            await autolewd.save();
+          } else if (autolewd.sentNotVotedWarning && validVote) {
+            autolewd.sentNotVotedWarning = false;
+            await autolewd.save();
           }
 
           const category: LewdCategory =
             autolewd.category === "random" ? getRandomLewdCategory() : (autolewd.category as LewdCategory);
           const success = await this.sendLewdToChannel(channel, category);
 
-          if (success) container.logger.info(`Sent lewd to ${autolewd.guildId}`);
+          if (success)
+            container.logger.info(`Autolewd: Sent lewd to ${autolewd.guildId} in channel ${autolewd.channelId}`);
         } catch (_) {
           container.logger.error(`Error processing autolewd for ${autolewd.guildId}`);
         }

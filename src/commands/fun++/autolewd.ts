@@ -18,10 +18,10 @@ import { AutolewdModel } from "../../models/Autolewd";
 import type {
   AutolewdButtonOptions,
   AutolewdCollectorOptions,
-  AutolewdDocument,
   AutolewdHandleButtonOptions,
   LewdCategory,
 } from "../../typings/lewd";
+import type { AutolewdDocument } from "../../typings/models/Autolewd";
 
 function createButtons(options: AutolewdButtonOptions) {
   const { showEnable, showDisable, disabled = false, userId } = options;
@@ -120,7 +120,6 @@ async function setupCollector(options: AutolewdCollectorOptions) {
 
   collector.on("end", async (_, reason) => {
     if (reason !== "finished") {
-      // Disable all currently shown buttons
       const disabledRows = createButtons({
         showEnable,
         showDisable,
@@ -198,15 +197,8 @@ export class AutolewdCommand extends Command {
             `Category: **${existingDoc.category}**`
         );
 
-      if (isSameChannel) {
-        // Same channel: only red button
-        showEnable = false;
-        showDisable = true;
-      } else {
-        // Different channel: both buttons
-        showEnable = true;
-        showDisable = true;
-      }
+      showEnable = !isSameChannel;
+      showDisable = true;
     } else {
       // No existing setup: only green button
       embed = new EmbedBuilder()
