@@ -63,6 +63,7 @@ export const WAIFU_API_URL = "https://nekos.best/api/v2/waifu";
 export const LEWD_CATEGORIES = ["hoyo", "kemonomimi", "misc", "shipgirls", "undies"] as const;
 export const LEWD_FORMAT = ["image", "animated"] as const;
 
+export const BOORU_SITES = ["gelbooru", "rule34", "safebooru"] as const;
 export const BOORU_CONFIG: BooruConfigMap = {
   gelbooru: {
     baseUrl: "https://gelbooru.com/index.php?page=post&s=view&id=",
@@ -101,7 +102,7 @@ export const BOORU_QUERY = {
 } as const;
 
 export const PAGE_SELECTION = {
-  earlyPageProbability: 0.8,
-  earlyPageThreshold: 0.35,
+  earlyPageProbability: 0.6,
+  earlyPageThreshold: 0.4, // Top X% of pages
   pageWeightDecay: 3,
 } as const;

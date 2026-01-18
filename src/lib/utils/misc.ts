@@ -50,3 +50,11 @@ export function isVideoUrl(url: string): boolean {
 export function isValidSourceUrl(source: string | undefined): source is string {
   return !!source && /^https?:\/\//i.test(source) && source.length <= BOORU_QUERY.maxSourceUrlLength;
 }
+
+export function cleanBooruTags(tags: string): string {
+  return tags
+    .trim()
+    .split(" ")
+    .filter(tag => !tag.startsWith("sort:"))
+    .join(" ");
+}

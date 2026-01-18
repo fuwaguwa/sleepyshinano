@@ -1,4 +1,11 @@
-import type { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from "discord.js";
+import type {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonInteraction,
+  ChatInputCommandInteraction,
+  EmbedBuilder,
+  Message,
+} from "discord.js";
 import type { BooruPost, BooruSite } from "./api/booru";
 
 export interface BooruSiteConfig {
@@ -40,4 +47,24 @@ export interface BooruReplyContent {
   content?: string;
   embeds?: EmbedBuilder[];
   components: ActionRowBuilder<ButtonBuilder>[];
+}
+
+export interface AutobooruCollectorOptions {
+  response: Message;
+  interaction: ChatInputCommandInteraction;
+  site: BooruSite;
+  tags: string;
+  isRandom: boolean;
+  isUpdate: boolean;
+  showEnable: boolean;
+  showDisable: boolean;
+}
+
+export interface AutobooruHandleButtonsOptions {
+  buttonInteraction: ButtonInteraction;
+  commandInteraction: ChatInputCommandInteraction;
+  site: BooruSite;
+  tags: string;
+  isRandom: boolean;
+  isUpdate: boolean;
 }

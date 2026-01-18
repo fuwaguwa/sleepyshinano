@@ -26,12 +26,14 @@ import {
   TOPGG_VOTE_URL,
 } from "./constants";
 import {
+  cleanBooruTags,
   getCurrentTimestamp,
   isGroupDM,
   isGuildInteraction,
   isUserDM,
   isValidSourceUrl,
   isVideoUrl,
+  randomItem,
 } from "./utils/misc";
 
 const COOL_PEOPLE_SET = new Set(process.env.COOL_PEOPLE_IDS.split(","));
@@ -96,7 +98,7 @@ async function checkUserVoteStatus(userId: string, cachedVoteInfo: BooruUserVote
   return hasVoted;
 }
 
-function createLinkButtons(postUrl: string, sourceUrl: string | undefined, isVideo: boolean) {
+export function createLinkButtons(postUrl: string, sourceUrl: string | undefined, isVideo: boolean) {
   const links = new ActionRowBuilder<ButtonBuilder>().setComponents(
     new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("Post Link").setEmoji({ name: "🔗" }).setURL(postUrl)
   );
@@ -109,7 +111,7 @@ function createLinkButtons(postUrl: string, sourceUrl: string | undefined, isVid
     links.addComponents(
       new ButtonBuilder()
         .setStyle(ButtonStyle.Secondary)
-        .setCustomId("getSauce")
+        .setCustomId("getSauce-eph")
         .setLabel("Get Sauce")
         .setEmoji({ name: "🔍" })
     );
@@ -217,17 +219,15 @@ function selectNextPage(state: MutableBooruState): BooruPageSelectionResult {
 /**
  * Fetches posts
  */
-async function fetchBooruPosts(site: BooruSite, tags: string, page: number, useRandom: boolean): Promise<BooruPost[]> {
+export async function fetchBooruPosts(
+  site: BooruSite,
+  tags: string,
+  page: number,
+  useRandom: boolean
+): Promise<BooruPost[]> {
   const config = BOORU_CONFIG[site];
   const sortTag = useRandom ? "sort:random" : "sort:score";
-  const reqTags = [
-    ...tags
-      .trim()
-      .split(" ")
-      .filter(tag => !tag.startsWith("sort:")),
-    ...BOORU_BLACKLIST,
-    sortTag,
-  ].join(" ");
+  const reqTags = [tags, ...BOORU_BLACKLIST, sortTag].join(" ");
 
   const params = new URLSearchParams({
     page: "dapi",
@@ -272,13 +272,20 @@ export async function queryBooru(
   userId: string,
   useRandom = true
 ): Promise<QueryBooruResult> {
+  const filteredTags = cleanBooruTags(tags);
+  const keyTags = filteredTags
+    .split(" ")
+    .filter(tag => !tag.startsWith("-"))
+    .sort() // yeah yeah cry about it
+    .join(" ");
+
   if (useRandom) {
-    const posts = await fetchBooruPosts(site, tags, 0, true);
+    const posts = await fetchBooruPosts(site, filteredTags, 0, true);
     if (posts.length === 0) return { post: null, userVoteInfo: null };
-    return { post: posts[Math.floor(Math.random() * posts.length)], userVoteInfo: null };
+    return { post: randomItem(posts), userVoteInfo: null };
   }
 
-  const cacheKey = `${site}:${tags.trim()}`;
+  const cacheKey = `${site}:${keyTags}`;
   let user = await UserModel.findOne({ userId });
   if (!user) user = await UserModel.create({ userId, booruState: new Map() });
   const booruStateMap = user.booruState ?? new Map<string, MutableBooruState>();
@@ -291,7 +298,7 @@ export async function queryBooru(
   };
 
   for (let iteration = 0; iteration < BOORU_QUERY.maxFetchRetries; iteration++) {
-    const posts = await fetchBooruPosts(site, tags, state.currentPage, false);
+    const posts = await fetchBooruPosts(site, filteredTags, state.currentPage, false);
 
     if (posts.length === 0) {
       state = { currentPage: 0, seenIds: [], maxKnownPage: 0 };

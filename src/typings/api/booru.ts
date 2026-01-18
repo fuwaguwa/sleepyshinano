@@ -1,3 +1,4 @@
+import type { BOORU_SITES } from "../../lib/constants";
 import type { ProcessableInteraction } from "../interaction";
 
 export type GelbooruRating = "general" | "sensitive" | "questionable" | "explicit";
@@ -111,7 +112,7 @@ export interface SafebooruPost {
 
 export type SafebooruPostResponse = SafebooruPost[];
 
-export type BooruSite = "gelbooru" | "rule34" | "safebooru";
+export type BooruSite = (typeof BOORU_SITES)[number];
 export type BooruPost = GelbooruPost | Rule34Post | SafebooruPost;
 export type BooruResponse = GelbooruPostResponse | Rule34PostResponse | SafebooruPostResponse;
 

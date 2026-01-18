@@ -1,9 +1,10 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Events, Listener, type ListenerOptions } from "@sapphire/framework";
 import { ActivityType } from "discord.js";
-import { ShinanoAutoLewd } from "../structures/Autolewd";
 import { startCatchers } from "../lib/utils/db";
 import { updateServerCount } from "../lib/utils/logging";
+import { ShinanoAutobooru } from "../structures/Autobooru";
+import { ShinanoAutolewd } from "../structures/Autolewd";
 
 @ApplyOptions<ListenerOptions>({
   once: true,
@@ -22,7 +23,10 @@ export class ReadyListener extends Listener {
 
     startCatchers(this.container.client);
 
-    const lewd = new ShinanoAutoLewd();
+    const lewd = new ShinanoAutolewd();
     await lewd.startLewdPosting();
+
+    const booru = new ShinanoAutobooru();
+    await booru.startBooruPosting();
   }
 }
