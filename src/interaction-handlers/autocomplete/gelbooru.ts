@@ -52,8 +52,9 @@ export class GelbooruAutocompleteHandler extends InteractionHandler {
       });
 
       return this.some(suggestions);
-    } catch {
+    } catch (error) {
       // On error, return current input
+      this.container.logger.error(`Gelbooru Autocomplete: ${(error as Error).message}`);
       return this.some([{ name: focusedOption.value || "Search error", value: focusedOption.value }]);
     }
   }
