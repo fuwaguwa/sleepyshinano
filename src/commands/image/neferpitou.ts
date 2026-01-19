@@ -10,7 +10,7 @@ import { processBooruRequest } from "../../lib/booru";
   cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS.split(","),
   preconditions: ["NotBlacklisted"],
 })
-export class GelbooruCommand extends Command {
+export class SafebooruCommand extends Command {
   public override registerApplicationCommands(registry: Command.Registry) {
     registry.registerChatInputCommand(builder =>
       builder

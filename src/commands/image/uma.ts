@@ -11,7 +11,7 @@ import { processBooruRequest } from "../../lib/booru";
   preconditions: ["NotBlacklisted"],
   nsfw: true,
 })
-export class GelbooruCommand extends Command {
+export class SafebooruCommand extends Command {
   public override registerApplicationCommands(registry: Command.Registry) {
     registry.registerChatInputCommand(builder =>
       builder
