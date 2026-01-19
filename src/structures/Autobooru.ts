@@ -54,7 +54,11 @@ export class ShinanoAutobooru {
         components: [links],
       });
     } else {
-      const embed = new EmbedBuilder().setColor("Random").setImage(post.file_url).setDescription(tagMessage);
+      const embed = new EmbedBuilder()
+        .setColor("Random")
+        .setImage(post.file_url)
+        .setDescription(tagMessage)
+        .setTimestamp();
       await channel.send({ embeds: [embed], components: [links] });
     }
 
