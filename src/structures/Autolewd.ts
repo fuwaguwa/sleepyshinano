@@ -21,28 +21,33 @@ export class ShinanoAutolewd {
   }
 
   private async sendLewdToChannel(channel: TextChannel, category: LewdCategory | null): Promise<boolean> {
-    const results = await fetchRandomLewd({ category });
+    try {
+      const results = await fetchRandomLewd({ category });
 
-    if (results.length === 0) {
-      container.logger.error("No lewd found!");
+      if (results.length === 0) {
+        container.logger.error("No lewd found!");
+        return false;
+      }
+
+      const media = results[0] as LewdMedia;
+
+      if (media.format === "animated") {
+        await channel.send({ content: media.link });
+      } else {
+        const embed = new EmbedBuilder()
+          .setColor("Random")
+          .setImage(media.link)
+          .setFooter({ text: "Category: " + media.category })
+          .setTimestamp();
+
+        await channel.send({ embeds: [embed] });
+      }
+
+      return true;
+    } catch (error) {
+      container.logger.error("Error sending lewd to channel:", error);
       return false;
     }
-
-    const media = results[0] as LewdMedia;
-
-    if (media.format === "animated") {
-      await channel.send({ content: media.link });
-    } else {
-      const embed = new EmbedBuilder()
-        .setColor("Random")
-        .setImage(media.link)
-        .setFooter({ text: "Category: " + media.category })
-        .setTimestamp();
-
-      await channel.send({ embeds: [embed] });
-    }
-
-    return true;
   }
 
   private async processDevelopmentMode() {

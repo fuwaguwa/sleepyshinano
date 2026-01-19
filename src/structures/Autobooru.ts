@@ -27,42 +27,47 @@ export class ShinanoAutobooru {
     isRandom: boolean,
     site: BooruSite
   ): Promise<boolean> {
-    const config = BOORU_CONFIG[site];
-    const query = await queryBooru(site, tags, userId, isRandom);
-    const post = query.post;
+    try {
+      const config = BOORU_CONFIG[site];
+      const query = await queryBooru(site, tags, userId, isRandom);
+      const post = query.post;
 
-    if (!post) {
-      container.logger.error(`No booru post found! Guild: ${channel.guild.id}`);
+      if (!post) {
+        container.logger.error(`No booru post found! Guild: ${channel.guild.id}`);
+        return false;
+      }
+
+      const fileUrl = post.file_url;
+      const isVideo = isVideoUrl(fileUrl);
+      const tagMessage = `**Requested Tag(s)**: ${tags
+        .split(" ")
+        .map(tag => `\`${tag}\``)
+        .join(", ")}`;
+
+      const postUrl = config.baseUrl + post.id;
+      const links = createLinkButtons(postUrl, post.source, isVideo);
+
+      container.logger.debug(fileUrl);
+
+      if (isVideo) {
+        await channel.send({
+          content: `${tagMessage}\n\n${post.file_url}`,
+          components: [links],
+        });
+      } else {
+        const embed = new EmbedBuilder()
+          .setColor("Random")
+          .setImage(post.file_url)
+          .setDescription(tagMessage)
+          .setTimestamp();
+        await channel.send({ embeds: [embed], components: [links] });
+      }
+
+      return true;
+    } catch (error) {
+      container.logger.error("Error sending booru to channel:", error);
       return false;
     }
-
-    const fileUrl = post.file_url;
-    const isVideo = isVideoUrl(fileUrl);
-    const tagMessage = `**Requested Tag(s)**: ${tags
-      .split(" ")
-      .map(tag => `\`${tag}\``)
-      .join(", ")}`;
-
-    const postUrl = config.baseUrl + post.id;
-    const links = createLinkButtons(postUrl, post.source, isVideo);
-
-    container.logger.debug(fileUrl);
-
-    if (isVideo) {
-      await channel.send({
-        content: `${tagMessage}\n\n${post.file_url}`,
-        components: [links],
-      });
-    } else {
-      const embed = new EmbedBuilder()
-        .setColor("Random")
-        .setImage(post.file_url)
-        .setDescription(tagMessage)
-        .setTimestamp();
-      await channel.send({ embeds: [embed], components: [links] });
-    }
-
-    return true;
   }
 
   private async processDevelopmentMode() {
