@@ -108,7 +108,7 @@ export class ShinanoAutobooru {
             channel = (await guild.channels.fetch(autobooru.channelId)) as TextChannel;
           } catch (_) {
             container.logger.info(
-              `Channel ${autobooru.channelId} is not text-based, deleting entry of ${autobooru.guildId}...`
+              `Autobooru: Channel ${autobooru.channelId} is not text-based, deleting entry of ${autobooru.guildId}...`
             );
             await autobooru.deleteOne();
             continue;
@@ -124,7 +124,9 @@ export class ShinanoAutobooru {
 
             await channel.send({ embeds: [errorEmbed] });
             await autobooru.deleteOne();
-            container.logger.info(`Channel ${autobooru.channelId} is not NSFW, deleting entry of ${autobooru.guildId}`);
+            container.logger.info(
+              `Autobooru: Channel ${autobooru.channelId} is not NSFW, deleting entry of ${autobooru.guildId}`
+            );
             continue;
           }
 
