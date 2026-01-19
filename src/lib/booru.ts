@@ -276,7 +276,7 @@ export async function queryBooru(
   const keyTags = filteredTags
     .split(" ")
     .filter(tag => !tag.startsWith("-"))
-    .sort() // yeah yeah cry about it
+    .sort()
     .join(" ");
 
   if (useRandom) {
