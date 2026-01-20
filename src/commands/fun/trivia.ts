@@ -6,7 +6,9 @@ import {
   ButtonStyle,
   type ChatInputCommandInteraction,
   ComponentType,
-  EmbedBuilder,
+  ContainerBuilder,
+  MessageFlags,
+  TextDisplayBuilder,
 } from "discord.js";
 import { buttonCollector } from "../../lib/collectors";
 import { fetchJson } from "../../lib/utils/http";
@@ -88,10 +90,11 @@ export class TriviaCommand extends Command {
       const question = await this.getQuestion(category, difficulty);
 
       if (!question || !question.answers) {
-        const errorEmbed = new EmbedBuilder()
-          .setColor("Red")
-          .setDescription("❌ | Failed to fetch trivia question. Please try again later.");
-        return await interaction.editReply({ embeds: [errorEmbed] });
+        const errorText = new TextDisplayBuilder().setContent(
+          "❌ Failed to fetch trivia question. Please try again later."
+        );
+        const errorContainer = new ContainerBuilder().addTextDisplayComponents(errorText).setAccentColor([255, 0, 0]);
+        return await interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [errorContainer] });
       }
 
       // Create answer buttons. Use index-based custom IDs to avoid embedding the text in the ID.
@@ -101,30 +104,19 @@ export class TriviaCommand extends Command {
         )
       );
 
-      const questionEmbed = new EmbedBuilder()
-        .setAuthor({
-          iconURL: interaction.user.displayAvatarURL({ forceStatic: false }),
-          name: `${interaction.user.username}'s Trivia Question:`,
-        })
-        .setDescription(`${question.question}`)
-        .setColor("Random")
-        .setFields(
-          {
-            name: "Difficulty",
-            value: question.difficulty.toUpperCase(),
-            inline: true,
-          },
-          {
-            name: "Category",
-            value: question.category.toUpperCase(),
-            inline: true,
-          }
-        )
-        .setFooter({ text: "You have 15s to answer!" });
+      const questionText = new TextDisplayBuilder().setContent(
+        `**${question.question}**\n\n` +
+          `**Difficulty:** ${question.difficulty.toUpperCase()} | **Category:** ${question.category.toUpperCase()}`
+      );
+      const footerText = new TextDisplayBuilder().setContent("You have 15s to answer!");
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(questionText)
+        .addTextDisplayComponents(footerText)
+        .addActionRowComponents(answersRow);
 
       const message = await interaction.editReply({
-        embeds: [questionEmbed],
-        components: [answersRow],
+        flags: MessageFlags.IsComponentsV2,
+        components: [container],
       });
 
       const collector = message.createMessageComponentCollector({
@@ -143,29 +135,31 @@ export class TriviaCommand extends Command {
           else comp.setStyle(ButtonStyle.Secondary);
         });
 
+        let resultText: string;
+        let accent: [number, number, number] | undefined;
         if (timedOut) {
-          questionEmbed.setColor("Red");
-          questionEmbed.setFooter({ text: "Timed out!" });
-          await interaction.editReply({
-            embeds: [questionEmbed],
-            components: [answersRow],
-            content: `Timed out! The answer was \`${question.correctAnswer}\`.`,
-          });
+          resultText = `⏰ Timed out! The answer was \`${question.correctAnswer}\`.`;
+          accent = [255, 0, 0];
         } else if (selectedIndex !== null && question.answers[selectedIndex] === question.correctAnswer) {
-          questionEmbed.setColor("Green");
-          await interaction.editReply({
-            embeds: [questionEmbed],
-            components: [answersRow],
-            content: "You are correct!",
-          });
+          resultText = `✅ You are correct!`;
+          accent = [0, 255, 0];
         } else if (selectedIndex !== null) {
-          questionEmbed.setColor("Red");
-          await interaction.editReply({
-            embeds: [questionEmbed],
-            components: [answersRow],
-            content: `That was incorrect, the answer was \`${question.correctAnswer}\`.`,
-          });
+          resultText = `❌ That was incorrect, the answer was \`${question.correctAnswer}\`.`;
+          accent = [255, 0, 0];
+        } else {
+          resultText = "";
         }
+        const resultDisplay = new TextDisplayBuilder().setContent(resultText);
+
+        const resultContainer = new ContainerBuilder()
+          .addTextDisplayComponents(questionText)
+          .addTextDisplayComponents(resultDisplay)
+          .addActionRowComponents(answersRow);
+        if (accent) resultContainer.setAccentColor(accent);
+        await interaction.editReply({
+          flags: MessageFlags.IsComponentsV2,
+          components: [resultContainer],
+        });
       };
 
       collector.on("collect", async i => {
@@ -189,13 +183,23 @@ export class TriviaCommand extends Command {
         // If collector ended due to timeout, reason will be 'time' (or other) and we should handle timed out.
         if (reason && reason !== "End") {
           await finishRound(null, true);
+        } else {
+          // Always re-edit to ensure buttons are disabled (in case of manual stop)
+          answersRow.components.forEach(comp => {
+            comp.setDisabled(true);
+          });
+          const resultContainer = new ContainerBuilder()
+            .addTextDisplayComponents(questionText)
+            .addActionRowComponents(answersRow);
+          await interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [resultContainer] });
         }
       });
     } catch (error) {
-      const errorEmbed = new EmbedBuilder()
-        .setColor("Red")
-        .setDescription("❌ | Failed to fetch trivia question. Please try again later.");
-      await interaction.editReply({ embeds: [errorEmbed] });
+      const errorText = new TextDisplayBuilder().setContent(
+        "❌ Failed to fetch trivia question. Please try again later."
+      );
+      const errorContainer = new ContainerBuilder().addTextDisplayComponents(errorText).setAccentColor([255, 0, 0]);
+      await interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [errorContainer] });
       throw error;
     }
   }

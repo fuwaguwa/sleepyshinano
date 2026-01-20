@@ -5,8 +5,12 @@ import {
   ApplicationIntegrationType,
   ButtonBuilder,
   ButtonStyle,
+  ContainerBuilder,
   EmbedBuilder,
   InteractionContextType,
+  MediaGalleryBuilder,
+  MessageFlags,
+  TextDisplayBuilder,
 } from "discord.js";
 import { fetchRandomLewd } from "../../lib/utils/db";
 import { randomItem } from "../../lib/utils/misc";
@@ -236,60 +240,62 @@ export class PrivateCommand extends Subcommand {
         const errorEmbed = new EmbedBuilder()
           .setColor("Red")
           .setDescription(
-            `❌ | No images found${category ? ` in the **${category}** category` : ""}${format ? ` with **${format}** format` : ""}.`
+            `❌ No images found${category ? ` in the **${category}** category` : ""}${format ? ` with **${format}** format` : ""}.`
           );
         return interaction.editReply({ embeds: [errorEmbed] });
       }
 
       // If bomb mode, just send links
       if (bomb) {
-        const links = results.map(media => media.link).join("\n");
-        return interaction.editReply({ content: links });
+        const gallery = new MediaGalleryBuilder().addItems(results.map(media => ({ media: { url: media.link } })));
+        const footer = new TextDisplayBuilder().setContent(
+          `-# Requested by @${interaction.user.username} | <t:${Math.floor(Date.now() / 1000)}:R>`
+        );
+        const container = new ContainerBuilder().addMediaGalleryComponents(gallery).addTextDisplayComponents(footer);
+        return interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [container] });
       }
 
       // Single image mode
       const media = results[0];
 
-      // If animated, just send the link
-      if (media.format === "animated") return interaction.editReply({ content: media.link });
-
-      // If static image, send embed with button (no button for premium)
-      const embed = new EmbedBuilder()
-        .setColor("Random")
-        .setImage(media.link)
-        .setFooter({
-          text: `Requested by ${interaction.user.username}`,
-          iconURL: interaction.user.displayAvatarURL({ forceStatic: false }),
-        });
-
-      // Only add button for non-premium commands
-      if (!isPremium) {
-        const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
-          new ButtonBuilder()
-            .setStyle(ButtonStyle.Secondary)
-            .setCustomId(`getSauce`)
-            .setLabel("Get Sauce")
-            .setEmoji({ name: "🔍" })
+      // If animated, put in a container with gallery and footer (no getSauce button)
+      if (media.format === "animated") {
+        const gallery = new MediaGalleryBuilder().addItems([{ media: { url: media.link } }]);
+        const footer = new TextDisplayBuilder().setContent(
+          `-# Requested by @${interaction.user.username} | <t:${Math.floor(Date.now() / 1000)}:R>`
         );
-
-        return interaction.editReply({
-          embeds: [embed],
-          components: [row],
-        });
+        const container = new ContainerBuilder().addMediaGalleryComponents(gallery).addTextDisplayComponents(footer);
+        return interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [container] });
       }
 
-      await interaction.editReply({
-        embeds: [embed],
-      });
+      // If static image, use components v2 (gallery + button if not premium)
+      const gallery = new MediaGalleryBuilder().addItems([{ media: { url: media.link } }]);
+      const footer = new TextDisplayBuilder().setContent(
+        `-# Requested by @${interaction.user.username} | <t:${Math.floor(Date.now() / 1000)}:R>`
+      );
+      const container = new ContainerBuilder().addMediaGalleryComponents(gallery).addTextDisplayComponents(footer);
+
+      if (!isPremium) {
+        const button = new ButtonBuilder()
+          .setStyle(ButtonStyle.Secondary)
+          .setCustomId(`getSauce`)
+          .setLabel("Get Sauce")
+          .setEmoji({ name: "🔍" });
+        const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(button);
+        container.addActionRowComponents(actionRow);
+      }
+
+      return interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [container] });
     } catch (error) {
       this.container.logger.error(
         `Error in private command (category: ${category}, premium: ${isPremium}, format: ${format}):`,
         error
       );
-      const errorEmbed = new EmbedBuilder()
-        .setColor("Red")
-        .setDescription(`❌ | An error occurred while fetching an image. Please try again later.`);
-      return interaction.editReply({ embeds: [errorEmbed] });
+      const errorMessage = new TextDisplayBuilder().setContent(
+        `❌ An error occurred while fetching an image. Please try again later.`
+      );
+      const errorContainer = new ContainerBuilder().addTextDisplayComponents(errorMessage).setAccentColor([255, 0, 0]);
+      return interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [errorContainer] });
     }
   }
 }

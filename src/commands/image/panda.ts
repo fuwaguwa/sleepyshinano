@@ -3,10 +3,13 @@ import { Command, type CommandOptions } from "@sapphire/framework";
 import {
   ApplicationIntegrationType,
   type ChatInputCommandInteraction,
-  EmbedBuilder,
+  ContainerBuilder,
   InteractionContextType,
+  MediaGalleryBuilder,
+  MessageFlags,
+  TextDisplayBuilder,
 } from "discord.js";
-import { createFooter, standardCommandOptions } from "../../lib/utils/command";
+import { createTextFooter, standardCommandOptions } from "../../lib/utils/command";
 import { buildSraUrl, fetchJson } from "../../lib/utils/http";
 import type { PandaApiResponse } from "../../typings/api/animal";
 
@@ -31,23 +34,27 @@ export class PandaCommand extends Command {
 
   public override async chatInputRun(interaction: ChatInputCommandInteraction) {
     if (!interaction.deferred) await interaction.deferReply();
-
     try {
       const panda = await fetchJson<PandaApiResponse>(buildSraUrl("animal/panda"));
-
       if (!panda || !panda.image) throw new Error("Failed to fetch panda image");
-
-      const embed = new EmbedBuilder()
-        .setColor("Random")
-        .setImage(panda.image)
-        .setFooter(createFooter(interaction.user));
-
-      await interaction.editReply({ embeds: [embed] });
+      const gallery = new MediaGalleryBuilder().addItems({
+        media: {
+          url: panda.image,
+        },
+      });
+      const footer = new TextDisplayBuilder().setContent(createTextFooter(interaction.user));
+      const containerComponent = new ContainerBuilder()
+        .addMediaGalleryComponents(gallery)
+        .addTextDisplayComponents(footer);
+      await interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [containerComponent] });
     } catch (error) {
-      const errorEmbed = new EmbedBuilder()
-        .setColor("Red")
-        .setDescription("❌ | Failed to fetch a panda image. Please try again later.");
-      await interaction.editReply({ embeds: [errorEmbed] });
+      const errorMessage = new TextDisplayBuilder().setContent(
+        "❌ Failed to fetch a panda image. Please try again later."
+      );
+      const containerComponent = new ContainerBuilder()
+        .addTextDisplayComponents(errorMessage)
+        .setAccentColor([255, 0, 0]);
+      await interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [containerComponent] });
       throw error;
     }
   }

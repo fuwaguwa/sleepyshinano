@@ -1,4 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, type User } from "discord.js";
+import { getCurrentTimestamp } from "./misc";
 
 /**
  * Standard command options used across most commands
@@ -18,6 +19,13 @@ export function createFooter(user: User) {
     text: `Requested by ${user.username}`,
     iconURL: user.displayAvatarURL({ forceStatic: false }),
   };
+}
+
+/**
+ * Create text footer for components v2
+ */
+export function createTextFooter(user: User) {
+  return `-# Requested by ${user.username} | <t:${getCurrentTimestamp()}:R>`;
 }
 
 /**

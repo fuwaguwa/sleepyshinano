@@ -1,6 +1,14 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Subcommand, type SubcommandOptions } from "@sapphire/plugin-subcommands";
-import { ApplicationIntegrationType, EmbedBuilder, InteractionContextType, type User } from "discord.js";
+import {
+  ApplicationIntegrationType,
+  ContainerBuilder,
+  InteractionContextType,
+  MediaGalleryBuilder,
+  MessageFlags,
+  TextDisplayBuilder,
+  type User,
+} from "discord.js";
 import { standardCommandOptions } from "../../lib/utils/command";
 import { fetchJson } from "../../lib/utils/http";
 
@@ -164,14 +172,17 @@ export class ReactionCommand extends Subcommand {
     try {
       const description = this.getDescription(reaction, user, interaction.user);
       const imageLink = await this.getReactionImageLink(reaction);
-      const reactionEmbed = new EmbedBuilder().setColor("Random").setDescription(description).setImage(imageLink);
+      const gallery = new MediaGalleryBuilder().addItems([{ media: { url: imageLink as string } }]);
+      const descriptionComponent = new TextDisplayBuilder().setContent(description);
+      const containerComponent = new ContainerBuilder()
+        .addTextDisplayComponents(descriptionComponent)
+        .addMediaGalleryComponents(gallery);
 
-      await interaction.editReply({ embeds: [reactionEmbed] });
+      await interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [containerComponent] });
     } catch (error) {
-      const errorEmbed = new EmbedBuilder()
-        .setColor("Red")
-        .setDescription("❌ | Failed to fetch reaction. Please try again later.");
-      await interaction.editReply({ embeds: [errorEmbed] });
+      const errorMessage = new TextDisplayBuilder().setContent("❌ Failed to fetch reaction. Please try again later.");
+      const errorContainer = new ContainerBuilder().addTextDisplayComponents(errorMessage).setAccentColor([255, 0, 0]);
+      await interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [errorContainer] });
       throw error;
     }
   }

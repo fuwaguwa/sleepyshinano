@@ -1,6 +1,6 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { InteractionHandler, type InteractionHandlerOptions, InteractionHandlerTypes } from "@sapphire/framework";
-import { type ButtonInteraction, EmbedBuilder, MessageFlagsBitField } from "discord.js";
+import { type ButtonInteraction, ContainerBuilder, MessageFlags, TextDisplayBuilder, ActionRowBuilder, ButtonBuilder } from "discord.js";
 import { buttonCooldownCheck, buttonCooldownSet } from "../../lib/collectors";
 import { VOTE_LINK_BUTTON } from "../../lib/constants";
 import { getCurrentTimestamp } from "../../lib/utils/misc";
@@ -25,43 +25,46 @@ export class VoteCheckButtonHandler extends InteractionHandler {
 
     buttonCooldownSet("voteCheck", interaction);
 
-    const CANT_VOTE_EMBED = new EmbedBuilder().setColor("Red").setTimestamp();
-    const CAN_VOTE_EMBED = new EmbedBuilder().setColor("Green").setTimestamp();
-
     if (!user?.voteCreatedTimestamp || !user?.voteExpiredTimestamp) {
-      if (!user) await UserModel.findOneAndUpdate({ userId }, { $set: { userId } }, { upsert: true });
+  if (!user) await UserModel.findOneAndUpdate({ userId }, { $set: { userId } }, { upsert: true });
 
-      CANT_VOTE_EMBED.setDescription(
-        "It seems that you have not cast your vote for me! Please do so with the option below!"
-      );
+  const cantVoteText = new TextDisplayBuilder().setContent("## Vote Required\nIt seems that you have not cast your vote for me! Please do so with the option below!");
+  const cantVoteButton = VOTE_LINK_BUTTON;
+  const cantVoteContainer = new ContainerBuilder()
+    .addTextDisplayComponents(cantVoteText)
+    .addActionRowComponents(cantVoteButton)
+    .setAccentColor([255, 0, 0]);
 
-      return interaction.reply({
-        embeds: [CANT_VOTE_EMBED],
-        components: [VOTE_LINK_BUTTON],
-        flags: MessageFlagsBitField.Flags.Ephemeral,
-      });
-    }
+  return interaction.reply({
+    components: [cantVoteContainer],
+    flags: [MessageFlags.Ephemeral, MessageFlags.IsComponentsV2],
+  });
+}
 
-    const currentTime = getCurrentTimestamp();
+const currentTime = getCurrentTimestamp();
 
-    if (currentTime > user.voteExpiredTimestamp) {
-      CAN_VOTE_EMBED.setDescription(
-        `Your last vote was <t:${user.voteCreatedTimestamp}:R>, you can now vote again using the button below!`
-      );
+if (currentTime > user.voteExpiredTimestamp) {
+  const canVoteText = new TextDisplayBuilder().setContent(`## Vote Again!\nYour last vote was <t:${user.voteCreatedTimestamp}:R>, you can now vote again using the button below!`);
+  const canVoteButton = VOTE_LINK_BUTTON;
+  const canVoteContainer = new ContainerBuilder()
+    .addTextDisplayComponents(canVoteText)
+    .addActionRowComponents(canVoteButton)
+    .setAccentColor([0, 255, 0]);
 
-      await interaction.reply({
-        embeds: [CAN_VOTE_EMBED],
-        components: [VOTE_LINK_BUTTON],
-        flags: MessageFlagsBitField.Flags.Ephemeral,
-      });
-    } else {
-      CANT_VOTE_EMBED.setDescription(
-        `Your last vote was <t:${user.voteCreatedTimestamp}:R>, you can vote again <t:${user.voteExpiredTimestamp}:R>`
-      );
-      await interaction.reply({
-        embeds: [CANT_VOTE_EMBED],
-        flags: MessageFlagsBitField.Flags.Ephemeral,
-      });
-    }
+  await interaction.reply({
+    components: [canVoteContainer],
+    flags: [MessageFlags.Ephemeral, MessageFlags.IsComponentsV2],
+  });
+} else {
+  const cantVoteText = new TextDisplayBuilder().setContent(`## Vote Cooldown\nYour last vote was <t:${user.voteCreatedTimestamp}:R>, you can vote again <t:${user.voteExpiredTimestamp}:R>`);
+  const cantVoteContainer = new ContainerBuilder()
+    .addTextDisplayComponents(cantVoteText)
+    .setAccentColor([255, 0, 0]);
+
+  await interaction.reply({
+    components: [cantVoteContainer],
+    flags: [MessageFlags.Ephemeral, MessageFlags.IsComponentsV2],
+  });
+}
   }
 }

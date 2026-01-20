@@ -1,5 +1,16 @@
 import { container } from "@sapphire/framework";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, type Guild, type TextChannel } from "discord.js";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ContainerBuilder,
+  EmbedBuilder,
+  type Guild,
+  MediaGalleryBuilder,
+  MessageFlags,
+  type TextChannel,
+  TextDisplayBuilder,
+} from "discord.js";
 import { createLinkButtons, queryBooru } from "../lib/booru";
 import { BOORU_CONFIG, TOPGG_EMOJI_ID, TOPGG_VOTE_URL } from "../lib/constants";
 import { getCurrentTimestamp, isVideoUrl } from "../lib/utils/misc";
@@ -12,7 +23,7 @@ export class ShinanoAutobooru {
     container.logger.info("Initialized autobooru posting...");
 
     const isDevelopment = process.env.NODE_ENV === "development";
-    const intervalTime = isDevelopment ? 5000 : 60000;
+    const intervalTime = isDevelopment ? 10000 : 60000;
 
     await this.processAutobooru(isDevelopment);
     setInterval(async () => {
@@ -49,19 +60,16 @@ export class ShinanoAutobooru {
 
       container.logger.debug(fileUrl);
 
-      if (isVideo) {
-        await channel.send({
-          content: `${tagMessage}\n\n${post.file_url}`,
-          components: [links],
-        });
-      } else {
-        const embed = new EmbedBuilder()
-          .setColor("Random")
-          .setImage(post.file_url)
-          .setDescription(tagMessage)
-          .setTimestamp();
-        await channel.send({ embeds: [embed], components: [links] });
-      }
+      const descriptionText = new TextDisplayBuilder().setContent(tagMessage);
+      const gallery = new MediaGalleryBuilder().addItems([{ media: { url: post.file_url } }]);
+      const footer = new TextDisplayBuilder().setContent(`-# <t:${getCurrentTimestamp()}:R>`);
+      const containerComponent = new ContainerBuilder()
+        .addTextDisplayComponents(descriptionText)
+        .addMediaGalleryComponents(gallery)
+        .addTextDisplayComponents(footer)
+        .addActionRowComponents(links);
+
+      await channel.send({ flags: MessageFlags.IsComponentsV2, components: [containerComponent] });
 
       return true;
     } catch (error) {
@@ -72,19 +80,13 @@ export class ShinanoAutobooru {
 
   private async processDevelopmentMode() {
     const testGuildId = "1002188153685295204";
-    const testChannelId = "1455798633936191529";
+    const testChannelId = "1456564611301118083";
 
     try {
       const guild = await container.client.guilds.fetch(testGuildId);
       const channel = await guild.channels.fetch(testChannelId);
 
-      await this.sendBooruToChannel(
-        channel as TextChannel,
-        "836215956346634270",
-        "shinano_(azur_lane)",
-        false,
-        "rule34"
-      );
+      await this.sendBooruToChannel(channel as TextChannel, "836215956346634270", "genshin_impact", false, "rule34");
     } catch (error) {
       container.logger.error("Error in dev autobooru:", error);
     }
@@ -92,7 +94,7 @@ export class ShinanoAutobooru {
 
   private async processAutobooru(isDevelopment: boolean) {
     try {
-      if (isDevelopment) return; // this.processDevelopmentMode();
+      if (isDevelopment) return this.processDevelopmentMode();
 
       const autoboorus = await AutobooruModel.find();
 
@@ -124,7 +126,7 @@ export class ShinanoAutobooru {
             const errorEmbed = new EmbedBuilder()
               .setColor("Red")
               .setDescription(
-                "❌ | This channel is NOT NSFW, please make this channel age-restricted and run `/autobooru` again"
+                "❌ This channel is NOT NSFW, please make this channel age-restricted and run `/autobooru` again"
               );
 
             await channel.send({ embeds: [errorEmbed] });
@@ -158,7 +160,7 @@ export class ShinanoAutobooru {
             const voteBro = new EmbedBuilder()
               .setColor("Red")
               .setTitle("Vote expired!")
-              .setDescription("❌ | Please vote for Shinano to continue posting!");
+              .setDescription("❌ Please vote for Shinano to continue posting!");
 
             await channel.send({
               content: `<@${autobooru.userId}>,`,

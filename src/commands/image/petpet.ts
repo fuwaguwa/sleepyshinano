@@ -8,11 +8,14 @@ import {
   ApplicationIntegrationType,
   AttachmentBuilder,
   type ChatInputCommandInteraction,
-  EmbedBuilder,
+  ContainerBuilder,
   InteractionContextType,
+  MediaGalleryBuilder,
+  MessageFlags,
+  TextDisplayBuilder,
 } from "discord.js";
 import GIFEncoder from "gif-encoder-2";
-import { createFooter, standardCommandOptions } from "../../lib/utils/command";
+import { standardCommandOptions } from "../../lib/utils/command";
 
 const SIZE = 128; // canvas size (square)
 const DELAY = 20; // frame delay ms
@@ -35,22 +38,14 @@ async function collectStream(stream: Readable): Promise<Buffer> {
 const framesCache = new Map<string, Image[]>();
 const framesLoading = new Map<string, Promise<Image[]>>();
 
-/**
- * Loading frames from cache
- */
 async function loadFrames(framesPath: string, frameCount: number): Promise<Image[]> {
   const key = `${framesPath}:${frameCount}`;
-
-  // This function always returns Promise<Image[]>
   const cached = framesCache.get(key);
   if (cached) return cached;
   const inFlight = framesLoading.get(key);
   if (inFlight) return inFlight;
-
   const p = (async (): Promise<Image[]> => {
     const frameFiles = Array.from({ length: frameCount }, (_, i) => path.join(framesPath, `pet${i}.gif`));
-
-    // Verify files exist
     await Promise.all(
       frameFiles.map(async p => {
         try {
@@ -60,13 +55,11 @@ async function loadFrames(framesPath: string, frameCount: number): Promise<Image
         }
       })
     );
-
     const imgs = await Promise.all(frameFiles.map(f => loadImage(f)));
     framesCache.set(key, imgs);
     framesLoading.delete(key);
     return imgs;
   })();
-
   framesLoading.set(key, p);
   return p;
 }
@@ -93,35 +86,27 @@ export class PetpetCommand extends Command {
 
   public override async chatInputRun(interaction: ChatInputCommandInteraction) {
     if (!interaction.deferred) await interaction.deferReply();
-
     const target = interaction.options.getUser("user") || interaction.user;
     const avatar = target.displayAvatarURL({
       size: 512,
       extension: "png",
       forceStatic: true,
     });
-
     try {
-      // Load frames from cache if path matches
-      let frames: Image[];
-      frames = await loadFrames(FRAMES_PATH, FRAME_COUNT);
-
+      const frames: Image[] = await loadFrames(FRAMES_PATH, FRAME_COUNT);
       const avatarImage = await loadImage(avatar);
       const canvas = createCanvas(SIZE, SIZE);
-      const ctx = canvas.getContext("2d");
-
       const avatarSize = avatarImage.width;
       const frameCount = frames.length;
 
+      const ctx = canvas.getContext("2d");
       const encoder = new GIFEncoder(SIZE, SIZE, "octree", true, frameCount);
       encoder.setRepeat(0);
       encoder.setDelay(DELAY);
       encoder.setQuality(10);
 
       const outStream: Readable | null = encoder.createReadStream();
-
       encoder.start();
-
       for (let i = 0; i < frameCount; i++) {
         // Petpet animation transformations
         const j = i < frameCount / 2 ? i : frameCount - i;
@@ -129,32 +114,39 @@ export class PetpetCommand extends Command {
         const heightScale = 0.8 - j * 0.05;
         const offsetX = (1 - widthScale) * 0.5 + 0.1;
         const offsetY = 1 - heightScale - 0.08;
-
         ctx.clearRect(0, 0, SIZE, SIZE);
-
         const avatarDrawW = Math.round(widthScale * SIZE);
         const avatarDrawH = Math.round(heightScale * SIZE);
         const avatarDrawX = Math.round(offsetX * SIZE);
         const avatarDrawY = Math.round(offsetY * SIZE);
-
         ctx.drawImage(avatarImage, 0, 0, avatarSize, avatarSize, avatarDrawX, avatarDrawY, avatarDrawW, avatarDrawH);
-
         ctx.drawImage(frames[i], 0, 0, SIZE, SIZE);
-
         encoder.addFrame(ctx);
       }
-
       encoder.finish();
 
       const buffer: Buffer = await collectStream(outStream);
       const attachment = new AttachmentBuilder(buffer, { name: "petpet.gif" });
-      await interaction.editReply({ files: [attachment] });
+      const petpetGif = new MediaGalleryBuilder().addItems([
+        {
+          media: {
+            url: "attachment://petpet.gif",
+          },
+        },
+      ]);
+
+      const containerComponent = new ContainerBuilder().addMediaGalleryComponents(petpetGif);
+      await interaction.editReply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [containerComponent],
+        files: [attachment],
+      });
     } catch (err) {
-      const embed = new EmbedBuilder()
-        .setColor("Red")
-        .setDescription("❌ | Failed to create petpet gif.")
-        .setFooter(createFooter(interaction.user));
-      await interaction.editReply({ embeds: [embed] });
+      const errorMessage = new TextDisplayBuilder().setContent("❌ | Failed to create petpet gif.");
+      const containerComponent = new ContainerBuilder()
+        .addTextDisplayComponents(errorMessage)
+        .setAccentColor([255, 0, 0]);
+      await interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [containerComponent] });
       throw err;
     }
   }

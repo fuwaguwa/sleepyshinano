@@ -6,7 +6,7 @@ import {
   type UserError,
 } from "@sapphire/framework";
 import type { SubcommandPluginEvents } from "@sapphire/plugin-subcommands";
-import { EmbedBuilder, MessageFlagsBitField } from "discord.js";
+import { ContainerBuilder, MessageFlags, TextDisplayBuilder } from "discord.js";
 import { VOTE_LINK_BUTTON } from "../../../lib/constants";
 
 @ApplyOptions<ListenerOptions>({
@@ -20,32 +20,33 @@ export class VotedError extends Listener<typeof SubcommandPluginEvents.ChatInput
     if (Reflect.get(Object(context), "silent")) return;
     if (identifier !== "votedError") return;
 
-    const errorEmbed = new EmbedBuilder().setColor("Red").setTimestamp();
-
+    let description = "";
     if (message === "noVote") {
-      errorEmbed.setDescription(
-        "It seems that you have not cast your vote for me! Please do so with the option below!"
-      );
+      description = "It seems that you have not cast your vote for me! Please do so with the option below!";
     } else {
       const voteTimestamp = message.split("-")[1];
-      errorEmbed.setDescription(
-        `Your last vote was <t:${voteTimestamp}:R>, you can now vote again using the button below!`
-      );
+      description = `Your last vote was <t:${voteTimestamp}:R>, you can now vote again using the button below!`;
     }
+
+    const errorText = new TextDisplayBuilder().setContent(`## Vote Required\n${description}`);
+    const errorButton = VOTE_LINK_BUTTON;
+    const errorContainer = new ContainerBuilder()
+      .addTextDisplayComponents(errorText)
+      .addActionRowComponents(errorButton)
+      .setAccentColor([255, 0, 0]);
 
     if (interaction.deferred || interaction.replied) {
       return interaction.editReply({
-        embeds: [errorEmbed],
-        components: [VOTE_LINK_BUTTON],
+        components: [errorContainer],
         allowedMentions: { users: [interaction.user.id], roles: [] },
+        flags: MessageFlags.IsComponentsV2,
       });
     }
 
     return interaction.reply({
-      embeds: [errorEmbed],
-      components: [VOTE_LINK_BUTTON],
+      components: [errorContainer],
       allowedMentions: { users: [interaction.user.id], roles: [] },
-      flags: MessageFlagsBitField.Flags.Ephemeral,
+      flags: [MessageFlags.Ephemeral, MessageFlags.IsComponentsV2],
     });
   }
 }

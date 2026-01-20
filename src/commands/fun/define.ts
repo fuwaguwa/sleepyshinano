@@ -3,8 +3,11 @@ import { Command, type CommandOptions } from "@sapphire/framework";
 import {
   ApplicationIntegrationType,
   type ChatInputCommandInteraction,
-  EmbedBuilder,
+  ContainerBuilder,
   InteractionContextType,
+  MediaGalleryBuilder,
+  MessageFlags,
+  TextDisplayBuilder,
 } from "discord.js";
 import { standardCommandOptions } from "../../lib/utils/command";
 import { fetchJson } from "../../lib/utils/http";
@@ -48,33 +51,39 @@ export class DefineCommand extends Command {
       if (!definition || !definition.list) throw new Error("Invalid response from Urban Dictionary API");
 
       if (definition.list.length === 0) {
-        const noResult = new EmbedBuilder()
-          .setColor("Red")
-          .setDescription(`❌ | I apologize, but no definition for \`${word}\` can be located...`);
-        return interaction.editReply({ embeds: [noResult] });
+        const errorText = new TextDisplayBuilder().setContent("❌️ No results found!");
+        const containerComponent = new ContainerBuilder()
+          .addTextDisplayComponents(errorText)
+          .setAccentColor([255, 0, 0]);
+        return interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [containerComponent] });
       }
 
       const wordInfo = definition.list[0];
-      const definitionEmbed = new EmbedBuilder()
-        .setColor("#2b2d31")
-        .setTitle(`"${wordInfo.word}"`)
-        .setDescription(wordInfo.definition)
-        .setFooter({
-          text: `Definition by ${wordInfo.author} | ${wordInfo.thumbs_up} 👍 / ${wordInfo.thumbs_down} 👎`,
-        });
+      const definitionText = new TextDisplayBuilder().setContent(
+        `## "${wordInfo.word}"\n\n` +
+          `${wordInfo.definition}\n\n` +
+          `-# Definition by ${wordInfo.author} | ${wordInfo.thumbs_up} 👍 / ${wordInfo.thumbs_down} 👎`
+      );
+
+      const containerComponent = new ContainerBuilder().addTextDisplayComponents(definitionText);
 
       if (word.toLowerCase() === "shinano") {
-        definitionEmbed.setImage(
-          "https://cdn.donmai.us/sample/c0/37/__shinano_azur_lane_drawn_by_waa_okami__sample-c037f94c2287a60578bef71acf163865.jpg"
-        );
+        const shinanoImage = new MediaGalleryBuilder().addItems([
+          {
+            media: {
+              url: "https://cdn.donmai.us/sample/c0/37/__shinano_azur_lane_drawn_by_waa_okami__sample-c037f94c2287a60578bef71acf163865.jpg",
+            },
+          },
+        ]);
+        containerComponent.addMediaGalleryComponents(shinanoImage);
       }
 
-      await interaction.editReply({ embeds: [definitionEmbed] });
+      await interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [containerComponent] });
     } catch (error) {
-      const errorEmbed = new EmbedBuilder()
-        .setColor("Red")
-        .setDescription("❌ | Failed to fetch definition. Please try again later.");
-      await interaction.editReply({ embeds: [errorEmbed] });
+      const errorText = new TextDisplayBuilder().setContent("❌️ Failed to fetch definition");
+      const containerComponent = new ContainerBuilder().addTextDisplayComponents(errorText).setAccentColor([255, 0, 0]);
+
+      await interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [containerComponent] });
       throw error;
     }
   }

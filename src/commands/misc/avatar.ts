@@ -3,9 +3,13 @@ import { Command, type CommandOptions } from "@sapphire/framework";
 import {
   ApplicationIntegrationType,
   type ChatInputCommandInteraction,
-  EmbedBuilder,
+  ContainerBuilder,
   InteractionContextType,
+  MediaGalleryBuilder,
+  MessageFlags,
+  TextDisplayBuilder,
 } from "discord.js";
+import { getCurrentTimestamp } from "../../lib/utils/misc";
 
 @ApplyOptions<CommandOptions>({
   description: "Get an user's avatar",
@@ -40,13 +44,25 @@ export class AvatarCommand extends Command {
       : `[.jpg](${baseUrl}.jpg?size=1024) | [.png](${baseUrl}.png?size=1024) | [.webp](${baseUrl}.webp?size=1024)`;
     const displayUrl = isAnimated ? `${baseUrl}.gif?size=1024` : `${baseUrl}.png?size=1024`;
 
-    const embed = new EmbedBuilder()
-      .setTitle(`${user.username}'s Avatar`)
-      .setDescription(description)
-      .setImage(displayUrl)
-      .setColor("#2b2d31")
-      .setFooter({ text: `UID: ${user.id}` });
+    const titleText = new TextDisplayBuilder().setContent(`## ${user.username}'s Avatar`);
+    const avatarFormat = new TextDisplayBuilder().setContent(description);
+    const footer = new TextDisplayBuilder().setContent(
+      `-# UID: ${user.id} | Requested by ${interaction.user} | <t:${getCurrentTimestamp()}:R>`
+    );
 
-    await interaction.reply({ embeds: [embed] });
+    const avatarGallery = new MediaGalleryBuilder().addItems([
+      {
+        media: {
+          url: displayUrl,
+        },
+      },
+    ]);
+
+    const containerComponent = new ContainerBuilder()
+      .addTextDisplayComponents(titleText, avatarFormat)
+      .addMediaGalleryComponents(avatarGallery)
+      .addTextDisplayComponents(footer);
+
+    await interaction.reply({ flags: MessageFlags.IsComponentsV2, components: [containerComponent] });
   }
 }

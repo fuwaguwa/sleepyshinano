@@ -3,11 +3,14 @@ import { Command, type CommandOptions } from "@sapphire/framework";
 import {
   ApplicationIntegrationType,
   type ChatInputCommandInteraction,
-  EmbedBuilder,
+  ContainerBuilder,
   InteractionContextType,
+  MediaGalleryBuilder,
+  MessageFlags,
+  TextDisplayBuilder,
 } from "discord.js";
 import { DOG_API_URL } from "../../lib/constants";
-import { createFooter, standardCommandOptions } from "../../lib/utils/command";
+import { createTextFooter, standardCommandOptions } from "../../lib/utils/command";
 import { fetchJson } from "../../lib/utils/http";
 import type { DogApiResponse } from "../../typings/api/animal";
 
@@ -35,20 +38,27 @@ export class DogCommand extends Command {
 
     try {
       const dog = await fetchJson<DogApiResponse>(DOG_API_URL);
-
       if (!dog || !dog.message) throw new Error("Failed to fetch dog image");
 
-      const embed = new EmbedBuilder()
-        .setColor("Random")
-        .setImage(dog.message)
-        .setFooter(createFooter(interaction.user));
+      const gallery = new MediaGalleryBuilder().addItems({
+        media: {
+          url: dog.message,
+        },
+      });
+      const footer = new TextDisplayBuilder().setContent(createTextFooter(interaction.user));
+      const containerComponent = new ContainerBuilder()
+        .addMediaGalleryComponents(gallery)
+        .addTextDisplayComponents(footer);
 
-      await interaction.editReply({ embeds: [embed] });
+      await interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [containerComponent] });
     } catch (error) {
-      const errorEmbed = new EmbedBuilder()
-        .setColor("Red")
-        .setDescription("❌ | Failed to fetch a dog image. Please try again later.");
-      await interaction.editReply({ embeds: [errorEmbed] });
+      const errorMessage = new TextDisplayBuilder().setContent(
+        "❌ Failed to fetch a dog image. Please try again later."
+      );
+      const containerComponent = new ContainerBuilder()
+        .addTextDisplayComponents(errorMessage)
+        .setAccentColor([255, 0, 0]);
+      await interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [containerComponent] });
       throw error;
     }
   }

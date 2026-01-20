@@ -1,6 +1,6 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
-import { type ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
+import { type ChatInputCommandInteraction, ContainerBuilder, MessageFlags, TextDisplayBuilder } from "discord.js";
 import { standardCommandOptions } from "../../lib/utils/command";
 import { randomItem } from "../../lib/utils/misc";
 
@@ -44,8 +44,12 @@ export class EightBallCommand extends Command {
   public override async chatInputRun(interaction: ChatInputCommandInteraction) {
     const question = interaction.options.getString("question", true);
 
-    const embed = new EmbedBuilder().setColor("#2b2d31").setDescription(`> **${question}**\n${randomItem(RESPONSES)}`);
+    const text = new TextDisplayBuilder().setContent(`> **${question}**\n${randomItem(RESPONSES)}`);
+    const containerComponent = new ContainerBuilder().addTextDisplayComponents(text);
 
-    await interaction.reply({ embeds: [embed] });
+    await interaction.editReply({
+      flags: MessageFlags.IsComponentsV2,
+      components: [containerComponent],
+    });
   }
 }

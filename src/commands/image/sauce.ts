@@ -51,7 +51,7 @@ export class SauceCommand extends Command {
     const ERROR_EMBED = new EmbedBuilder().setColor("Red");
 
     if (!link && !media) {
-      ERROR_EMBED.setDescription("❌ | You must provide either a link or an attachment to search for sauce.");
+      ERROR_EMBED.setDescription("❌ You must provide either a link or an attachment to search for sauce.");
       return interaction.editReply({ embeds: [ERROR_EMBED] });
     }
 
@@ -59,7 +59,7 @@ export class SauceCommand extends Command {
     const imageUrl = link ?? (media?.proxyURL as string);
 
     if (!isImageAndGif(imageUrl)) {
-      ERROR_EMBED.setDescription("❌ | The provided link/attachment is not a valid image or GIF.");
+      ERROR_EMBED.setDescription("❌ The provided link/attachment is not a valid image or GIF.");
       return interaction.editReply({ embeds: [ERROR_EMBED] });
     }
 

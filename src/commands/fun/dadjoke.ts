@@ -1,6 +1,6 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
-import { type ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
+import { type ChatInputCommandInteraction, ContainerBuilder, MessageFlags, TextDisplayBuilder } from "discord.js";
 import { standardCommandOptions } from "../../lib/utils/command";
 import { fetchJson } from "../../lib/utils/http";
 
@@ -28,14 +28,15 @@ export class DadjokeCommand extends Command {
       if (!dadjoke || !dadjoke.joke) throw new Error("Cannot find dadjoke");
 
       const joke = dadjoke.joke;
-      const embed = new EmbedBuilder().setColor("Random").setDescription(joke);
+      const jokeText = new TextDisplayBuilder().setContent(joke);
+      const containerComponent = new ContainerBuilder().addTextDisplayComponents(jokeText);
 
-      await interaction.editReply({ embeds: [embed] });
+      await interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [containerComponent] });
     } catch (error) {
-      const errorEmbed = new EmbedBuilder()
-        .setColor("Red")
-        .setDescription("❌ | Failed to fetch a dad joke. Please try again later.");
-      await interaction.editReply({ embeds: [errorEmbed] });
+      const errorText = new TextDisplayBuilder().setContent("❌️ Failed to fetch a dadjoke!");
+      const containerComponent = new ContainerBuilder().addTextDisplayComponents(errorText).setAccentColor([255, 0, 0]);
+
+      await interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [containerComponent] });
       throw error;
     }
   }
