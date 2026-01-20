@@ -5,12 +5,16 @@ import {
   type ChatInputCommandInteraction,
   ContainerBuilder,
   type InteractionEditReplyOptions,
+  LabelBuilder,
   type Message,
   type MessageComponentInteraction,
   MessageFlags,
-  MessageFlagsBitField,
   type MessagePayload,
+  ModalBuilder,
+  SeparatorBuilder,
   type StringSelectMenuBuilder,
+  TextInputBuilder,
+  TextInputStyle,
 } from "discord.js";
 import { paginationCollector } from "../lib/collectors";
 import type { ShinanoPaginatorOptions } from "../typings/paginator";
@@ -24,6 +28,7 @@ export class ShinanoPaginator {
   private readonly interactorOnly: boolean;
   private readonly timeout: number;
   private readonly menuId?: string;
+  private readonly pageCountName: string;
 
   private collector!: ReturnType<Message["createMessageComponentCollector"]>;
   private currentPage: number;
@@ -39,6 +44,7 @@ export class ShinanoPaginator {
     this.interactorOnly = options.interactorOnly ?? false;
     this.timeout = options.timeout;
     this.currentPage = options.startPage ?? 0;
+    this.pageCountName = options.pageCountName ?? "Page";
 
     if (this.menu) this.menuId = this.menu.components[0].data.custom_id?.split("-")[0];
   }
@@ -78,6 +84,8 @@ export class ShinanoPaginator {
       clonedContainer.addActionRowComponents(this.menu);
     }
 
+    clonedContainer.addSeparatorComponents(new SeparatorBuilder());
+
     // Disable all paginator navigation buttons
     this.navigationButtons.forEach(button => {
       button.setStyle(ButtonStyle.Secondary).setDisabled(true);
@@ -108,9 +116,8 @@ export class ShinanoPaginator {
         .setCustomId(`BACK-${userId}`),
       new ButtonBuilder()
         .setStyle(ButtonStyle.Secondary)
-        .setDisabled(true)
-        .setCustomId("pagecount")
-        .setLabel(`Page: ${this.currentPage + 1}/${this.pages.length}`),
+        .setCustomId(`PAGECOUNT-${userId}`)
+        .setLabel(`${this.pageCountName}: ${this.currentPage + 1}/${this.pages.length}`),
       new ButtonBuilder()
         .setStyle(ButtonStyle.Primary)
         .setEmoji({ id: "1002197525345865790" })
@@ -143,11 +150,8 @@ export class ShinanoPaginator {
     this.navigationButtons[4].setDisabled(isLastPage);
 
     // Update page counter
-    this.navigationButtons[2].setLabel(`Page: ${this.currentPage + 1}/${this.pages.length}`);
+    this.navigationButtons[2].setLabel(`${this.pageCountName}: ${this.currentPage + 1}/${this.pages.length}`);
   }
-
-  // Obsolete
-  // private buildComponents() {}
 
   private buildContainerPayload(): { components: ContainerBuilder[] } {
     // Clone the original container to avoid mutating it on each page change
@@ -156,6 +160,7 @@ export class ShinanoPaginator {
 
     // Add menu and navigation/extra buttons as action rows inside the container
     if (this.menu) clonedContainer.addActionRowComponents(this.menu);
+    clonedContainer.addSeparatorComponents(new SeparatorBuilder());
     clonedContainer.addActionRowComponents(this.navigationRow);
     if (this.extraButtons?.[this.currentPage])
       clonedContainer.addActionRowComponents(this.extraButtons[this.currentPage]);
@@ -186,6 +191,8 @@ export class ShinanoPaginator {
       paginationCollector.set(this.interaction.user.id, collector);
 
       collector.on("collect", async (i: MessageComponentInteraction) => {
+        const splitId = i.customId.split("-")[0];
+        if (!["FIRST", "BACK", "NEXT", "LAST", "PAGECOUNT"].includes(splitId) && splitId !== this.menuId) return;
         const interactionSuccess = await this.handleInteraction(i, collector);
 
         if (!interactionSuccess) resolve(this.currentPage);
@@ -201,7 +208,8 @@ export class ShinanoPaginator {
     i: MessageComponentInteraction,
     collector: ReturnType<Message["createMessageComponentCollector"]>
   ): Promise<boolean> {
-    const [action, userId] = i.customId.split("-");
+    const splitId = i.customId.split("-");
+    const action = splitId[0];
 
     if (action === this.menuId) {
       collector.stop("interaction ended");
@@ -210,12 +218,17 @@ export class ShinanoPaginator {
       return false;
     }
 
-    if (this.interactorOnly && userId !== i.user.id) {
+    if (this.interactorOnly && !i.customId.endsWith(i.user.id)) {
       await i.reply({
         content: "This button does not belong to you!",
-        flags: MessageFlagsBitField.Flags.Ephemeral,
+        flags: MessageFlags.Ephemeral,
       });
 
+      return true;
+    }
+
+    if (action === "PAGECOUNT") {
+      await this.showPageJumpModal(i, collector);
       return true;
     }
 
@@ -246,6 +259,54 @@ export class ShinanoPaginator {
     }
   }
 
+  private async showPageJumpModal(
+    i: MessageComponentInteraction,
+    collector: ReturnType<Message["createMessageComponentCollector"]>
+  ) {
+    const modal = new ModalBuilder().setCustomId(`pagejump-${i.user.id}`).setTitle(`${this.pageCountName} Selection`);
+
+    const pageInput = new TextInputBuilder()
+      .setCustomId("pageNumber")
+      .setStyle(TextInputStyle.Short)
+      .setPlaceholder(`1-${this.pages.length}`)
+      .setRequired(true);
+
+    const label = new LabelBuilder()
+      .setLabel(`Enter ${this.pageCountName.toLowerCase()}`)
+      .setTextInputComponent(pageInput);
+
+    modal.addLabelComponents(label);
+
+    await i.showModal(modal);
+
+    const modalFilter = (modalInteraction: any) => modalInteraction.customId === `pagejump-${i.user.id}`;
+
+    try {
+      const modalSubmit = await i.awaitModalSubmit({ filter: modalFilter, time: 60000 });
+
+      const pageNumberInput = modalSubmit.fields.getTextInputValue("pageNumber");
+      const pageNumber = Number.parseInt(pageNumberInput, 10);
+
+      if (Number.isNaN(pageNumber) || pageNumber < 1 || pageNumber > this.pages.length) {
+        await modalSubmit.reply({
+          content: "The value you entered is invalid, please try again",
+          flags: MessageFlags.Ephemeral,
+        });
+        return;
+      }
+
+      this.currentPage = pageNumber - 1;
+
+      await modalSubmit.deferUpdate();
+      this.updateButtonStates();
+      await modalSubmit.editReply(this.getMessagePayload());
+
+      collector.resetTimer();
+    } catch (_) {
+      return;
+    }
+  }
+
   private async handleCollectorEnd(reason: string) {
     if (["messageDelete", "interaction ended"].includes(reason)) return;
 
@@ -260,6 +321,8 @@ export class ShinanoPaginator {
       });
       clonedContainer.addActionRowComponents(this.menu);
     }
+
+    clonedContainer.addSeparatorComponents(new SeparatorBuilder());
 
     // Disable navigation buttons
     this.navigationButtons.forEach(button => {
