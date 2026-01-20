@@ -58,3 +58,7 @@ export function cleanBooruTags(tags: string): string {
     .filter(tag => !tag.startsWith("sort:"))
     .join(" ");
 }
+
+export function toTitleCase(str: string): string {
+  return str.replace(/\b\w/g, c => c.toUpperCase());
+}

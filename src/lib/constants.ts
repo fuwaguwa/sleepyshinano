@@ -60,6 +60,21 @@ export const FOXGIRL_API_URL = "https://nekos.best/api/v2/kitsune";
 export const HUSBANDO_API_URL = "https://nekos.best/api/v2/husbando";
 export const WAIFU_API_URL = "https://nekos.best/api/v2/waifu";
 
+export const KEMONO_BASE_URL = "https://kemono.cr";
+export const KEMONO_API_BASE_URL = `${KEMONO_BASE_URL}/api`;
+export const KEMONO_API2_BASE_URL = "https://kemono-api.mbaharip.com";
+export const KEMONO_SERVICES = [
+  "patreon",
+  "fanbox",
+  "fantia",
+  "gumroad",
+  "boosty",
+  "afdian",
+  "dlsite",
+  "subscribestar",
+  "discord",
+] as const;
+
 export const LEWD_CATEGORIES = ["hoyo", "kemonomimi", "misc", "shipgirls", "undies"] as const;
 export const LEWD_FORMAT = ["image", "animated"] as const;
 
