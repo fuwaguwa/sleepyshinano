@@ -14,6 +14,7 @@ export interface ShinanoPaginatorOptions {
   extraButtons?: ActionRowBuilder<ButtonBuilder>[];
   payloads?: MessagePayload[] | string[] | InteractionEditReplyOptions[];
   menu?: ActionRowBuilder<StringSelectMenuBuilder>;
+  pageCountName?: string;
   interactorOnly: boolean;
   timeout: number;
   startPage?: number;
