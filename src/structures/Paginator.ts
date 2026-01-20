@@ -63,7 +63,6 @@ export class ShinanoPaginator {
   }
 
   public async stopPaginator(hideComponents: boolean) {
-    // Stop collector if running
     if (this.collector && !this.collector.ended) {
       this.collector.stop("stopped by stopPaginator");
     }
@@ -72,11 +71,9 @@ export class ShinanoPaginator {
       return;
     }
 
-    // Clone the original container to avoid mutating it
     const originalContainer = this.pages[this.currentPage];
     const clonedContainer = new ContainerBuilder(originalContainer.toJSON());
 
-    // Disable menu if present (all components) - ABOVE navigation
     if (this.menu) {
       this.menu.components.forEach(component => {
         component.setDisabled(true);
@@ -86,13 +83,11 @@ export class ShinanoPaginator {
 
     clonedContainer.addSeparatorComponents(new SeparatorBuilder());
 
-    // Disable all paginator navigation buttons
     this.navigationButtons.forEach(button => {
       button.setStyle(ButtonStyle.Secondary).setDisabled(true);
     });
     clonedContainer.addActionRowComponents(this.navigationRow);
 
-    // Disable extraButtons if present for this page - BELOW navigation
     if (this.extraButtons?.[this.currentPage]) {
       this.extraButtons[this.currentPage].components.forEach(btn => {
         btn.setDisabled(true);
@@ -100,6 +95,10 @@ export class ShinanoPaginator {
       clonedContainer.addActionRowComponents(this.extraButtons[this.currentPage]);
     }
     await this.interaction.editReply({ components: [clonedContainer], flags: MessageFlags.IsComponentsV2 });
+  }
+
+  public getCurrentPage(): number {
+    return this.currentPage;
   }
 
   private initializeButtons() {
