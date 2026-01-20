@@ -3,10 +3,11 @@ import {
   ButtonBuilder,
   ButtonStyle,
   type ChatInputCommandInteraction,
-  type EmbedBuilder,
+  ContainerBuilder,
   type InteractionEditReplyOptions,
   type Message,
   type MessageComponentInteraction,
+  MessageFlags,
   MessageFlagsBitField,
   type MessagePayload,
   type StringSelectMenuBuilder,
@@ -16,13 +17,15 @@ import type { ShinanoPaginatorOptions } from "../typings/paginator";
 
 export class ShinanoPaginator {
   private readonly interaction: ChatInputCommandInteraction;
-  private readonly pages: EmbedBuilder[];
+  private readonly pages: ContainerBuilder[];
+  private readonly extraButtons?: ActionRowBuilder<ButtonBuilder>[];
   private readonly payloads?: MessagePayload[] | string[] | InteractionEditReplyOptions[];
   private readonly menu?: ActionRowBuilder<StringSelectMenuBuilder>;
   private readonly interactorOnly: boolean;
   private readonly timeout: number;
   private readonly menuId?: string;
 
+  private collector!: ReturnType<Message["createMessageComponentCollector"]>;
   private currentPage: number;
   private navigationRow!: ActionRowBuilder<ButtonBuilder>;
   private navigationButtons!: ButtonBuilder[];
@@ -30,6 +33,7 @@ export class ShinanoPaginator {
   constructor(options: ShinanoPaginatorOptions) {
     this.interaction = options.interaction;
     this.pages = options.pages ?? [];
+    this.extraButtons = options.extraButtons;
     this.payloads = options.payloads;
     this.menu = options.menu;
     this.interactorOnly = options.interactorOnly ?? false;
@@ -39,7 +43,7 @@ export class ShinanoPaginator {
     if (this.menu) this.menuId = this.menu.components[0].data.custom_id?.split("-")[0];
   }
 
-  async startPaginator(): Promise<number> {
+  public async startPaginator(): Promise<number> {
     if (!this.interaction.deferred) await this.interaction.deferReply();
 
     this.initializeButtons();
@@ -50,6 +54,44 @@ export class ShinanoPaginator {
     if (this.pages.length === 0) return this.currentPage;
 
     return this.setupCollector(message);
+  }
+
+  public async stopPaginator(hideComponents: boolean) {
+    // Stop collector if running
+    if (this.collector && !this.collector.ended) {
+      this.collector.stop("stopped by stopPaginator");
+    }
+    if (hideComponents) {
+      await this.interaction.editReply({ components: [] });
+      return;
+    }
+
+    // Clone the original container to avoid mutating it
+    const originalContainer = this.pages[this.currentPage];
+    const clonedContainer = new ContainerBuilder(originalContainer.toJSON());
+
+    // Disable menu if present (all components) - ABOVE navigation
+    if (this.menu) {
+      this.menu.components.forEach(component => {
+        component.setDisabled(true);
+      });
+      clonedContainer.addActionRowComponents(this.menu);
+    }
+
+    // Disable all paginator navigation buttons
+    this.navigationButtons.forEach(button => {
+      button.setStyle(ButtonStyle.Secondary).setDisabled(true);
+    });
+    clonedContainer.addActionRowComponents(this.navigationRow);
+
+    // Disable extraButtons if present for this page - BELOW navigation
+    if (this.extraButtons?.[this.currentPage]) {
+      this.extraButtons[this.currentPage].components.forEach(btn => {
+        btn.setDisabled(true);
+      });
+      clonedContainer.addActionRowComponents(this.extraButtons[this.currentPage]);
+    }
+    await this.interaction.editReply({ components: [clonedContainer], flags: MessageFlags.IsComponentsV2 });
   }
 
   private initializeButtons() {
@@ -104,22 +146,30 @@ export class ShinanoPaginator {
     this.navigationButtons[2].setLabel(`Page: ${this.currentPage + 1}/${this.pages.length}`);
   }
 
-  private buildComponents() {
-    const components: ActionRowBuilder<StringSelectMenuBuilder | ButtonBuilder>[] = [this.navigationRow];
+  // Obsolete
+  // private buildComponents() {}
 
-    if (this.menu) components.unshift(this.menu);
+  private buildContainerPayload(): { components: ContainerBuilder[] } {
+    // Clone the original container to avoid mutating it on each page change
+    const originalContainer = this.pages[this.currentPage];
+    const clonedContainer = new ContainerBuilder(originalContainer.toJSON());
 
-    return components;
+    // Add menu and navigation/extra buttons as action rows inside the container
+    if (this.menu) clonedContainer.addActionRowComponents(this.menu);
+    clonedContainer.addActionRowComponents(this.navigationRow);
+    if (this.extraButtons?.[this.currentPage])
+      clonedContainer.addActionRowComponents(this.extraButtons[this.currentPage]);
+
+    return { components: [clonedContainer] };
   }
 
-  private getMessagePayload() {
-    const components = this.buildComponents();
-
-    if (this.payloads) return Object.assign({}, this.payloads[this.currentPage], { components });
+  private getMessagePayload(): InteractionEditReplyOptions {
+    // If custom payloads are used, user must provide the full payload with flags
+    if (this.payloads) return Object.assign({}, this.payloads[this.currentPage]) as InteractionEditReplyOptions;
 
     return {
-      embeds: [this.pages[this.currentPage]],
-      components,
+      ...this.buildContainerPayload(),
+      flags: MessageFlags.IsComponentsV2,
     };
   }
 
@@ -129,7 +179,9 @@ export class ShinanoPaginator {
 
   private async setupCollector(message: Message): Promise<number> {
     return new Promise(resolve => {
-      const collector = message.createMessageComponentCollector({ time: this.timeout });
+      this.collector = message.createMessageComponentCollector({ time: this.timeout });
+
+      const collector = this.collector;
 
       paginationCollector.set(this.interaction.user.id, collector);
 
@@ -151,7 +203,6 @@ export class ShinanoPaginator {
   ): Promise<boolean> {
     const [action, userId] = i.customId.split("-");
 
-    // Handle menu selection
     if (action === this.menuId) {
       collector.stop("interaction ended");
       this.currentPage = 0;
@@ -159,7 +210,6 @@ export class ShinanoPaginator {
       return false;
     }
 
-    // Validating user
     if (this.interactorOnly && userId !== i.user.id) {
       await i.reply({
         content: "This button does not belong to you!",
@@ -169,10 +219,8 @@ export class ShinanoPaginator {
       return true;
     }
 
-    // Update page based on action
     this.handlePageChange(action);
 
-    // Update UI
     await i.deferUpdate();
     this.updateButtonStates();
     await i.editReply(this.getMessagePayload());
@@ -201,17 +249,31 @@ export class ShinanoPaginator {
   private async handleCollectorEnd(reason: string) {
     if (["messageDelete", "interaction ended"].includes(reason)) return;
 
+    // Clone the original container to avoid mutating it
+    const originalContainer = this.pages[this.currentPage];
+    const clonedContainer = new ContainerBuilder(originalContainer.toJSON());
+
+    // Disable menu - ABOVE navigation
+    if (this.menu) {
+      this.menu.components.forEach(component => {
+        component.setDisabled(true);
+      });
+      clonedContainer.addActionRowComponents(this.menu);
+    }
+
+    // Disable navigation buttons
     this.navigationButtons.forEach(button => {
       button.setStyle(ButtonStyle.Secondary).setDisabled(true);
     });
+    clonedContainer.addActionRowComponents(this.navigationRow);
 
-    const components: ActionRowBuilder<ButtonBuilder | StringSelectMenuBuilder>[] = [this.navigationRow];
-
-    if (this.menu) {
-      this.menu.components[0].setDisabled(true);
-      components.unshift(this.menu);
+    // Disable extra buttons if present - BELOW navigation
+    if (this.extraButtons?.[this.currentPage]) {
+      this.extraButtons[this.currentPage].components.forEach(btn => {
+        btn.setDisabled(true);
+      });
+      clonedContainer.addActionRowComponents(this.extraButtons[this.currentPage]);
     }
-
-    await this.interaction.editReply({ components });
+    await this.interaction.editReply({ components: [clonedContainer], flags: MessageFlags.IsComponentsV2 });
   }
 }
