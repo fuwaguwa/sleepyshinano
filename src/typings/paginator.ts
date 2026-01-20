@@ -1,7 +1,8 @@
 import type {
   ActionRowBuilder,
+  ButtonBuilder,
   ChatInputCommandInteraction,
-  EmbedBuilder,
+  ContainerBuilder,
   InteractionEditReplyOptions,
   MessagePayload,
   StringSelectMenuBuilder,
@@ -9,7 +10,8 @@ import type {
 
 export interface ShinanoPaginatorOptions {
   interaction: ChatInputCommandInteraction;
-  pages?: EmbedBuilder[];
+  pages?: ContainerBuilder[];
+  extraButtons?: ActionRowBuilder<ButtonBuilder>[];
   payloads?: MessagePayload[] | string[] | InteractionEditReplyOptions[];
   menu?: ActionRowBuilder<StringSelectMenuBuilder>;
   interactorOnly: boolean;
