@@ -7,7 +7,7 @@ import {
   type ListenerOptions,
   type UserError,
 } from "@sapphire/framework";
-import { EmbedBuilder, MessageFlagsBitField } from "discord.js";
+import { ContainerBuilder, MessageFlags, TextDisplayBuilder } from "discord.js";
 
 @ApplyOptions<ListenerOptions>({
   event: "chatInputCommandDenied",
@@ -20,22 +20,23 @@ export class CooldownErrorListener extends Listener<typeof Events.ChatInputComma
     const remaining = Reflect.get(Object(context), "remaining") as number;
     const retryTimestamp = Math.floor((Date.now() + remaining) / 1000);
 
-    const ERROR_EMBED = new EmbedBuilder()
-      .setColor("Red")
-      .setTitle("You're on cooldown!")
-      .setDescription(`You will be able to run the command again <t:${retryTimestamp}:R>`);
+    const errorText = new TextDisplayBuilder().setContent(
+      `## You're on cooldown!\nYou will be able to run the command again <t:${retryTimestamp}:R>`
+    );
+    const errorContainer = new ContainerBuilder().addTextDisplayComponents(errorText).setAccentColor([255, 0, 0]);
 
     if (interaction.deferred || interaction.replied) {
       return interaction.editReply({
-        embeds: [ERROR_EMBED],
+        components: [errorContainer],
         allowedMentions: { users: [interaction.user.id], roles: [] },
+        flags: MessageFlags.IsComponentsV2,
       });
     }
 
     return interaction.reply({
-      embeds: [ERROR_EMBED],
+      components: [errorContainer],
       allowedMentions: { users: [interaction.user.id], roles: [] },
-      flags: MessageFlagsBitField.Flags.Ephemeral,
+      flags: [MessageFlags.Ephemeral, MessageFlags.IsComponentsV2],
     });
   }
 }

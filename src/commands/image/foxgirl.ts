@@ -3,11 +3,14 @@ import { Command, type CommandOptions } from "@sapphire/framework";
 import {
   ApplicationIntegrationType,
   type ChatInputCommandInteraction,
-  EmbedBuilder,
+  ContainerBuilder,
   InteractionContextType,
+  MediaGalleryBuilder,
+  MessageFlags,
+  TextDisplayBuilder,
 } from "discord.js";
 import { FOXGIRL_API_URL } from "../../lib/constants";
-import { createFooter, createImageActionRow, standardCommandOptions } from "../../lib/utils/command";
+import { createTextFooter, standardCommandOptions } from "../../lib/utils/command";
 import { fetchJson } from "../../lib/utils/http";
 import type { NekosBestResponse } from "../../typings/api/misc";
 
@@ -32,29 +35,26 @@ export class FoxgirlCommand extends Command {
 
   public override async chatInputRun(interaction: ChatInputCommandInteraction) {
     if (!interaction.deferred) await interaction.deferReply();
-
     try {
       const foxgirl = await fetchJson<NekosBestResponse>(FOXGIRL_API_URL);
-
       if (!foxgirl || !foxgirl.results) throw new Error("Failed to fetch foxgirl");
-
       const imageUrl = foxgirl.results[0].url;
-
-      const embed = new EmbedBuilder()
-        .setColor("Random")
-        .setFooter(createFooter(interaction.user))
-        .setTimestamp()
-        .setImage(imageUrl);
-
-      await interaction.editReply({
-        embeds: [embed],
-        components: [createImageActionRow(imageUrl)],
+      const gallery = new MediaGalleryBuilder().addItems({
+        media: {
+          url: imageUrl,
+        },
       });
+      const footer = new TextDisplayBuilder().setContent(createTextFooter(interaction.user));
+      const containerComponent = new ContainerBuilder()
+        .addMediaGalleryComponents(gallery)
+        .addTextDisplayComponents(footer);
+      await interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [containerComponent] });
     } catch (error) {
-      const errorEmbed = new EmbedBuilder()
-        .setColor("Red")
-        .setDescription("❌ | Failed to fetch a foxgirl. Please try again later.");
-      await interaction.editReply({ embeds: [errorEmbed] });
+      const errorMessage = new TextDisplayBuilder().setContent("❌ Failed to fetch a foxgirl. Please try again later.");
+      const containerComponent = new ContainerBuilder()
+        .addTextDisplayComponents(errorMessage)
+        .setAccentColor([255, 0, 0]);
+      await interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [containerComponent] });
       throw error;
     }
   }

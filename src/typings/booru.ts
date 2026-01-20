@@ -1,11 +1,4 @@
-import type {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonInteraction,
-  ChatInputCommandInteraction,
-  EmbedBuilder,
-  Message,
-} from "discord.js";
+import type { ButtonInteraction, ChatInputCommandInteraction, EmbedBuilder, Message } from "discord.js";
 import type { BooruPost, BooruSite } from "./api/booru";
 
 export interface BooruSiteConfig {
@@ -46,7 +39,8 @@ export interface QueryBooruResult {
 export interface BooruReplyContent {
   content?: string;
   embeds?: EmbedBuilder[];
-  components: ActionRowBuilder<ButtonBuilder>[];
+  components: any[];
+  flags?: number;
 }
 
 export interface AutobooruCollectorOptions {

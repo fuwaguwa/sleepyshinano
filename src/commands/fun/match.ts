@@ -1,6 +1,6 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
-import { type ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
+import { type ChatInputCommandInteraction, ContainerBuilder, MessageFlags, TextDisplayBuilder } from "discord.js";
 import { standardCommandOptions } from "../../lib/utils/command";
 
 @ApplyOptions<CommandOptions>({
@@ -27,11 +27,11 @@ export class MatchCommand extends Command {
     const loveIndex = Math.floor(love / 10);
     const loveLevel = "💖".repeat(loveIndex) + "💔".repeat(10 - loveIndex);
 
-    const loveEmbed = new EmbedBuilder()
-      .setColor("Red")
-      .setTitle("Love Percentage 💘")
-      .setDescription(`${user1} and ${user2} love percentage: ${love}%\n\n${loveLevel}`);
+    const matchText = new TextDisplayBuilder().setContent(
+      `## Love Percentage 💘\n\n` + `${user1} and ${user2} love percentage: ${love}%\n\n${loveLevel}`
+    );
+    const containerComponent = new ContainerBuilder().addTextDisplayComponents(matchText);
 
-    await interaction.reply({ embeds: [loveEmbed] });
+    await interaction.reply({ flags: MessageFlags.IsComponentsV2, components: [containerComponent] });
   }
 }

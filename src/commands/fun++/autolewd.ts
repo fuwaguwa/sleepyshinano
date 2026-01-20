@@ -8,10 +8,11 @@ import {
   ChannelType,
   type ChatInputCommandInteraction,
   ComponentType,
-  EmbedBuilder,
+  ContainerBuilder,
   InteractionContextType,
   MessageFlagsBitField,
   PermissionsBitField,
+  TextDisplayBuilder,
 } from "discord.js";
 import { buttonCollector } from "../../lib/collectors";
 import { AutolewdModel } from "../../models/Autolewd";
@@ -58,9 +59,10 @@ async function handleButtons(options: AutolewdHandleButtonOptions) {
   if (action === "ALDisable") {
     await AutolewdModel.deleteOne({ guildId: commandInteraction.guildId });
 
-    const embed = new EmbedBuilder().setColor("Green").setDescription("✅ | Autolewd has been disabled!");
-
-    return commandInteraction.editReply({ embeds: [embed], components: [] });
+    const container = new ContainerBuilder()
+      .addTextDisplayComponents(new TextDisplayBuilder().setContent("✅ | Autolewd has been disabled!"))
+      .setAccentColor([0, 255, 0]);
+    return commandInteraction.editReply({ flags: MessageFlagsBitField.Flags.IsComponentsV2, components: [container] });
   }
 
   // Enable/Update autolewd
@@ -77,16 +79,15 @@ async function handleButtons(options: AutolewdHandleButtonOptions) {
     { upsert: true }
   );
 
-  const embed = new EmbedBuilder()
-    .setColor("Green")
-    .setTitle(`Autolewd has been ${isUpdate ? "updated" : "enabled"}!`)
-    .setDescription(
-      `User: <@${commandInteraction.user.id}>\n` +
-        `Channel: <#${commandInteraction.channelId}>\n` +
-        `Category: **${category}**`
-    );
-
-  return commandInteraction.editReply({ embeds: [embed], components: [] });
+  const container = new ContainerBuilder()
+    .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(`## Autolewd has been ${isUpdate ? "updated" : "enabled"}!`),
+      new TextDisplayBuilder().setContent(
+        `User: <@${commandInteraction.user.id}>\nChannel: <#${commandInteraction.channelId}>\nCategory: **${category}**`
+      )
+    )
+    .setAccentColor([0, 255, 0]);
+  return commandInteraction.editReply({ flags: MessageFlagsBitField.Flags.IsComponentsV2, components: [container] });
 }
 
 async function setupCollector(options: AutolewdCollectorOptions) {
@@ -171,43 +172,45 @@ export class AutolewdCommand extends Command {
     if (!interaction.deferred) await interaction.deferReply();
 
     if (interaction.channel?.type !== ChannelType.GuildText) {
-      const errorEmbed = new EmbedBuilder()
-        .setColor("Red")
-        .setDescription("❌ | Please run this command in a normal text channel");
-
-      return interaction.editReply({ embeds: [errorEmbed] });
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent("❌ | Please run this command in a normal text channel")
+        )
+        .setAccentColor([255, 0, 0]);
+      return interaction.editReply({ flags: MessageFlagsBitField.Flags.IsComponentsV2, components: [container] });
     }
 
     const category = (interaction.options.getString("category") as LewdCategory) || "random";
     const existingDoc = await AutolewdModel.findOne({ guildId: interaction.guildId }).lean<AutolewdDocument>();
 
-    let embed: EmbedBuilder;
+    let container: ContainerBuilder;
     let showEnable: boolean;
     let showDisable: boolean;
     const isSameChannel = existingDoc?.channelId === interaction.channelId;
 
     if (existingDoc) {
       // Show existing setup
-      embed = new EmbedBuilder()
-        .setColor("Red")
-        .setTitle("Autolewd has already been setup!")
-        .setDescription(
-          `User: <@${existingDoc.userId}>\n` +
-            `Channel: <#${existingDoc.channelId}>\n` +
-            `Category: **${existingDoc.category}**`
-        );
+      container = new ContainerBuilder()
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent("## Autolewd has already been setup!"),
+          new TextDisplayBuilder().setContent(
+            `User: <@${existingDoc.userId}>\nChannel: <#${existingDoc.channelId}>\nCategory: **${existingDoc.category}**`
+          )
+        )
+        .setAccentColor([255, 0, 0]);
 
       showEnable = !isSameChannel;
       showDisable = true;
     } else {
       // No existing setup: only green button
-      embed = new EmbedBuilder()
-        .setColor("Red")
-        .setTitle("Autolewd has not been enabled for this server!")
-        .setDescription(
-          `Do you want Shinano to send lewd into this channel? Current selected category: **${category}**\n` +
-            `\n**Make sure Shinano has the \`Send Message\` permission before continuing!**`
-        );
+      container = new ContainerBuilder()
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent("## Autolewd has not been enabled for this server!"),
+          new TextDisplayBuilder().setContent(
+            `Do you want Shinano to send lewd into this channel? Current selected category: **${category}**\n\n**Make sure Shinano has the \`Send Message\` permission before continuing!**`
+          )
+        )
+        .setAccentColor([255, 0, 0]);
 
       showEnable = true;
       showDisable = false;
@@ -219,7 +222,11 @@ export class AutolewdCommand extends Command {
       userId: interaction.user.id,
     });
 
-    const response = await interaction.editReply({ embeds: [embed], components: [row] });
+    container.addActionRowComponents(row);
+    const response = await interaction.editReply({
+      flags: MessageFlagsBitField.Flags.IsComponentsV2,
+      components: [container],
+    });
 
     await setupCollector({
       response,

@@ -1,5 +1,16 @@
 import { container } from "@sapphire/framework";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, type Guild, type TextChannel } from "discord.js";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ContainerBuilder,
+  EmbedBuilder,
+  type Guild,
+  MediaGalleryBuilder,
+  MessageFlags,
+  type TextChannel,
+  TextDisplayBuilder,
+} from "discord.js";
 import { MAIN_GUILD_ID, TOPGG_EMOJI_ID, TOPGG_VOTE_URL } from "../lib/constants";
 import { fetchRandomLewd } from "../lib/utils/db";
 import { getCurrentTimestamp, getRandomLewdCategory } from "../lib/utils/misc";
@@ -12,7 +23,7 @@ export class ShinanoAutolewd {
     container.logger.info("Initialized lewd posting...");
 
     const isDevelopment = process.env.NODE_ENV === "development";
-    const intervalTime = isDevelopment ? 5000 : 600000;
+    const intervalTime = isDevelopment ? 10000 : 600000;
 
     await this.processAutolewd(isDevelopment);
     setInterval(async () => {
@@ -31,18 +42,15 @@ export class ShinanoAutolewd {
 
       const media = results[0] as LewdMedia;
 
-      if (media.format === "animated") {
-        await channel.send({ content: media.link });
-      } else {
-        const embed = new EmbedBuilder()
-          .setColor("Random")
-          .setImage(media.link)
-          .setFooter({ text: "Category: " + media.category })
-          .setTimestamp();
+      const gallery = new MediaGalleryBuilder().addItems([{ media: { url: media.link } }]);
+      const footer = new TextDisplayBuilder().setContent(
+        `-# Category: ${media.category} | <t:${getCurrentTimestamp()}:R>`
+      );
+      const containerComponent = new ContainerBuilder()
+        .addMediaGalleryComponents(gallery)
+        .addTextDisplayComponents(footer);
 
-        await channel.send({ embeds: [embed] });
-      }
-
+      await channel.send({ flags: MessageFlags.IsComponentsV2, components: [containerComponent] });
       return true;
     } catch (error) {
       container.logger.error("Error sending lewd to channel:", error);
@@ -58,7 +66,7 @@ export class ShinanoAutolewd {
       const guild = await container.client.guilds.fetch(testGuildId);
       const channel = await guild.channels.fetch(testChannelId);
 
-      await this.sendLewdToChannel(channel as TextChannel, "hoyo");
+      await this.sendLewdToChannel(channel as TextChannel, null);
 
       // if (success) container.logger.info(`Sent autolewd to dev channel`);
     } catch (error) {
@@ -68,7 +76,7 @@ export class ShinanoAutolewd {
 
   private async processAutolewd(isDevelopment: boolean) {
     try {
-      if (isDevelopment) return; // this.processDevelopmentMode();
+      if (isDevelopment) return this.processDevelopmentMode();
 
       const mainGuild = await container.client.guilds.fetch(MAIN_GUILD_ID);
       const autolewds = await AutolewdModel.find();
@@ -102,7 +110,7 @@ export class ShinanoAutolewd {
             const errorEmbed = new EmbedBuilder()
               .setColor("Red")
               .setDescription(
-                "❌ | This channel is NOT NSFW, please make this channel age-restricted and run `/autolewd` again"
+                "❌ This channel is NOT NSFW, please make this channel age-restricted and run `/autolewd` again"
               );
 
             await channel.send({ embeds: [errorEmbed] });
@@ -147,7 +155,7 @@ export class ShinanoAutolewd {
             const voteBro = new EmbedBuilder()
               .setColor("Red")
               .setTitle("Vote expired!")
-              .setDescription("❌ | Please vote for Shinano to continue posting!");
+              .setDescription("❌ Please vote for Shinano to continue posting!");
 
             await channel.send({
               content: `<@${autolewd.userId}>,`,

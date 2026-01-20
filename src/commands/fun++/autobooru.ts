@@ -7,10 +7,11 @@ import {
   ButtonStyle,
   ChannelType,
   ComponentType,
-  EmbedBuilder,
+  ContainerBuilder,
   InteractionContextType,
   MessageFlagsBitField,
   PermissionsBitField,
+  TextDisplayBuilder,
 } from "discord.js";
 import { fetchBooruPosts } from "../../lib/booru";
 import { buttonCollector } from "../../lib/collectors";
@@ -56,9 +57,10 @@ async function handleButtons(options: AutobooruHandleButtonsOptions) {
   if (action === "ABDisable") {
     await AutobooruModel.deleteOne({ guildId: commandInteraction.guildId });
 
-    const embed = new EmbedBuilder().setColor("Green").setDescription("✅ | Autobooru has been disabled!");
-
-    return commandInteraction.editReply({ embeds: [embed], components: [] });
+    const container = new ContainerBuilder()
+      .addTextDisplayComponents(new TextDisplayBuilder().setContent("✅ Autobooru has been disabled!"))
+      .setAccentColor([0, 255, 0]);
+    return commandInteraction.editReply({ flags: MessageFlagsBitField.Flags.IsComponentsV2, components: [container] });
   }
 
   // Enable/Update autobooru
@@ -77,14 +79,15 @@ async function handleButtons(options: AutobooruHandleButtonsOptions) {
     { upsert: true }
   );
 
-  const embed = new EmbedBuilder()
-    .setColor("Green")
-    .setTitle(`Autobooru has been ${isUpdate ? "updated" : "enabled"}!`)
-    .setDescription(
-      `User: <@${commandInteraction.user.id}>\n` + `Channel: <#${commandInteraction.channelId}>\n` + `Tags: **${tags}**`
-    );
-
-  return commandInteraction.editReply({ embeds: [embed], components: [] });
+  const container = new ContainerBuilder()
+    .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(`## Autobooru has been ${isUpdate ? "updated" : "enabled"}!`),
+      new TextDisplayBuilder().setContent(
+        `User: <@${commandInteraction.user.id}>\nChannel: <#${commandInteraction.channelId}>\nTags: **${tags}**`
+      )
+    )
+    .setAccentColor([0, 255, 0]);
+  return commandInteraction.editReply({ flags: MessageFlagsBitField.Flags.IsComponentsV2, components: [container] });
 }
 
 async function setupCollector(options: AutobooruCollectorOptions) {
@@ -180,11 +183,12 @@ export class AutobooruCommand extends Command {
     if (!interaction.deferred) await interaction.deferReply();
 
     if (interaction.channel?.type !== ChannelType.GuildText) {
-      const errorEmbed = new EmbedBuilder()
-        .setColor("Red")
-        .setDescription("❌ | This command can only be used in a server text channel.");
-
-      return interaction.editReply({ embeds: [errorEmbed] });
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent("❌ This command can only be used in a server text channel.")
+        )
+        .setAccentColor([255, 0, 0]);
+      return interaction.editReply({ flags: MessageFlagsBitField.Flags.IsComponentsV2, components: [container] });
     }
 
     const site = interaction.options.getString("site", true) as BooruSite;
@@ -193,46 +197,47 @@ export class AutobooruCommand extends Command {
 
     const testQuery = await fetchBooruPosts(site, tags, 0, mode === "random");
     if (testQuery.length === 0) {
-      const errorEmbed = new EmbedBuilder()
-        .setColor("Red")
-        .setDescription(
-          "❌ | No posts were found with the provided tags. Please check your tags and try again.\n\n" +
-            "HINT: Try running `/gelbooru` or `/rule34`, the autocomplete helps you validate your tags, and then you can use them here!"
-        );
-      return interaction.editReply({ embeds: [errorEmbed] });
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            "❌ No posts were found with the provided tags. Please check your tags and try again.\n\n" +
+              "HINT: Try running `/gelbooru` or `/rule34`, the autocomplete helps you validate your tags, and then you can use them here!"
+          )
+        )
+        .setAccentColor([255, 0, 0]);
+      return interaction.editReply({ flags: MessageFlagsBitField.Flags.IsComponentsV2, components: [container] });
     }
 
     const filteredTags = cleanBooruTags(tags);
     const existingDoc = await AutobooruModel.findOne({ guildId: interaction.guildId }).lean<AutobooruDocument>();
 
-    let embed: EmbedBuilder;
+    let container: ContainerBuilder;
     let showEnable: boolean;
     let showDisable: boolean;
     const isSameChannel = existingDoc?.channelId === interaction.channelId;
 
     if (existingDoc) {
       // Show existing setup
-      embed = new EmbedBuilder()
-        .setColor("Red")
-        .setTitle("Autobooru has already been setup!")
-        .setDescription(
-          `User: <@${existingDoc.userId}>\n` +
-            `Channel: <#${existingDoc.channelId}>\n` +
-            `Tags: **${existingDoc.tags}**`
-        );
-
+      container = new ContainerBuilder()
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent("## Autobooru has already been setup!"),
+          new TextDisplayBuilder().setContent(
+            `User: <@${existingDoc.userId}>\nChannel: <#${existingDoc.channelId}>\nTags: **${existingDoc.tags}**`
+          )
+        )
+        .setAccentColor([255, 0, 0]);
       showEnable = !isSameChannel;
       showDisable = true;
     } else {
       // No existing setup: only green button
-      embed = new EmbedBuilder()
-        .setColor("Red")
-        .setTitle("Autobooru has not been enabled for this server!")
-        .setDescription(
-          `Do you want Shinano to send booru posts into this channel? Current tags: **${tags}**\n` +
-            `\n**Make sure Shinano has the \`Send Message\` permission before continuing!**`
-        );
-
+      container = new ContainerBuilder()
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent("## Autobooru has not been enabled for this server!"),
+          new TextDisplayBuilder().setContent(
+            `Do you want Shinano to send booru posts into this channel? Current tags: **${tags}**\n\n**Make sure Shinano has the \`Send Message\` permission before continuing!**`
+          )
+        )
+        .setAccentColor([255, 0, 0]);
       showEnable = true;
       showDisable = false;
     }
@@ -243,7 +248,11 @@ export class AutobooruCommand extends Command {
       userId: interaction.user.id,
     });
 
-    const response = await interaction.editReply({ embeds: [embed], components: [row] });
+    container.addActionRowComponents(row);
+    const response = await interaction.editReply({
+      flags: MessageFlagsBitField.Flags.IsComponentsV2,
+      components: [container],
+    });
 
     await setupCollector({
       response,

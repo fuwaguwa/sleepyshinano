@@ -1,6 +1,13 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Subcommand, type SubcommandOptions } from "@sapphire/plugin-subcommands";
-import { ApplicationIntegrationType, EmbedBuilder, InteractionContextType } from "discord.js";
+import {
+  ApplicationIntegrationType,
+  ContainerBuilder,
+  InteractionContextType,
+  MediaGalleryBuilder,
+  MessageFlags,
+  TextDisplayBuilder,
+} from "discord.js";
 import { fetchRandomLewd } from "../../lib/utils/db";
 
 @ApplyOptions<SubcommandOptions>({
@@ -96,10 +103,12 @@ export class MeteorCommand extends Subcommand {
       const batchSize = 5;
       const batchCount = totalImages / batchSize;
       const delayBetweenBatches = 2500;
+      const timestamp = Math.floor(Date.now() / 1000);
 
       // Initial response
-      const initialEmbed = new EmbedBuilder().setColor("Red").setDescription(`🌠 Meteor shower incoming!`);
-      await interaction.editReply({ embeds: [initialEmbed] });
+      const initialMsg = new TextDisplayBuilder().setContent(`🌠 Meteor shower incoming!`);
+      const initialContainer = new ContainerBuilder().addTextDisplayComponents(initialMsg).setAccentColor([255, 0, 0]);
+      await interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [initialContainer] });
 
       // Send batches
       for (let i = 0; i < batchCount; i++) {
@@ -115,37 +124,49 @@ export class MeteorCommand extends Subcommand {
           });
 
           if (results.length === 0) {
-            const errorEmbed = new EmbedBuilder()
-              .setColor("Red")
-              .setDescription(`❌ | No more images found. Stopped at batch ${i + 1}/${batchCount}.`);
-            await interaction.followUp({ embeds: [errorEmbed] });
+            const errorMsg = new TextDisplayBuilder().setContent(
+              `❌ No more images found. Stopped at batch ${i + 1}/${batchCount}.`
+            );
+            const errorContainer = new ContainerBuilder()
+              .addTextDisplayComponents(errorMsg)
+              .setAccentColor([255, 0, 0]);
+            await interaction.followUp({ flags: MessageFlags.IsComponentsV2, components: [errorContainer] });
             break;
           }
 
-          const links = results.map(media => media.link).join("\n");
-          await interaction.followUp({ content: links });
+          const gallery = new MediaGalleryBuilder().addItems(results.map(media => ({ media: { url: media.link } })));
+          const footer = new TextDisplayBuilder().setContent(
+            `-# Requested by @${interaction.user.username} | <t:${timestamp}:R>`
+          );
+          const container = new ContainerBuilder().addMediaGalleryComponents(gallery).addTextDisplayComponents(footer);
+          await interaction.followUp({ flags: MessageFlags.IsComponentsV2, components: [container] });
         } catch (error) {
           this.container.logger.error(`Error in meteor shower batch ${i + 1}:`, error);
-          const errorEmbed = new EmbedBuilder()
-            .setColor("Red")
-            .setDescription(`❌ | Error occurred at batch ${i + 1}/${batchCount}. Stopping meteor shower.`);
-          await interaction.followUp({ embeds: [errorEmbed] });
+          const errorMsg = new TextDisplayBuilder().setContent(
+            `❌ Error occurred at batch ${i + 1}/${batchCount}. Stopping meteor shower.`
+          );
+          const errorContainer = new ContainerBuilder().addTextDisplayComponents(errorMsg).setAccentColor([255, 0, 0]);
+          await interaction.followUp({ flags: MessageFlags.IsComponentsV2, components: [errorContainer] });
           break;
         }
       }
 
       // Final completion message
-      const completionEmbed = new EmbedBuilder().setColor("Green").setDescription(`✅ Meteor shower complete!`);
-      await interaction.followUp({ embeds: [completionEmbed] });
+      const completionMsg = new TextDisplayBuilder().setContent(`✅ Meteor shower complete!`);
+      const completionContainer = new ContainerBuilder()
+        .addTextDisplayComponents(completionMsg)
+        .setAccentColor([0, 255, 0]);
+      await interaction.followUp({ flags: MessageFlags.IsComponentsV2, components: [completionContainer] });
     } catch (error) {
       this.container.logger.error(
         `Error in meteor command (category: ${categoryOption}, premium: ${isPremium}):`,
         error
       );
-      const errorEmbed = new EmbedBuilder()
-        .setColor("Red")
-        .setDescription(`❌ | An error occurred while starting the meteor shower. Please try again later.`);
-      return interaction.editReply({ embeds: [errorEmbed] });
+      const errorMsg = new TextDisplayBuilder().setContent(
+        `❌ An error occurred while starting the meteor shower. Please try again later.`
+      );
+      const errorContainer = new ContainerBuilder().addTextDisplayComponents(errorMsg).setAccentColor([255, 0, 0]);
+      return interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [errorContainer] });
     }
   }
 }

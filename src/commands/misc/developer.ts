@@ -138,7 +138,7 @@ export class DeveloperCommand extends Subcommand {
     if (!voteUser) {
       const noDataEmbed = new EmbedBuilder()
         .setColor("Red")
-        .setDescription("❌ | No vote data found for this user in the Shinano database!");
+        .setDescription("❌ No vote data found for this user in the Shinano database!");
       return interaction.editReply({ embeds: [noDataEmbed] });
     }
 
@@ -161,9 +161,7 @@ export class DeveloperCommand extends Subcommand {
     );
 
     if (!result) {
-      const errorEmbed = new EmbedBuilder()
-        .setColor("Red")
-        .setDescription("❌ | Failed to fetch vote data from Top.gg!");
+      const errorEmbed = new EmbedBuilder().setColor("Red").setDescription("❌ Failed to fetch vote data from Top.gg!");
       return interaction.editReply({ embeds: [errorEmbed] });
     }
 
@@ -227,7 +225,7 @@ export class DeveloperCommand extends Subcommand {
         },
         { upsert: true }
       );
-      const updatedEmbed = new EmbedBuilder().setColor("Green").setDescription("✅ | Updated the database!");
+      const updatedEmbed = new EmbedBuilder().setColor("Green").setDescription("✅ Updated the database!");
 
       await i.reply({
         embeds: [updatedEmbed],

@@ -1,6 +1,13 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { InteractionHandler, type InteractionHandlerOptions, InteractionHandlerTypes } from "@sapphire/framework";
-import { type ButtonInteraction, EmbedBuilder, MessageFlagsBitField } from "discord.js";
+import {
+  type ButtonInteraction,
+  ContainerBuilder,
+  type ContainerComponent,
+  type MediaGalleryComponent,
+  MessageFlags,
+  TextDisplayBuilder,
+} from "discord.js";
 import { getSauce } from "../../lib/sauce";
 import { isTextChannelNonNSFW } from "../../lib/utils/misc";
 
@@ -14,20 +21,32 @@ export class GetSauceButtonHandler extends InteractionHandler {
   }
 
   public override async run(interaction: ButtonInteraction) {
-    const link = interaction.message.embeds[0]?.image?.url;
+    try {
+      const containerComponent = interaction.message.components[0] as ContainerComponent;
+      let media: string;
 
-    if (!link) {
-      const embed = new EmbedBuilder()
-        .setColor("Red")
-        .setDescription("❌ | Could not find an image in the message!")
-        .setTimestamp();
-      return interaction.reply({ embeds: [embed], flags: MessageFlagsBitField.Flags.Ephemeral });
+      try {
+        // Tagless booru posts
+        media = (containerComponent.components[0] as MediaGalleryComponent).items[0].media.url;
+      } catch (_) {
+        media = (containerComponent.components[1] as MediaGalleryComponent).items[0].media.url;
+      }
+
+      const isEphButton = interaction.customId.split("-")[1] === "eph";
+      // Check if this is a TextChannel
+      const ephemeral = isEphButton || isTextChannelNonNSFW(interaction);
+
+      await getSauce({ interaction, link: media, ephemeral });
+    } catch (error) {
+      this.container.logger.error("Error in GetSauceButtonHandler:", error);
+
+      const errorText = new TextDisplayBuilder().setContent("❌ No image found in this message!");
+      const containerComponent = new ContainerBuilder().addTextDisplayComponents(errorText);
+
+      return interaction.reply({
+        flags: [MessageFlags.Ephemeral, MessageFlags.IsComponentsV2],
+        components: [containerComponent],
+      });
     }
-
-    const isEphButton = interaction.customId.split("-")[1] === "eph";
-    // Check if this is a TextChannel
-    const ephemeral = isEphButton || isTextChannelNonNSFW(interaction);
-
-    await getSauce({ interaction, link, ephemeral });
   }
 }

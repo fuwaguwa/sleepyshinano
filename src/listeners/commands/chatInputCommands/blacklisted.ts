@@ -5,7 +5,7 @@ import {
   type ListenerOptions,
   type UserError,
 } from "@sapphire/framework";
-import { EmbedBuilder, MessageFlagsBitField } from "discord.js";
+import { ContainerBuilder, MessageFlags, TextDisplayBuilder } from "discord.js";
 
 @ApplyOptions<ListenerOptions>({
   event: "chatInputCommandDenied",
@@ -15,24 +15,23 @@ export class BlacklistedErrorListener extends Listener {
     if (Reflect.get(Object(context), "silent")) return;
     if (identifier !== "blacklisted") return;
 
-    const errorEmbed = new EmbedBuilder()
-      .setColor("Red")
-      .setTitle("You have been blacklisted!")
-      .setDescription(
-        "Please contact us at the [support server](https://discord.gg/NFkMxFeEWr) for more information about your blacklist."
-      );
+    const errorText = new TextDisplayBuilder().setContent(
+      "## You have been blacklisted!\nPlease contact us at the [support server](https://discord.gg/NFkMxFeEWr) for more information about your blacklist."
+    );
+    const errorContainer = new ContainerBuilder().addTextDisplayComponents(errorText).setAccentColor([255, 0, 0]);
 
     if (interaction.deferred || interaction.replied) {
       return interaction.editReply({
-        embeds: [errorEmbed],
+        components: [errorContainer],
         allowedMentions: { users: [interaction.user.id], roles: [] },
+        flags: MessageFlags.IsComponentsV2,
       });
     }
 
     return interaction.reply({
-      embeds: [errorEmbed],
+      components: [errorContainer],
       allowedMentions: { users: [interaction.user.id], roles: [] },
-      flags: MessageFlagsBitField.Flags.Ephemeral,
+      flags: [MessageFlags.Ephemeral, MessageFlags.IsComponentsV2],
     });
   }
 }

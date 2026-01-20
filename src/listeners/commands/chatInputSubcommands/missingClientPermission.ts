@@ -1,7 +1,7 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Listener, type ListenerOptions, type UserError } from "@sapphire/framework";
 import type { ChatInputSubcommandDeniedPayload, SubcommandPluginEvents } from "@sapphire/plugin-subcommands";
-import { EmbedBuilder, MessageFlagsBitField } from "discord.js";
+import { ContainerBuilder, MessageFlags, TextDisplayBuilder } from "discord.js";
 
 @ApplyOptions<ListenerOptions>({
   event: "chatInputSubcommandDenied",
@@ -15,21 +15,23 @@ export class MissingClientPermissionSubcommandListener extends Listener<
     const missing = Reflect.get(Object(context), "missing") as string[];
     if (!missing || missing.length === 0) return;
 
-    const errorEmbed = new EmbedBuilder()
-      .setColor("Red")
-      .setDescription(`❌ | Shinano is currently missing the following permission(s): ${missing.join(", ")}`);
+    const errorText = new TextDisplayBuilder().setContent(
+      `## Missing Bot Permissions\n❌ | Shinano is currently missing the following permission(s): ${missing.join(", ")}`
+    );
+    const errorContainer = new ContainerBuilder().addTextDisplayComponents(errorText).setAccentColor([255, 0, 0]);
 
     if (interaction.deferred || interaction.replied) {
       return interaction.editReply({
-        embeds: [errorEmbed],
+        components: [errorContainer],
         allowedMentions: { users: [interaction.user.id], roles: [] },
+        flags: MessageFlags.IsComponentsV2,
       });
     }
 
     return interaction.reply({
-      embeds: [errorEmbed],
+      components: [errorContainer],
       allowedMentions: { users: [interaction.user.id], roles: [] },
-      flags: MessageFlagsBitField.Flags.Ephemeral,
+      flags: [MessageFlags.Ephemeral, MessageFlags.IsComponentsV2],
     });
   }
 }

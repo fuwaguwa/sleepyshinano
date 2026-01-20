@@ -3,8 +3,11 @@ import { Subcommand, type SubcommandOptions } from "@sapphire/plugin-subcommands
 import {
   ApplicationIntegrationType,
   AttachmentBuilder,
-  EmbedBuilder,
+  ContainerBuilder,
   InteractionContextType,
+  MediaGalleryBuilder,
+  MessageFlags,
+  TextDisplayBuilder,
   type User,
 } from "discord.js";
 import { buildSraUrl } from "../../lib/utils/http";
@@ -308,8 +311,9 @@ export class ImageCommand extends Subcommand {
     const username = this.target.username;
 
     if (!/^(0?[1-9]|[12][0-9]|3[01])\/(0?[1-9]|1[0-2])$/.test(birthday)) {
-      const failedEmbed = new EmbedBuilder().setColor("Red").setDescription("❌ | Birthday must be in `DD/MM` format!");
-      return interaction.editReply({ embeds: [failedEmbed] });
+      const errorMessage = new TextDisplayBuilder().setContent("❌ Birthday must be in `DD/MM` format!");
+      const errorContainer = new ContainerBuilder().addTextDisplayComponents(errorMessage).setAccentColor([255, 0, 0]);
+      return interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [errorContainer] });
     }
 
     const link = this.sra("canvas/misc/namecard", {
@@ -396,11 +400,18 @@ export class ImageCommand extends Subcommand {
   private async send({ interaction, image, link }: ImageSendOptions) {
     if (image) {
       const attachment = new AttachmentBuilder(image, { name: "image.png" });
-      return interaction.editReply({ files: [attachment] });
+      const gallery = new MediaGalleryBuilder().addItems([{ media: { url: "attachment://image.png" } }]);
+      const container = new ContainerBuilder().addMediaGalleryComponents(gallery);
+      return interaction.editReply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [container],
+        files: [attachment],
+      });
     }
 
-    const embed = new EmbedBuilder().setColor("#2b2d31").setImage(link ?? null);
-    return interaction.editReply({ embeds: [embed] });
+    const gallery = new MediaGalleryBuilder().addItems([{ media: { url: link as string } }]);
+    const container = new ContainerBuilder().addMediaGalleryComponents(gallery);
+    return interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [container] });
   }
 
   /**

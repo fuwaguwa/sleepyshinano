@@ -2,10 +2,13 @@ import { ApplyOptions } from "@sapphire/decorators";
 import { Listener, type ListenerOptions } from "@sapphire/framework";
 import {
   AttachmentBuilder,
-  EmbedBuilder,
+  ContainerBuilder,
   Events,
   type Interaction,
+  MediaGalleryBuilder,
   type MessageContextMenuCommandInteraction,
+  MessageFlags,
+  TextDisplayBuilder,
 } from "discord.js";
 import { createQuoteImage } from "../../lib/makeQuote";
 
@@ -26,10 +29,12 @@ export class MakeQuoteContextMenuListener extends Listener {
     const content = interaction.targetMessage.content;
 
     if (!content) {
-      const errorEmbed = new EmbedBuilder()
-        .setColor("Red")
-        .setDescription("❌ | This message does not contain any text!");
-      return interaction.editReply({ embeds: [errorEmbed] });
+      const errorMessage = new TextDisplayBuilder().setContent("❌ | This message does not contain any text!");
+      const errorContainer = new ContainerBuilder().addTextDisplayComponents(errorMessage).setAccentColor([255, 0, 0]);
+      return interaction.editReply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [errorContainer],
+      });
     }
 
     const user = interaction.targetMessage.author;
@@ -38,7 +43,12 @@ export class MakeQuoteContextMenuListener extends Listener {
 
     const buffer = await createQuoteImage({ text: content, username, avatarUrl });
     const image = new AttachmentBuilder(buffer, { name: "quote.png" });
-
-    await interaction.editReply({ files: [image] });
+    const gallery = new MediaGalleryBuilder().addItems([{ media: { url: "attachment://quote.png" } }]);
+    const container = new ContainerBuilder().addMediaGalleryComponents(gallery);
+    await interaction.editReply({
+      flags: MessageFlags.IsComponentsV2,
+      components: [container],
+      files: [image],
+    });
   }
 }

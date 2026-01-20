@@ -1,6 +1,12 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Command, type CommandOptions } from "@sapphire/framework";
-import { type ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
+import {
+  type ChatInputCommandInteraction,
+  ContainerBuilder,
+  EmbedBuilder,
+  MessageFlags,
+  TextDisplayBuilder,
+} from "discord.js";
 import { standardCommandOptions } from "../../lib/utils/command";
 import { fetchJson } from "../../lib/utils/http";
 
@@ -30,10 +36,11 @@ export class OwoifyCommand extends Command {
     const text = interaction.options.getString("text", true);
 
     if (text.length > 200) {
-      const invalidEmbed = new EmbedBuilder()
-        .setColor("Red")
-        .setDescription("❌ | The `text` is constrained by a limit of 200 characters...");
-      return interaction.editReply({ embeds: [invalidEmbed] });
+      const errorText = new TextDisplayBuilder().setContent(
+        "❌ The `text` is constrained by a limit of 200 characters..."
+      );
+      const containerComponent = new ContainerBuilder().addTextDisplayComponents(errorText).setAccentColor([255, 0, 0]);
+      return interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [containerComponent] });
     }
 
     try {
@@ -45,10 +52,10 @@ export class OwoifyCommand extends Command {
 
       await interaction.editReply({ embeds: [owoEmbed] });
     } catch (error) {
-      const errorEmbed = new EmbedBuilder()
-        .setColor("Red")
-        .setDescription("❌ | Failed to owoify text. Please try again later.");
-      await interaction.editReply({ embeds: [errorEmbed] });
+      const errorText = new TextDisplayBuilder().setContent("❌️ Failed to owoify text");
+      const containerComponent = new ContainerBuilder().addTextDisplayComponents(errorText).setAccentColor([255, 0, 0]);
+
+      await interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [containerComponent] });
       throw error;
     }
   }

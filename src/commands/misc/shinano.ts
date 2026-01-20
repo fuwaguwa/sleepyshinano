@@ -5,15 +5,18 @@ import {
   ApplicationIntegrationType,
   ButtonBuilder,
   ButtonStyle,
-  EmbedBuilder,
+  ContainerBuilder,
   InteractionContextType,
+  MediaGalleryBuilder,
+  MessageFlags,
+  SectionBuilder,
   type TextChannel,
+  TextDisplayBuilder,
+  ThumbnailBuilder,
 } from "discord.js";
 import { processBooruRequest } from "../../lib/booru";
 import { TOPGG_BASE_URL, TOPGG_EMOJI_ID, TOPGG_VOTE_URL } from "../../lib/constants";
-import { isGroupDM, isUserDM, randomItem } from "../../lib/utils/misc";
-
-const PAT_RESPONSES = ['"Aah... My ears are sensitive..."', '"Alas... This one\'s ears are sensitive..."'] as const;
+import { isGroupDM, isUserDM } from "../../lib/utils/misc";
 
 @ApplyOptions<SubcommandOptions>({
   description: "silly commands",
@@ -62,27 +65,28 @@ export class ShinanoCommand extends Subcommand {
     const latency = Date.now() - interaction.createdTimestamp;
     const apiLatency = Math.round(this.container.client.ws.ping);
 
-    const pingEmbed = new EmbedBuilder()
-      .setTitle("Pong 🏓")
-      .setDescription(`Latency: ${latency}ms\nAPI Latency: ${apiLatency}ms`)
-      .setColor("#2b2d31");
+    const containerComponent = new ContainerBuilder().addTextDisplayComponents(
+      new TextDisplayBuilder().setContent("## Pong 🏓"),
+      new TextDisplayBuilder().setContent(`**Latency**: ${latency}ms\n**API Latency**: ${apiLatency}ms`)
+    );
 
-    await interaction.reply({ embeds: [pingEmbed] });
+    return interaction.reply({
+      flags: MessageFlags.IsComponentsV2,
+      components: [containerComponent],
+    });
   }
 
   /**
    * /shinano info - Show bot information
    */
   public async subcommandInfo(interaction: Subcommand.ChatInputCommandInteraction) {
-    const shinanoEmbed = new EmbedBuilder()
-      .setColor("#2b2d31")
-      .setTitle("Shinano")
-      .setDescription(
-        "floofy great fox\n" +
-          "Developer: [**Fuwafuwa**](https://github.com/fuwaguwa)\n" +
-          "Credits: On GitHub\n" +
-          "Liking the bot so far? Please **vote** and leave Shinano a **rating** on **top.gg**!"
-      );
+    const shinanoInfo = new TextDisplayBuilder().setContent(
+      "## Shinano\n" +
+        "floofy sleepy great big squishy fox\n\n" +
+        "Developer: furafu\n" +
+        "Credits: On GitHub\n\n" +
+        "-# Liking the bot so far? Please **vote** and leave Shinano a rating on top.gg!"
+    );
 
     const mainButtons = new ActionRowBuilder<ButtonBuilder>().setComponents(
       new ButtonBuilder()
@@ -101,10 +105,7 @@ export class ShinanoCommand extends Subcommand {
         .setStyle(ButtonStyle.Link)
         .setEmoji({ id: "1065583023086641203" })
         .setLabel("GitHub")
-        .setURL("https://github.com/fuwaguwa/sleepyshinano")
-    );
-
-    const linkButtons = new ActionRowBuilder<ButtonBuilder>().setComponents(
+        .setURL("https://github.com/fuwaguwa/sleepyshinano"),
       new ButtonBuilder()
         .setStyle(ButtonStyle.Link)
         .setEmoji({ id: TOPGG_EMOJI_ID })
@@ -112,9 +113,21 @@ export class ShinanoCommand extends Subcommand {
         .setURL(TOPGG_BASE_URL)
     );
 
+    const avatarThumbnail = new ThumbnailBuilder({
+      media: {
+        url: this.container.client.user?.displayAvatarURL({ extension: "png", size: 1024 }) as string,
+      },
+    });
+
+    const section1 = new SectionBuilder().addTextDisplayComponents(shinanoInfo).setThumbnailAccessory(avatarThumbnail);
+
+    const containerComponent = new ContainerBuilder()
+      .addSectionComponents(section1)
+      .addActionRowComponents(mainButtons);
+
     await interaction.reply({
-      embeds: [shinanoEmbed],
-      components: [mainButtons, linkButtons],
+      flags: MessageFlags.IsComponentsV2,
+      components: [containerComponent],
     });
   }
 
@@ -122,14 +135,23 @@ export class ShinanoCommand extends Subcommand {
    * /shinano pat - Give Shinano headpats
    */
   public async subcommandPat(interaction: Subcommand.ChatInputCommandInteraction) {
-    const embed = new EmbedBuilder()
-      .setColor("#2b2d31")
-      .setDescription(randomItem(PAT_RESPONSES))
-      .setImage(
-        "https://cdn.discordapp.com/attachments/1002189321631187026/1034474955116662844/shinano_azur_lane_drawn_by_nagi_ria__3c37724853c358bebf5bc5668e0d4314_1.gif"
-      );
+    const textDisplay = new TextDisplayBuilder().setContent("-# pat pat pat");
+    const gifDisplay = new MediaGalleryBuilder().addItems([
+      {
+        media: {
+          url: "https://cdn.discordapp.com/attachments/1002189321631187026/1034474955116662844/shinano_azur_lane_drawn_by_nagi_ria__3c37724853c358bebf5bc5668e0d4314_1.gif",
+        },
+      },
+    ]);
 
-    await interaction.reply({ embeds: [embed] });
+    const containerComponent = new ContainerBuilder()
+      .addTextDisplayComponents(textDisplay)
+      .addMediaGalleryComponents(gifDisplay);
+
+    await interaction.reply({
+      flags: MessageFlags.IsComponentsV2,
+      components: [containerComponent],
+    });
   }
 
   /**
@@ -152,29 +174,24 @@ export class ShinanoCommand extends Subcommand {
     if (days > 0) uptimeString += `${days} days, `;
     uptimeString += `${hours} hours, ${minutes} minutes, ${seconds} seconds`;
 
-    const embed = new EmbedBuilder()
-      .setColor("#2b2d31")
-      .setTitle("Shinano's Stats")
-      .addFields(
-        { name: "Uptime:", value: uptimeString },
-        {
-          name: "Bot Stats:",
-          value: `Total Guilds: **${this.container.client.guilds.cache.size}**\n`,
-        }
-      );
+    const titleText = new TextDisplayBuilder().setContent("## Shinano's Stats");
+    const uptimeText = new TextDisplayBuilder().setContent(`**Uptime**: ${uptimeString}`);
+    const totalGuildsText = new TextDisplayBuilder().setContent(
+      `**Total Guilds**: ${this.container.client.guilds.cache.size}`
+    );
 
-    await interaction.editReply({ embeds: [embed] });
+    const containerComponent = new ContainerBuilder().addTextDisplayComponents(titleText, uptimeText, totalGuildsText);
+
+    await interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [containerComponent] });
   }
 
   /**
    * /shinano support - Show support server link
    */
   public async subcommandSupport(interaction: Subcommand.ChatInputCommandInteraction) {
-    const supportEmbed = new EmbedBuilder()
-      .setColor("#2b2d31")
-      .setDescription(
-        "If you encounter any issues pertaining to my services, kindly reach out to my creator through the support server provided below..."
-      );
+    const descriptionText = new TextDisplayBuilder().setContent(
+      "If you encounter any issues pertaining to my services, kindly reach out to my creator through the support server provided below..."
+    );
 
     const supportButton = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
@@ -184,26 +201,20 @@ export class ShinanoCommand extends Subcommand {
         .setURL("https://discord.gg/NFkMxFeEWr")
     );
 
-    await interaction.reply({
-      embeds: [supportEmbed],
-      components: [supportButton],
-    });
+    const containerComponent = new ContainerBuilder()
+      .addTextDisplayComponents(descriptionText)
+      .addActionRowComponents(supportButton);
+
+    await interaction.reply({ flags: MessageFlags.IsComponentsV2, components: [containerComponent] });
   }
 
   /**
    * /shinano vote - Show voting links
    */
   public async subcommandVote(interaction: Subcommand.ChatInputCommandInteraction) {
-    if (!interaction.deferred) {
-      await interaction.deferReply();
-    }
-
-    const voteEmbed = new EmbedBuilder()
-      .setColor("#2b2d31")
-      .setDescription(
-        "You may cast your vote for me down below. I express my gratitude for your unwavering support!\n"
-      );
-
+    const voteText = new TextDisplayBuilder().setContent(
+      "You may cast your vote for me down below. I express my gratitude for your unwavering support!"
+    );
     const links = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
         .setStyle(ButtonStyle.Link)
@@ -217,10 +228,9 @@ export class ShinanoCommand extends Subcommand {
         .setCustomId("voteCheck")
     );
 
-    await interaction.editReply({
-      embeds: [voteEmbed],
-      components: [links],
-    });
+    const containerComponent = new ContainerBuilder().addTextDisplayComponents(voteText).addActionRowComponents(links);
+
+    await interaction.reply({ flags: MessageFlags.IsComponentsV2, components: [containerComponent] });
   }
 
   /**
@@ -246,14 +256,20 @@ export class ShinanoCommand extends Subcommand {
       });
     }
 
-    const responseEmbed = new EmbedBuilder()
-      .setColor("#2b2d31")
-      .setDescription(message)
-      .setImage(
-        "https://cdn.discordapp.com/attachments/1022191350835331203/1280481895536267287/Discord_OsMDlfJqTX.png?ex=66d83d32&is=66d6ebb2&hm=9baf7360168e1d2a815b86882fcfa0869e1868513136cef33fd62f99a8abeb31&"
-      );
+    const descriptionText = new TextDisplayBuilder().setContent(message);
+    const tutorialImage = new MediaGalleryBuilder().addItems([
+      {
+        media: {
+          url: "https://cdn.discordapp.com/attachments/1022191350835331203/1280481895536267287/Discord_OsMDlfJqTX.png?ex=66d83d32&is=66d6ebb2&hm=9baf7360168e1d2a815b86882fcfa0869e1868513136cef33fd62f99a8abeb31&",
+        },
+      },
+    ]);
 
-    await interaction.reply({ embeds: [responseEmbed] });
+    const containerComponent = new ContainerBuilder()
+      .addTextDisplayComponents(descriptionText)
+      .addMediaGalleryComponents(tutorialImage);
+
+    await interaction.reply({ flags: MessageFlags.IsComponentsV2, components: [containerComponent] });
   }
 
   /**

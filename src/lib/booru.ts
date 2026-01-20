@@ -3,8 +3,11 @@ import {
   ButtonBuilder,
   ButtonStyle,
   ComponentType,
-  EmbedBuilder,
+  ContainerBuilder,
+  MediaGalleryBuilder,
+  MessageFlags,
   MessageFlagsBitField,
+  TextDisplayBuilder,
 } from "discord.js";
 import { fetch } from "netbun";
 import { UserModel } from "../models/User";
@@ -148,9 +151,8 @@ function buildReplyContent(
   tags: string,
   noTagsOnReply: boolean,
   components: ActionRowBuilder<ButtonBuilder>[],
-  isVideo: boolean,
   username: string,
-  avatarUrl: string
+  sentAt?: number
 ): BooruReplyContent {
   const tagMessage = noTagsOnReply
     ? null
@@ -159,21 +161,21 @@ function buildReplyContent(
         .map(tag => `\`${tag}\``)
         .join(", ")}`;
 
-  if (isVideo) {
-    return {
-      content: tagMessage ? `${tagMessage}\n\n${result.file_url}` : result.file_url,
-      components,
-    };
-  }
+  const gallery = new MediaGalleryBuilder().addItems([{ media: { url: result.file_url } }]);
+  const description = tagMessage ? new TextDisplayBuilder().setContent(tagMessage) : null;
+  const footer = new TextDisplayBuilder().setContent(
+    `-# Requested by @${username} | <t:${sentAt ?? getCurrentTimestamp()}:R>`
+  );
+  const container = new ContainerBuilder()
+    .addTextDisplayComponents(...[description].filter((c): c is TextDisplayBuilder => !!c))
+    .addMediaGalleryComponents(gallery)
+    .addTextDisplayComponents(footer)
+    .addActionRowComponents(components);
 
-  const embed = new EmbedBuilder()
-    .setColor("Random")
-    .setImage(result.file_url)
-    .setFooter({ text: `Requested by ${username}`, iconURL: avatarUrl });
-
-  if (tagMessage) embed.setDescription(tagMessage);
-
-  return { embeds: [embed], components };
+  return {
+    flags: MessageFlags.IsComponentsV2,
+    components: [container],
+  };
 }
 
 /**
@@ -353,8 +355,9 @@ export async function processBooruRequest({
   const { post: result, userVoteInfo } = await queryBooru(site, tags, interaction.user.id, useRandom);
 
   if (!result) {
-    const noResultEmbed = new EmbedBuilder().setColor("Red").setDescription("❌ | No result found!");
-    await interaction.editReply({ embeds: [noResultEmbed] });
+    const errorMessage = new TextDisplayBuilder().setContent("❌ No result found!");
+    const errorContainer = new ContainerBuilder().addTextDisplayComponents(errorMessage).setAccentColor([255, 0, 0]);
+    await interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [errorContainer] });
     return;
   }
 
@@ -371,15 +374,9 @@ export async function processBooruRequest({
     components.push(loadMore);
   }
 
-  const replyContent = buildReplyContent(
-    result,
-    tags,
-    noTagsOnReply,
-    components,
-    isVideo,
-    interaction.user.username,
-    interaction.user.displayAvatarURL({ forceStatic: false })
-  );
+  // Cache the timestamp for footer
+  const sentAt = getCurrentTimestamp();
+  const replyContent = buildReplyContent(result, tags, noTagsOnReply, components, interaction.user.username, sentAt);
 
   const chatMessage =
     mode === "followUp" ? await interaction.followUp(replyContent) : await interaction.editReply(replyContent);
@@ -394,7 +391,7 @@ export async function processBooruRequest({
   buttonCollector.set(interaction.user.id, collector);
 
   collector.on("collect", async i => {
-    if (i.customId.includes("getSauce")) return;
+    if (!i.customId.includes("loadMore")) return;
 
     const isUserButton = i.customId.endsWith(i.user.id);
     if (!isUserButton) {
@@ -404,26 +401,42 @@ export async function processBooruRequest({
       });
     }
 
-    if (i.customId.includes("loadMore")) {
-      if (await buttonCooldownCheck("loadMore", i)) return;
+    if (await buttonCooldownCheck("loadMore", i)) return;
 
-      await i.deferUpdate();
+    await i.deferUpdate();
 
-      if (loadMore) {
-        loadMore.components[0].setDisabled(true);
-        await chatMessage.edit({ components });
-      }
-
-      await processBooruRequest({ interaction, tags, site, mode: "followUp", noTagsOnReply, useRandom });
-      buttonCooldownSet("loadMore", i);
-      return collector.stop("done");
+    if (loadMore) {
+      loadMore.components[0].setDisabled(true);
+      const disabledReplyContent = buildReplyContent(
+        result,
+        tags,
+        noTagsOnReply,
+        components,
+        interaction.user.username,
+        sentAt
+      );
+      await chatMessage.edit(disabledReplyContent);
     }
+
+    await processBooruRequest({ interaction, tags, site, mode: "followUp", noTagsOnReply, useRandom });
+    buttonCooldownSet("loadMore", i);
+    return collector.stop("done");
   });
 
   collector.on("end", async (_, reason) => {
     if (reason !== "done" && loadMore) {
       loadMore.components[0].setDisabled(true);
-      await chatMessage.edit({ components });
+
+      // Rebuild the container with the disabled button and re-edit the message
+      const disabledReplyContent = buildReplyContent(
+        result,
+        tags,
+        noTagsOnReply,
+        components,
+        interaction.user.username,
+        sentAt
+      );
+      await chatMessage.edit(disabledReplyContent);
     }
   });
 }

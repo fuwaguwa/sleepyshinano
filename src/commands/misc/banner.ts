@@ -3,11 +3,14 @@ import { Command, type CommandOptions } from "@sapphire/framework";
 import {
   ApplicationIntegrationType,
   type ChatInputCommandInteraction,
-  EmbedBuilder,
+  ContainerBuilder,
   InteractionContextType,
+  MediaGalleryBuilder,
+  MessageFlags,
+  TextDisplayBuilder,
 } from "discord.js";
 import { fetchJson } from "../../lib/utils/http";
-
+import { getCurrentTimestamp } from "../../lib/utils/misc";
 import type { DiscordUserResponse } from "../../typings/api/misc";
 
 @ApplyOptions<CommandOptions>({
@@ -46,8 +49,11 @@ export class BannerCommand extends Command {
       if (!data) throw new Error("Failed to fetch data from Discord API.");
 
       if (!data.banner) {
-        const embed = new EmbedBuilder().setColor("Red").setDescription("❌ | User does not have a banner.");
-        return interaction.editReply({ embeds: [embed] });
+        const errorMessage = new TextDisplayBuilder().setContent("❌ User does not have a banner.");
+        const errorContainer = new ContainerBuilder()
+          .addTextDisplayComponents(errorMessage)
+          .setAccentColor([255, 0, 0]);
+        return interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [errorContainer] });
       }
 
       const baseUrl = `https://cdn.discordapp.com/banners/${user.id}/${data.banner}`;
@@ -57,18 +63,29 @@ export class BannerCommand extends Command {
         : `[.jpg](${baseUrl}.jpg?size=1024) | [.png](${baseUrl}.png?size=1024) | [.webp](${baseUrl}.webp?size=1024)`;
       const displayUrl = isAnimated ? `${baseUrl}.gif?size=1024` : `${baseUrl}.png?size=1024`;
 
-      const embed = new EmbedBuilder()
-        .setTitle(`${user.username}'s Banner`)
-        .setColor("#2b2d31")
-        .setDescription(description)
-        .setImage(displayUrl);
+      const titleText = new TextDisplayBuilder().setContent(`## ${user.username}'s Banner`);
+      const avatarFormatText = new TextDisplayBuilder().setContent(description);
+      const bannerGallery = new MediaGalleryBuilder().addItems([
+        {
+          media: {
+            url: displayUrl,
+          },
+        },
+      ]);
+      const footer = new TextDisplayBuilder().setContent(
+        `-# UID: ${user.id} | Requested by ${interaction.user} | <t:${getCurrentTimestamp()}:R>`
+      );
 
-      await interaction.editReply({ embeds: [embed] });
+      const containerComponent = new ContainerBuilder()
+        .addTextDisplayComponents(titleText, avatarFormatText)
+        .addMediaGalleryComponents(bannerGallery)
+        .addTextDisplayComponents(footer);
+
+      await interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [containerComponent] });
     } catch (error) {
-      const errorEmbed = new EmbedBuilder()
-        .setColor("Red")
-        .setDescription("❌ | Failed to fetch the banner. Please try again later.");
-      await interaction.editReply({ embeds: [errorEmbed] });
+      const errorMessage = new TextDisplayBuilder().setContent("❌ Failed to fetch the user's banner");
+      const errorContainer = new ContainerBuilder().addTextDisplayComponents(errorMessage).setAccentColor([255, 0, 0]);
+      await interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [errorContainer] });
       throw error;
     }
   }

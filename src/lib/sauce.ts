@@ -1,5 +1,15 @@
 import type { InteractionDeferReplyOptions, InteractionEditReplyOptions, InteractionReplyOptions } from "discord.js";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageFlagsBitField } from "discord.js";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ContainerBuilder,
+  MessageFlags,
+  SectionBuilder,
+  SeparatorBuilder,
+  TextDisplayBuilder,
+  ThumbnailBuilder,
+} from "discord.js";
 import sagiri from "sagiri";
 import type { LocalSauceResult, SauceOptions, SauceSortedLinks } from "../typings/sauce";
 import { LOADING_EMOJI, SAUCE_EMOJIS } from "./constants";
@@ -50,26 +60,28 @@ function stringifyValue(value: unknown): string | undefined {
 // Embed Builders
 // ============================================================================
 
-function createErrorEmbed(message: string): EmbedBuilder {
-  return new EmbedBuilder().setColor("Red").setDescription(`❌ | ${message}`);
+function createErrorContainer(message: string): ContainerBuilder {
+  const errorText = new TextDisplayBuilder().setContent(`❌ ${message}`);
+  return new ContainerBuilder().addTextDisplayComponents(errorText).setAccentColor([255, 0, 0]);
 }
 
-function createLoadingEmbed(steps: { link?: boolean; sauce?: boolean; filter?: boolean }): EmbedBuilder {
-  const linkStatus = steps.link ? "✅ | Valid Link!" : `${LOADING_EMOJI} | Validating Link...`;
-  const sauceStatus = steps.sauce ? "✅ | Sauce Found!" : `${LOADING_EMOJI} | Searching For Sauce...`;
-  const filterStatus = steps.filter ? "✅ | Link Filtered!" : `${LOADING_EMOJI} | Filtering...`;
-
-  return new EmbedBuilder()
-    .setTitle("Processing...")
-    .setColor("Green")
-    .setDescription(`${linkStatus}\n${sauceStatus}\n${filterStatus}`);
+function createLoadingContainer(steps: { link?: boolean; sauce?: boolean; filter?: boolean }): ContainerBuilder {
+  const linkStatus = steps.link ? "✅ Valid Link!" : `${LOADING_EMOJI} Validating Link...`;
+  const sauceStatus = steps.sauce ? "✅ Sauce Found!" : `${LOADING_EMOJI} Searching For Sauce...`;
+  const filterStatus = steps.filter ? "✅ Link Filtered!" : `${LOADING_EMOJI} Filtering...`;
+  const loadingText = new TextDisplayBuilder().setContent(
+    `## Processing...\n${linkStatus}\n${sauceStatus}\n${filterStatus}`
+  );
+  return new ContainerBuilder().addTextDisplayComponents(loadingText).setAccentColor([0, 255, 0]);
 }
 
-function createNoResultEmbed(): EmbedBuilder {
-  return new EmbedBuilder()
-    .setColor("Red")
-    .setDescription("❌ | No results were found!")
-    .setImage("https://cdn.discordapp.com/attachments/977409556638474250/999486337822507058/akairo-azur-lane.gif");
+function createNoResultContainer(): ContainerBuilder {
+  const noResultText = new TextDisplayBuilder().setContent("❌ No results were found!");
+  const thumbnail = new ThumbnailBuilder().setURL(
+    "https://cdn.discordapp.com/attachments/977409556638474250/999486337822507058/akairo-azur-lane.gif"
+  );
+  const section = new SectionBuilder().addTextDisplayComponents(noResultText).setThumbnailAccessory(thumbnail);
+  return new ContainerBuilder().addSectionComponents(section).setAccentColor([255, 0, 0]);
 }
 
 // ============================================================================
@@ -129,18 +141,17 @@ function extractArtistInfo(raw: unknown, paths: string[][]): string | undefined 
   return undefined;
 }
 
-function buildSiteFields(results: LocalSauceResult[], resultEmbed: EmbedBuilder): void {
+function buildSiteSections(results: LocalSauceResult[], container: ContainerBuilder, thumbnail?: string): void {
   const danbooru = results.find(r => r.site === "Danbooru");
   const yandere = results.find(r => r.site === "Yande.re");
   const konachan = results.find(r => r.site === "Konachan");
   const pixiv = results.find(r => r.site === "Pixiv");
-
-  let fieldsAdded = 0;
+  const sections: SectionBuilder[] = [];
+  const fieldSeparator = new SeparatorBuilder();
 
   if (danbooru) {
     const info = getRawField<Record<string, unknown>>(danbooru.raw, ["raw", "data"]) ?? {};
     const parts: string[] = [];
-
     const creator = extractArtistInfo(danbooru.raw, [
       ["raw", "data", "creator"],
       ["raw", "data", "author"],
@@ -148,28 +159,21 @@ function buildSiteFields(results: LocalSauceResult[], resultEmbed: EmbedBuilder)
       ["author"],
     ]);
     if (creator) parts.push(`**Artist**: ${creator}`);
-
     const material = stringifyValue(info.material ?? info.source);
     if (material) parts.push(`**Material**: ${material}`);
-
     const characters = stringifyValue(info.characters);
     if (characters) parts.push(`**Characters**: ${characters}`);
-
-    resultEmbed.addFields({
-      name: "Danbooru:",
-      value: parts.join("\n") || "N/A",
-      inline: true,
-    });
-    fieldsAdded++;
+    const danbooruText = new TextDisplayBuilder().setContent(`### Danbooru\n${parts.join("\n") || "N/A"}`);
+    const danbooruSection = new SectionBuilder().addTextDisplayComponents(danbooruText);
+    if (thumbnail) danbooruSection.setThumbnailAccessory(new ThumbnailBuilder().setURL(thumbnail));
+    sections.push(danbooruSection);
   }
 
   if (pixiv) {
     const info = getRawField<Record<string, unknown>>(pixiv.raw, ["raw", "data"]) ?? {};
     const parts: string[] = [];
-
     const title = stringifyValue(info.title);
     if (title) parts.push(`**Title**: ${title}`);
-
     const artist = extractArtistInfo(pixiv.raw, [
       ["raw", "data", "member_name"],
       ["authorName"],
@@ -177,93 +181,86 @@ function buildSiteFields(results: LocalSauceResult[], resultEmbed: EmbedBuilder)
       ["author"],
     ]);
     if (artist) parts.push(`**Artist**: ${artist}`);
-
     const artistId = extractArtistInfo(pixiv.raw, [["raw", "data", "member_id"], ["authorId"], ["authorUrl"]]);
     if (artistId) parts.push(`**Artist ID**: ${artistId}`);
-
-    resultEmbed.addFields({
-      name: "Pixiv:",
-      value: parts.join("\n") || "N/A",
-      inline: fieldsAdded % 2 === 0,
-    });
-    fieldsAdded++;
+    const pixivText = new TextDisplayBuilder().setContent(`### Pixiv\n${parts.join("\n") || "N/A"}`);
+    const pixivSection = new SectionBuilder().addTextDisplayComponents(pixivText);
+    if (thumbnail) pixivSection.setThumbnailAccessory(new ThumbnailBuilder().setURL(thumbnail));
+    sections.push(pixivSection);
   }
 
   if (yandere) {
     const info = getRawField<Record<string, unknown>>(yandere.raw, ["raw", "data"]) ?? {};
     const parts: string[] = [];
-
     const creator = extractArtistInfo(yandere.raw, [
       ["raw", "data", "creator"],
       ["raw", "data", "author"],
       ["authorName"],
     ]);
     if (creator) parts.push(`**Artist**: ${creator}`);
-
     const material = stringifyValue(info.material ?? info.source);
     if (material) parts.push(`**Material**: ${material}`);
-
     const characters = stringifyValue(info.characters);
     if (characters) parts.push(`**Characters**: ${characters}`);
-
-    resultEmbed.addFields({
-      name: "Yande.re:",
-      value: parts.join("\n") || "N/A",
-    });
-    fieldsAdded++;
+    const yandereText = new TextDisplayBuilder().setContent(`### Yande.re\n${parts.join("\n") || "N/A"}`);
+    const yandereSection = new SectionBuilder().addTextDisplayComponents(yandereText);
+    if (thumbnail) yandereSection.setThumbnailAccessory(new ThumbnailBuilder().setURL(thumbnail));
+    sections.push(yandereSection);
   }
 
-  if (konachan && fieldsAdded < 4) {
+  if (konachan && sections.length < 4) {
     const info = getRawField<Record<string, unknown>>(konachan.raw, ["raw", "data"]) ?? {};
     const parts: string[] = [];
-
     const creator = extractArtistInfo(konachan.raw, [
       ["raw", "data", "creator"],
       ["raw", "data", "author"],
       ["authorName"],
     ]);
     if (creator) parts.push(`**Artist**: ${creator}`);
-
     const material = stringifyValue(info.material ?? info.source);
     if (material) parts.push(`**Material**: ${material}`);
-
     const characters = stringifyValue(info.characters);
     if (characters) parts.push(`**Characters**: ${characters}`);
+    const konachanText = new TextDisplayBuilder().setContent(`### Konachan\n${parts.join("\n") || "N/A"}`);
+    const konachanSection = new SectionBuilder().addTextDisplayComponents(konachanText);
+    if (thumbnail) konachanSection.setThumbnailAccessory(new ThumbnailBuilder().setURL(thumbnail));
+    sections.push(konachanSection);
+  }
 
-    resultEmbed.addFields({
-      name: "Konachan:",
-      value: parts.join("\n") || "N/A",
-      inline: fieldsAdded % 2 === 1,
-    });
+  // Add sections and separators to container
+  for (let i = 0; i < sections.length; i++) {
+    container.addSectionComponents(sections[i]);
+    if (i < sections.length - 1) container.addSeparatorComponents(fieldSeparator);
   }
 }
 
-function buildResultEmbed(results: LocalSauceResult[]): EmbedBuilder {
+function buildResultContainer(results: LocalSauceResult[]): ContainerBuilder {
   const firstResult = results[0];
-  const thumbnail = typeof firstResult.thumbnail === "string" ? firstResult.thumbnail : null;
-
-  const embed = new EmbedBuilder()
-    .setColor("#2b2d31")
-    .setTitle("Sauce...Found?")
-    .setThumbnail(thumbnail)
-    .setFooter({ text: "Similarity is displayed below." });
+  const thumbnail = typeof firstResult.thumbnail === "string" ? firstResult.thumbnail : undefined;
+  const container = new ContainerBuilder();
+  const headerText = new TextDisplayBuilder().setContent("## Sauce...Found?");
+  let section: SectionBuilder;
 
   const indexName = getRawField<string>(firstResult.raw, ["raw", "header", "index_name"]);
   const rawSource = getRawField<string>(firstResult.raw, ["raw", "data", "source"]);
 
   if (rawSource && indexName?.includes("H-Anime")) {
-    embed.addFields([
-      { name: "Sauce:", value: rawSource },
-      {
-        name: "Estimated Timestamp:",
-        value: String(getRawField(firstResult.raw, ["raw", "data", "est_time"]) ?? "N/A"),
-      },
-    ]);
+    const sauceText = new TextDisplayBuilder().setContent(`**Sauce:** ${rawSource}`);
+    const timestampText = new TextDisplayBuilder().setContent(
+      `**Estimated Timestamp:** ${String(getRawField(firstResult.raw, ["raw", "data", "est_time"]) ?? "N/A")}`
+    );
+    section = new SectionBuilder().addTextDisplayComponents(headerText, sauceText, timestampText);
+    if (thumbnail) section.setThumbnailAccessory(new ThumbnailBuilder().setURL(thumbnail));
+    container.addSectionComponents(section);
   } else {
-    buildSiteFields(results, embed);
+    container.addTextDisplayComponents(headerText);
+    buildSiteSections(results, container, thumbnail);
   }
 
-  return embed;
+  // Footer
+  const footerText = new TextDisplayBuilder().setContent("-# Similarity is displayed below.");
+  container.addTextDisplayComponents(footerText);
+  return container;
 }
 
 function sortLinksBySite(results: LocalSauceResult[]): SauceSortedLinks {
@@ -319,27 +316,30 @@ export async function getSauce({ interaction, link, ephemeral = true }: SauceOpt
   // Defer reply if not already done
   if (!interaction.deferred && !interaction.replied) {
     const opts: InteractionDeferReplyOptions = {};
-    if (ephemeral) opts.flags = MessageFlagsBitField.Flags.Ephemeral;
+    if (ephemeral) opts.flags = MessageFlags.Ephemeral;
     await interaction.deferReply(opts);
   }
 
   // UPDATE: Started processing
   await interaction.editReply({
-    embeds: [createLoadingEmbed({ link: false, sauce: false, filter: false })],
+    flags: MessageFlags.IsComponentsV2,
+    components: [createLoadingContainer({ link: false, sauce: false, filter: false })],
   });
 
   // Validate image
   const validation = await validateImageLink(link);
   if (!validation.valid) {
     await interaction.editReply({
-      embeds: [createErrorEmbed(validation.error ?? "Unknown error")],
+      flags: MessageFlags.IsComponentsV2,
+      components: [createErrorContainer(validation.error ?? "Unknown error")],
     });
     return;
   }
 
   // UPDATE: Link validated
   await interaction.editReply({
-    embeds: [createLoadingEmbed({ link: true, sauce: false, filter: false })],
+    flags: MessageFlags.IsComponentsV2,
+    components: [createLoadingContainer({ link: true, sauce: false, filter: false })],
   });
 
   const sauceClient = sagiri(process.env.SAUCENAO_API_KEY!);
@@ -353,7 +353,8 @@ export async function getSauce({ interaction, link, ephemeral = true }: SauceOpt
       rawResults = await sauceClient(link);
     } catch {
       await interaction.editReply({
-        embeds: [createErrorEmbed("Failed to query SauceNAO. Try again later.")],
+        flags: MessageFlags.IsComponentsV2,
+        components: [createErrorContainer("Failed to query SauceNAO. Try again later.")],
       });
       return;
     }
@@ -361,38 +362,43 @@ export async function getSauce({ interaction, link, ephemeral = true }: SauceOpt
 
   // Check for no results
   if (!Array.isArray(rawResults) || rawResults.length === 0) {
-    await interaction.editReply({ embeds: [createNoResultEmbed()] });
+    await interaction.editReply({
+      flags: MessageFlags.IsComponentsV2,
+      components: [createNoResultContainer()],
+    });
     return;
   }
 
   // UPDATE: sauce found
   await interaction.editReply({
-    embeds: [createLoadingEmbed({ link: true, sauce: true, filter: false })],
+    flags: MessageFlags.IsComponentsV2,
+    components: [createLoadingContainer({ link: true, sauce: true, filter: false })],
   });
 
   // Process results
   const results = mapRawResults(rawResults);
-  const resultEmbed = buildResultEmbed(results);
+  const resultContainer = buildResultContainer(results);
   const sortedLinks = sortLinksBySite(results);
   const buttonRow = buildButtonRow(sortedLinks);
 
   // UPDATE: Filtering complete
   await interaction.editReply({
-    embeds: [createLoadingEmbed({ link: true, sauce: true, filter: true })],
+    flags: MessageFlags.IsComponentsV2,
+    components: [createLoadingContainer({ link: true, sauce: true, filter: true })],
   });
 
   // Final reply
+  if (buttonRow) resultContainer.addActionRowComponents(buttonRow);
   const replyOptions: InteractionReplyOptions = {
-    embeds: [resultEmbed],
+    flags: MessageFlags.IsComponentsV2,
+    components: [resultContainer],
   };
-
-  if (buttonRow) replyOptions.components = [buttonRow];
 
   if (interaction.deferred || interaction.replied) {
     await interaction.editReply(replyOptions as InteractionEditReplyOptions);
     return;
   }
 
-  if (ephemeral) replyOptions.flags = MessageFlagsBitField.Flags.Ephemeral;
+  if (ephemeral) replyOptions.flags = [MessageFlags.Ephemeral, MessageFlags.IsComponentsV2];
   await interaction.reply(replyOptions);
 }
