@@ -11,6 +11,7 @@ import {
   InteractionContextType,
   MessageFlagsBitField,
   PermissionsBitField,
+  SeparatorBuilder,
   TextDisplayBuilder,
 } from "discord.js";
 import { fetchBooruPosts } from "../../lib/booru";
@@ -248,6 +249,7 @@ export class AutobooruCommand extends Command {
       userId: interaction.user.id,
     });
 
+    container.addSeparatorComponents(new SeparatorBuilder());
     container.addActionRowComponents(row);
     const response = await interaction.editReply({
       flags: MessageFlagsBitField.Flags.IsComponentsV2,

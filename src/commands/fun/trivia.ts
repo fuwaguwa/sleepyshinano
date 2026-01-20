@@ -8,6 +8,7 @@ import {
   ComponentType,
   ContainerBuilder,
   MessageFlags,
+  SeparatorBuilder,
   TextDisplayBuilder,
 } from "discord.js";
 import { buttonCollector } from "../../lib/collectors";
@@ -112,6 +113,7 @@ export class TriviaCommand extends Command {
       const container = new ContainerBuilder()
         .addTextDisplayComponents(questionText)
         .addTextDisplayComponents(footerText)
+        .addSeparatorComponents(new SeparatorBuilder())
         .addActionRowComponents(answersRow);
 
       const message = await interaction.editReply({
@@ -154,6 +156,7 @@ export class TriviaCommand extends Command {
         const resultContainer = new ContainerBuilder()
           .addTextDisplayComponents(questionText)
           .addTextDisplayComponents(resultDisplay)
+          .addSeparatorComponents(new SeparatorBuilder())
           .addActionRowComponents(answersRow);
         if (accent) resultContainer.setAccentColor(accent);
         await interaction.editReply({
@@ -190,6 +193,7 @@ export class TriviaCommand extends Command {
           });
           const resultContainer = new ContainerBuilder()
             .addTextDisplayComponents(questionText)
+            .addSeparatorComponents(new SeparatorBuilder())
             .addActionRowComponents(answersRow);
           await interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [resultContainer] });
         }

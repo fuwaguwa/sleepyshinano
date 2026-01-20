@@ -7,6 +7,7 @@ import {
   ButtonStyle,
   ContainerBuilder,
   MessageFlags,
+  SeparatorBuilder,
   TextDisplayBuilder,
 } from "discord.js";
 
@@ -32,6 +33,7 @@ export class InMainServerErrorSubcommandListener extends Listener<
     );
     const exclusiveContainer = new ContainerBuilder()
       .addTextDisplayComponents(exclusiveText)
+      .addSeparatorComponents(new SeparatorBuilder())
       .addActionRowComponents(joinButton)
       .setAccentColor([255, 0, 0]);
 

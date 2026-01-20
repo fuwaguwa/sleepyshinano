@@ -7,6 +7,7 @@ import {
   MediaGalleryBuilder,
   MessageFlags,
   MessageFlagsBitField,
+  SeparatorBuilder,
   TextDisplayBuilder,
 } from "discord.js";
 import { fetch } from "netbun";
@@ -170,6 +171,7 @@ function buildReplyContent(
     .addTextDisplayComponents(...[description].filter((c): c is TextDisplayBuilder => !!c))
     .addMediaGalleryComponents(gallery)
     .addTextDisplayComponents(footer)
+    .addSeparatorComponents(new SeparatorBuilder())
     .addActionRowComponents(components);
 
   return {

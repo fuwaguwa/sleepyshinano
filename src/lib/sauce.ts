@@ -4,6 +4,7 @@ import {
   ButtonBuilder,
   ButtonStyle,
   ContainerBuilder,
+  MediaGalleryBuilder,
   MessageFlags,
   SectionBuilder,
   SeparatorBuilder,
@@ -387,8 +388,10 @@ export async function getSauce({ interaction, link, ephemeral = true }: SauceOpt
     components: [createLoadingContainer({ link: true, sauce: true, filter: true })],
   });
 
-  // Final reply
-  if (buttonRow) resultContainer.addActionRowComponents(buttonRow);
+  if (buttonRow) {
+    resultContainer.addSeparatorComponents(new SeparatorBuilder());
+    resultContainer.addActionRowComponents(buttonRow);
+  }
   const replyOptions: InteractionReplyOptions = {
     flags: MessageFlags.IsComponentsV2,
     components: [resultContainer],

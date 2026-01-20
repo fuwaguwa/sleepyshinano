@@ -10,6 +10,7 @@ import {
   InteractionContextType,
   MediaGalleryBuilder,
   MessageFlags,
+  SeparatorBuilder,
   TextDisplayBuilder,
 } from "discord.js";
 import { fetchRandomLewd } from "../../lib/utils/db";
@@ -282,6 +283,7 @@ export class PrivateCommand extends Subcommand {
           .setLabel("Get Sauce")
           .setEmoji({ name: "🔍" });
         const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(button);
+        container.addSeparatorComponents(new SeparatorBuilder());
         container.addActionRowComponents(actionRow);
       }
 

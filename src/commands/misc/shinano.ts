@@ -10,6 +10,7 @@ import {
   MediaGalleryBuilder,
   MessageFlags,
   SectionBuilder,
+  SeparatorBuilder,
   type TextChannel,
   TextDisplayBuilder,
   ThumbnailBuilder,
@@ -123,6 +124,7 @@ export class ShinanoCommand extends Subcommand {
 
     const containerComponent = new ContainerBuilder()
       .addSectionComponents(section1)
+      .addSeparatorComponents(new SeparatorBuilder())
       .addActionRowComponents(mainButtons);
 
     await interaction.reply({
@@ -203,6 +205,7 @@ export class ShinanoCommand extends Subcommand {
 
     const containerComponent = new ContainerBuilder()
       .addTextDisplayComponents(descriptionText)
+      .addSeparatorComponents(new SeparatorBuilder())
       .addActionRowComponents(supportButton);
 
     await interaction.reply({ flags: MessageFlags.IsComponentsV2, components: [containerComponent] });
@@ -228,7 +231,10 @@ export class ShinanoCommand extends Subcommand {
         .setCustomId("voteCheck")
     );
 
-    const containerComponent = new ContainerBuilder().addTextDisplayComponents(voteText).addActionRowComponents(links);
+    const containerComponent = new ContainerBuilder()
+      .addTextDisplayComponents(voteText)
+      .addSeparatorComponents(new SeparatorBuilder())
+      .addActionRowComponents(links);
 
     await interaction.reply({ flags: MessageFlags.IsComponentsV2, components: [containerComponent] });
   }

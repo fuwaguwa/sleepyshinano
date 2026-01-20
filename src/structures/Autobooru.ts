@@ -8,6 +8,7 @@ import {
   type Guild,
   MediaGalleryBuilder,
   MessageFlags,
+  SeparatorBuilder,
   type TextChannel,
   TextDisplayBuilder,
 } from "discord.js";
@@ -67,6 +68,7 @@ export class ShinanoAutobooru {
         .addTextDisplayComponents(descriptionText)
         .addMediaGalleryComponents(gallery)
         .addTextDisplayComponents(footer)
+        .addSeparatorComponents(new SeparatorBuilder())
         .addActionRowComponents(links);
 
       await channel.send({ flags: MessageFlags.IsComponentsV2, components: [containerComponent] });

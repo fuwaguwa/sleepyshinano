@@ -6,7 +6,7 @@ import {
   type UserError,
 } from "@sapphire/framework";
 import type { SubcommandPluginEvents } from "@sapphire/plugin-subcommands";
-import { ContainerBuilder, MessageFlags, TextDisplayBuilder } from "discord.js";
+import { ContainerBuilder, MessageFlags, SeparatorBuilder, TextDisplayBuilder } from "discord.js";
 import { VOTE_LINK_BUTTON } from "../../../lib/constants";
 
 @ApplyOptions<ListenerOptions>({
@@ -32,6 +32,7 @@ export class VotedError extends Listener<typeof SubcommandPluginEvents.ChatInput
     const errorButton = VOTE_LINK_BUTTON;
     const errorContainer = new ContainerBuilder()
       .addTextDisplayComponents(errorText)
+      .addSeparatorComponents(new SeparatorBuilder())
       .addActionRowComponents(errorButton)
       .setAccentColor([255, 0, 0]);
 
