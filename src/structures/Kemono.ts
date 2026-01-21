@@ -1,5 +1,11 @@
 import { container } from "@sapphire/framework";
 import Fuse from "fuse.js";
+import {
+  kemonoCreatorPostContentCache,
+  kemonoCreatorPostsCache,
+  kemonoPostCacheSet,
+  kemonoPostContentCacheSet,
+} from "../lib/collectors";
 import { KEMONO_API_BASE_URL, KEMONO_BASE_URL } from "../lib/constants";
 import type {
   KemonoAPICreator,
@@ -22,6 +28,8 @@ export class KemonoCreator {
   public readonly updated: number;
   public readonly indexed: number;
 
+  public posts: PostListItem[] | null = null;
+
   constructor(data: KemonoAPICreator) {
     this.id = data.id;
     this.name = data.name;
@@ -37,21 +45,39 @@ export class KemonoCreator {
 
   public async getPosts(): Promise<PostListItem[] | null> {
     try {
+      if (kemonoCreatorPostsCache.has(this.id)) return kemonoCreatorPostsCache.get(this.id) as PostListItem[];
+
       const allPosts: PostListItem[] = [];
       let offset = 0;
-      while (true) {
+      const maxPages = 20;
+      let pageCount = 0;
+
+      while (pageCount < maxPages) {
         const params = new URLSearchParams({
           o: offset.toString(),
         });
         const response = await fetch(`${this.apiBaseUrl}/posts?${params.toString()}`, {
           headers: { Accept: "text/css" },
         });
+
+        if (!response.ok) {
+          container.logger.warn(`Kemono(Posts): HTTP ${response.status} - stopping fetch`);
+          break;
+        }
+
         const posts = (await response.json()) as PostsListResponse;
         if (posts.length === 0) break;
+
         allPosts.push(...posts);
-        if (posts.length < 50) break; // last page
+        pageCount++;
+
+        if (posts.length < 50) break;
+
         offset += 50;
+        await new Promise(resolve => setTimeout(resolve, 250));
       }
+
+      kemonoPostCacheSet(this.id, allPosts);
       return allPosts;
     } catch (error) {
       container.logger.error(`Kemono(Posts): ${(error as Error).message}`);
@@ -61,6 +87,9 @@ export class KemonoCreator {
 
   public async getPost(postId: string): Promise<KemonoPost | null> {
     try {
+      const cacheKey = `${this.id}-${postId}`;
+      if (kemonoCreatorPostContentCache.has(cacheKey)) return kemonoCreatorPostContentCache.get(cacheKey) as KemonoPost;
+      container.logger.debug("Cache failed");
       const response = await fetch(`${this.apiBaseUrl}/post/${postId}`, { headers: { Accept: "text/css" } });
       const result = (await response.json()) as PostDetailResponse;
       const post = result.post;
@@ -75,7 +104,7 @@ export class KemonoCreator {
         };
       });
 
-      return new KemonoPost(
+      const responsePost = new KemonoPost(
         post.id,
         post.user,
         post.service as KemonoService,
@@ -85,6 +114,10 @@ export class KemonoCreator {
         previewUrl,
         attachments
       );
+
+      kemonoPostContentCacheSet(postId, this.id, responsePost);
+
+      return responsePost;
     } catch (error) {
       container.logger.error(`Kemono(Post): ${(error as Error).message}`);
       return null;
