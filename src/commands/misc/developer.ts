@@ -1,0 +1,326 @@
+import util from "node:util";
+import { ApplyOptions } from "@sapphire/decorators";
+import { Subcommand, type SubcommandOptions } from "@sapphire/plugin-subcommands";
+import {
+  ActionRowBuilder,
+  ApplicationIntegrationType,
+  ButtonBuilder,
+  ButtonStyle,
+  ComponentType,
+  codeBlock,
+  EmbedBuilder,
+  InteractionContextType,
+  MessageFlags,
+} from "discord.js";
+import { buttonCollector } from "../../lib/collectors";
+import { fetchJson } from "../../lib/utils/http";
+import { getCurrentTimestamp } from "../../lib/utils/misc";
+import { UserModel } from "../../models/User";
+import type { TopggVoteCheck } from "../../typings/api/botListing";
+import type { ShinanoUser } from "../../typings/models/User";
+
+@ApplyOptions<SubcommandOptions>({
+  description: "N/A",
+  preconditions: ["OwnerOnly"],
+  cooldownLimit: 1,
+  cooldownDelay: 10000000,
+  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS.split(","),
+  subcommands: [
+    { name: "eval", chatInputRun: "subcommandEval" },
+    { name: "vote-check", chatInputRun: "subcommandVote" },
+    {
+      name: "blacklist",
+      type: "group",
+      entries: [
+        { name: "add", chatInputRun: "subcommandBLAdd" },
+        { name: "remove", chatInputRun: "subcommandBLRemove" },
+        { name: "check", chatInputRun: "subcommandBLCheck" },
+      ],
+    },
+  ],
+})
+export class DeveloperCommand extends Subcommand {
+  public override async registerApplicationCommands(registry: Subcommand.Registry) {
+    registry.registerChatInputCommand(builder =>
+      builder
+        .setName(this.name)
+        .setDescription("Developer-only commands")
+        .setIntegrationTypes([ApplicationIntegrationType.GuildInstall, ApplicationIntegrationType.UserInstall])
+        .setContexts([
+          InteractionContextType.Guild,
+          InteractionContextType.BotDM,
+          InteractionContextType.PrivateChannel,
+        ])
+        .addSubcommand(command =>
+          command
+            .setName("eval")
+            .setDescription("Evaluate JavaScript code")
+            .addStringOption(option => option.setName("code").setDescription("Code to evaluate").setRequired(true))
+        )
+        .addSubcommand(command =>
+          command
+            .setName("vote-check")
+            .setDescription("Check a user's vote status")
+            .addUserOption(option =>
+              option.setName("user").setDescription("User to check vote status").setRequired(true)
+            )
+        )
+        .addSubcommandGroup(group =>
+          group
+            .setName("blacklist")
+            .setDescription("Manage blacklisted users")
+            .addSubcommand(command =>
+              command
+                .setName("add")
+                .setDescription("Add someone to the bot's blacklist")
+                .addUserOption(option => option.setName("user").setDescription("User to blacklist").setRequired(true))
+            )
+            .addSubcommand(command =>
+              command
+                .setName("remove")
+                .setDescription("Remove someone from the bot's blacklist")
+                .addUserOption(option => option.setName("user").setDescription("User to unblacklist").setRequired(true))
+            )
+            .addSubcommand(command =>
+              command
+                .setName("check")
+                .setDescription("Check if a user is blacklisted")
+                .addUserOption(option => option.setName("user").setDescription("User to check").setRequired(true))
+            )
+        )
+    );
+  }
+
+  /**
+   * /developer eval - Evaluate JavaScript code
+   */
+  public async subcommandEval(interaction: Subcommand.ChatInputCommandInteraction) {
+    if (!interaction.deferred) await interaction.deferReply();
+
+    const code = interaction.options.getString("code", true);
+
+    try {
+      let output: any = await new Promise((resolve, _) => {
+        // biome-ignore lint/security/noGlobalEval: i need this
+        resolve(eval(code));
+      });
+
+      if (typeof output !== "string") {
+        output = util.inspect(output, { depth: 0 });
+      }
+
+      // Truncate if too long
+      if (output.length > 1900) {
+        output = output.substring(0, 1900) + "...";
+      }
+
+      await interaction.editReply({
+        content: codeBlock("js", output),
+      });
+    } catch (error: any) {
+      await interaction.editReply({
+        content: codeBlock("js", `Error: ${error.message}`),
+      });
+    }
+  }
+
+  /**
+   * /developer vote-check - Check user's vote status
+   */
+  public async subcommandVote(interaction: Subcommand.ChatInputCommandInteraction) {
+    if (!interaction.deferred) await interaction.deferReply();
+
+    const user = interaction.options.getUser("user", true);
+
+    // Check Shinano database
+    const voteUser = await UserModel.findOne({ userId: user.id }).lean<ShinanoUser>();
+
+    if (!voteUser) {
+      const noDataEmbed = new EmbedBuilder()
+        .setColor("Red")
+        .setDescription("❌ No vote data found for this user in the Shinano database!");
+      return interaction.editReply({ embeds: [noDataEmbed] });
+    }
+
+    let voteStatus: boolean | string = "N/A";
+    let voteTime: number | string = "N/A";
+
+    if (voteUser?.voteCreatedTimestamp && voteUser?.voteExpiredTimestamp) {
+      const currentTime = getCurrentTimestamp();
+      voteTime = voteUser.voteCreatedTimestamp;
+      voteStatus = currentTime >= voteUser.voteExpiredTimestamp;
+    }
+
+    // Check Top.gg database
+    let topggVoteStatus = false;
+    const result = await fetchJson<TopggVoteCheck>(
+      `https://top.gg/api/bots/1002193298229829682/check?userId=${user.id}`,
+      {
+        headers: { Authorization: process.env.TOPGG_API_KEY! },
+      }
+    );
+
+    if (!result) {
+      const errorEmbed = new EmbedBuilder().setColor("Red").setDescription("❌ Failed to fetch vote data from Top.gg!");
+      return interaction.editReply({ embeds: [errorEmbed] });
+    }
+
+    topggVoteStatus = result.voted === 1;
+
+    const voteEmbed = new EmbedBuilder().setColor("#2b2d31").addFields(
+      {
+        name: "Top.gg Database:",
+        value: `Voted: ${topggVoteStatus}`,
+      },
+      {
+        name: "Shinano Database:",
+        value:
+          `Voted: ${voteStatus}\n` +
+          `Last Voted: ${typeof voteTime === "number" ? `<t:${voteTime}:R> | <t:${voteTime}>` : "N/A"}`,
+      }
+    );
+
+    const dbUpdate = new ActionRowBuilder<ButtonBuilder>().setComponents(
+      new ButtonBuilder()
+        .setLabel("Update user in database")
+        .setEmoji({ name: "✅" })
+        .setStyle(ButtonStyle.Success)
+        .setCustomId("addDatabase")
+        .setDisabled(false)
+    );
+
+    // Send message with button
+    const message = await interaction.editReply({
+      embeds: [voteEmbed],
+      components: [dbUpdate],
+    });
+
+    // Create collector
+    const collector = message.createMessageComponentCollector({
+      componentType: ComponentType.Button,
+      time: 60000,
+    });
+
+    buttonCollector.set(interaction.user.id, collector);
+
+    collector.on("collect", async i => {
+      const ownerIds = process.env.OWNER_IDS.split(",");
+      if (!ownerIds.includes(i.user.id)) {
+        return i.reply({
+          content: "This button is only for developers!",
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+
+      // Update database
+      const currentTime = getCurrentTimestamp();
+      await UserModel.findOneAndUpdate(
+        { userId: user.id },
+        {
+          $set: {
+            userId: user.id,
+            voteCreatedTimestamp: currentTime,
+            voteExpiredTimestamp: currentTime + 12 * 60 * 60,
+          },
+        },
+        { upsert: true }
+      );
+      const updatedEmbed = new EmbedBuilder().setColor("Green").setDescription("✅ Updated the database!");
+
+      await i.reply({
+        embeds: [updatedEmbed],
+        flags: MessageFlags.Ephemeral,
+      });
+
+      collector.stop();
+    });
+
+    collector.on("end", async () => {
+      dbUpdate.components[0].setDisabled(true);
+      await interaction.editReply({ components: [dbUpdate] });
+    });
+  }
+
+  /**
+   * /developer blacklist add - Add user to blacklist
+   */
+  public async subcommandBLAdd(interaction: Subcommand.ChatInputCommandInteraction) {
+    if (!interaction.deferred) await interaction.deferReply();
+
+    const targetUser = interaction.options.getUser("user", true);
+
+    const user = await UserModel.findOne({ userId: targetUser.id });
+
+    if (user?.blacklisted) {
+      const alreadyBlacklisted = new EmbedBuilder()
+        .setColor("Red")
+        .setDescription(`${targetUser} has already been blacklisted!`);
+      return interaction.editReply({ embeds: [alreadyBlacklisted] });
+    }
+
+    // Add to blacklist
+    await UserModel.findOneAndUpdate(
+      { userId: targetUser.id },
+      { $set: { blacklisted: true }, $setOnInsert: { userId: targetUser.id } },
+      { upsert: true }
+    );
+
+    const success = new EmbedBuilder()
+      .setColor("Green")
+      .setDescription(`${targetUser} has been added to blacklist!`)
+      .addFields({ name: "User ID", value: targetUser.id })
+      .setTimestamp();
+
+    await interaction.editReply({ embeds: [success] });
+  }
+
+  /**
+   * /developer blacklist remove - Remove user from blacklist
+   */
+  public async subcommandBLRemove(interaction: Subcommand.ChatInputCommandInteraction) {
+    if (!interaction.deferred) await interaction.deferReply();
+
+    const targetUser = interaction.options.getUser("user", true);
+
+    // Check if user exists and is blacklisted
+    const user = await UserModel.findOne({ userId: targetUser.id });
+
+    if (!user?.blacklisted) {
+      const notBlacklisted = new EmbedBuilder().setColor("Red").setDescription("User is not blacklisted!");
+      return interaction.editReply({ embeds: [notBlacklisted] });
+    }
+
+    user.blacklisted = false;
+    await user.save();
+
+    const success = new EmbedBuilder()
+      .setColor("Green")
+      .setDescription(`${targetUser} has been removed from the blacklist!`)
+      .setTimestamp();
+
+    await interaction.editReply({ embeds: [success] });
+  }
+
+  /**
+   * /developer blacklist check - Check if user is blacklisted
+   */
+  public async subcommandBLCheck(interaction: Subcommand.ChatInputCommandInteraction) {
+    if (!interaction.deferred) await interaction.deferReply();
+
+    const targetUser = interaction.options.getUser("user", true);
+
+    // Check if user exists
+    const user = await UserModel.findOne({ userId: targetUser.id }).lean<ShinanoUser>();
+
+    if (user?.blacklisted) {
+      const blacklisted = new EmbedBuilder()
+        .setColor("Red")
+        .setTitle("Uh oh, user is blacklisted!")
+        .addFields({ name: "User:", value: `${targetUser}` });
+      await interaction.editReply({ embeds: [blacklisted] });
+    } else {
+      const notBlacklisted = new EmbedBuilder().setColor("Green").setDescription("User is not blacklisted!");
+      await interaction.editReply({ embeds: [notBlacklisted] });
+    }
+  }
+}

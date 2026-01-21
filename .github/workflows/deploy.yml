@@ -1,0 +1,87 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: fuwaguwa/shinano
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+            type=sha,prefix={{branch}}-
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@main
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTH_KEY }}
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/projects/Shinano
+
+            cat > .env.production << EOF
+            NODE_ENV=production
+            BOT_TOKEN=${{ secrets.BOT_TOKEN }}
+            COOL_PEOPLE_IDS=${{ secrets.COOL_PEOPLE_IDS }}
+            LOGGING_CHANNEL_ID=${{ secrets.LOGGING_CHANNEL_ID }}
+            LOGGING_GUILD_ID=${{ secrets.LOGGING_GUILD_ID }}
+            MONGODB_URI=${{ secrets.MONGODB_URI }}
+            OWNER_IDS=${{ secrets.OWNER_IDS }}
+            TOPGG_API_KEY=${{ secrets.TOPGG_API_KEY }}
+            SAUCENAO_API_KEY=${{ secrets.SAUCENAO_API_KEY }}
+            GELBOORU_API_KEY=${{ secrets.GELBOORU_API_KEY }}
+            GELBOORU_USER_ID=${{ secrets.GELBOORU_USER_ID }}
+            RULE34_API_KEY=${{ secrets.RULE34_API_KEY }}
+            RULE34_USER_ID=${{ secrets.RULE34_USER_ID }}
+            SOCKS_PROXY=${{ secrets.SOCKS_PROXY }}
+            GITHUB_REPOSITORY_OWNER=${{ github.repository_owner }}
+            EOF
+
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            docker compose pull
+            docker compose up -d
+            docker image prune -f

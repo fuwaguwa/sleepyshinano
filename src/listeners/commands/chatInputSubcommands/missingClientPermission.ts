@@ -1,0 +1,37 @@
+import { ApplyOptions } from "@sapphire/decorators";
+import { Listener, type ListenerOptions, type UserError } from "@sapphire/framework";
+import type { ChatInputSubcommandDeniedPayload, SubcommandPluginEvents } from "@sapphire/plugin-subcommands";
+import { ContainerBuilder, MessageFlags, TextDisplayBuilder } from "discord.js";
+
+@ApplyOptions<ListenerOptions>({
+  event: "chatInputSubcommandDenied",
+})
+export class MissingClientPermissionSubcommandListener extends Listener<
+  typeof SubcommandPluginEvents.ChatInputSubcommandDenied
+> {
+  public override async run({ context }: UserError, { interaction }: ChatInputSubcommandDeniedPayload) {
+    if (Reflect.get(Object(context), "silent")) return;
+
+    const missing = Reflect.get(Object(context), "missing") as string[];
+    if (!missing || missing.length === 0) return;
+
+    const errorText = new TextDisplayBuilder().setContent(
+      `## Missing Bot Permissions\n❌ | Shinano is currently missing the following permission(s): ${missing.join(", ")}`
+    );
+    const errorContainer = new ContainerBuilder().addTextDisplayComponents(errorText).setAccentColor([255, 0, 0]);
+
+    if (interaction.deferred || interaction.replied) {
+      return interaction.editReply({
+        components: [errorContainer],
+        allowedMentions: { users: [interaction.user.id], roles: [] },
+        flags: MessageFlags.IsComponentsV2,
+      });
+    }
+
+    return interaction.reply({
+      components: [errorContainer],
+      allowedMentions: { users: [interaction.user.id], roles: [] },
+      flags: [MessageFlags.Ephemeral, MessageFlags.IsComponentsV2],
+    });
+  }
+}

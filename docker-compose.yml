@@ -1,0 +1,21 @@
+services:
+  shinano:
+    image: ghcr.io/fuwaguwa/shinano:latest
+    container_name: shinano-bot
+    restart: unless-stopped
+    network_mode: "host"
+    env_file:
+      - .env.production
+    environment:
+      - NODE_ENV=production
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+        reservations:
+          memory: 512M
