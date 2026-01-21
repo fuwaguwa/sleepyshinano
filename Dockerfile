@@ -26,9 +26,10 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs && \
   adduser --system --uid 1001 shinanouser
 
-COPY --from=builder --chown=bunuser:nodejs /app/dist ./dist
-COPY --from=deps --chown=bunuser:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=bunuser:nodejs /app/package.json ./package.json
+COPY --from=builder --chown=shinanouser:nodejs /app/dist ./dist
+COPY --from=deps --chown=shinanouser:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=shinanouser:nodejs /app/package.json ./package.json
+COPY --from=builder --chown=shinanouser:nodejs /app/data ./data
 
 USER shinanouser
 
