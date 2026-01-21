@@ -23,6 +23,11 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
+RUN apk add --no-cache \
+  fontconfig \
+  ttf-dejavu \
+  && fc-cache -f -v
+
 RUN addgroup --system --gid 1001 nodejs && \
   adduser --system --uid 1001 shinanouser
 

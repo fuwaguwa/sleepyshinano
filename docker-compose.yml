@@ -1,7 +1,7 @@
 services:
   shinano:
     image: ghcr.io/fuwaguwa/shinano:latest
-    container_name: shinano-bot
+    container_name: shinano
     restart: unless-stopped
     network_mode: "host"
     env_file:
