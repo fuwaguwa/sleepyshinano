@@ -17,7 +17,7 @@ import {
   ThumbnailBuilder,
 } from "discord.js";
 import { buttonCollector } from "../../lib/collectors";
-import { KEMONO, KEMONO_BASE_URL } from "../../lib/constants";
+import { KEMONO, KEMONO_BASE_URL, LOADING_EMOJI } from "../../lib/constants";
 import { toTitleCase } from "../../lib/utils/misc";
 import type { KemonoCreator, KemonoPost } from "../../structures/Kemono";
 import { ShinanoPaginator } from "../../structures/Paginator";
@@ -271,6 +271,9 @@ export class KemonoCommand extends Subcommand {
 
     const splitName = creatorName.split("-");
     const nameType = splitName[0];
+    let searchName = creatorName;
+
+    if (["id", "name"].includes(nameType)) searchName = splitName[1];
 
     if (nameType === "id" || creatorId) {
       const searchId = creatorId?.toString() ?? splitName[1];
@@ -283,10 +286,12 @@ export class KemonoCommand extends Subcommand {
         return interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [errorContainer] });
       }
 
+      this.showLoadingPostsMessage(interaction);
+
       return this.showPostsSelection(interaction, creator, [creator]);
     }
 
-    const searchResults = await KEMONO.searchCreator(splitName[1], creatorId?.toString());
+    const searchResults = await KEMONO.searchCreator(searchName, creatorId?.toString());
     if (!searchResults || searchResults.length === 0) {
       const noResultText = new TextDisplayBuilder().setContent(`❌️ No creators found for the name: **${creatorName}**`);
       const container1 = new ContainerBuilder().addTextDisplayComponents(noResultText).setAccentColor([255, 0, 0]);
@@ -349,11 +354,18 @@ export class KemonoCommand extends Subcommand {
 
       const creatorPage = creatorSelectionPaginator.getCurrentPage();
       creatorSelectionPaginator.stopPaginator(false);
+
       const creatorIdx = splitReason[1];
       const selectedCreator = searchResults[Number(creatorIdx)];
 
       await this.processCreatorSelection(interaction, selectedCreator, searchResults, creatorPage);
     });
+  }
+
+  private async showLoadingPostsMessage(interaction: Subcommand.ChatInputCommandInteraction) {
+    const loadingText = new TextDisplayBuilder().setContent(`${LOADING_EMOJI} Loading creator posts...`);
+    const loadingContainer = new ContainerBuilder().addTextDisplayComponents(loadingText);
+    await interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [loadingContainer] });
   }
 
   private async processCreatorSelection(
@@ -362,6 +374,7 @@ export class KemonoCommand extends Subcommand {
     searchResults: KemonoCreator[],
     creatorPage?: number
   ) {
+    this.showLoadingPostsMessage(interaction);
     await this.showPostsSelection(interaction, selectedCreator, searchResults, creatorPage);
   }
 
@@ -372,7 +385,8 @@ export class KemonoCommand extends Subcommand {
     creatorPage?: number,
     startPage?: number
   ) {
-    const posts = await creator.getPosts();
+    let posts = creator.posts;
+    if (!posts) posts = await creator.getPosts();
 
     if (!posts) {
       const noPostText = new TextDisplayBuilder().setContent("❌️ No posts found for this creator!");

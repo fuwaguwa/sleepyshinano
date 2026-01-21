@@ -7,10 +7,14 @@ import {
   type InteractionCollector,
   MessageFlags,
 } from "discord.js";
+import type { KemonoPost } from "../structures/Kemono";
+import type { PostListItem } from "../typings/kemono";
 
 export const buttonCollector: Collection<string, InteractionCollector<any>> = new Collection();
 export const paginationCollector: Collection<string, InteractionCollector<any>> = new Collection();
 export const buttonCooldown: Collection<string, number> = new Collection();
+export const kemonoCreatorPostsCache: Collection<string, PostListItem[]> = new Collection();
+export const kemonoCreatorPostContentCache: Collection<string, KemonoPost> = new Collection();
 const BUTTON_COOLDOWN_MS = 5000;
 
 /**
@@ -61,4 +65,27 @@ export function buttonCooldownSet(id: string, interaction: ButtonInteraction) {
   setTimeout(() => {
     buttonCooldown.delete(`${id}${userId}`);
   }, BUTTON_COOLDOWN_MS);
+}
+
+export function kemonoPostCacheSet(creatorId: string, posts: PostListItem[]) {
+  kemonoCreatorPostsCache.set(creatorId, posts);
+
+  setTimeout(
+    () => {
+      kemonoCreatorPostsCache.delete(creatorId);
+    },
+    10 * 60 * 1000
+  );
+}
+
+export function kemonoPostContentCacheSet(postId: string, creatorId: string, post: KemonoPost) {
+  const cacheKey = `${creatorId}-${postId}`;
+
+  kemonoCreatorPostContentCache.set(cacheKey, post);
+  setTimeout(
+    () => {
+      kemonoCreatorPostContentCache.delete(cacheKey);
+    },
+    12 * 60 * 60 * 1000
+  );
 }
