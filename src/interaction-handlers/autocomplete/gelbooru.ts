@@ -13,9 +13,14 @@ export class GelbooruAutocompleteHandler extends InteractionHandler {
   }
 
   public override async parse(interaction: AutocompleteInteraction) {
-    const subcommandName = interaction.options.getSubcommand();
+    const optionsData = interaction.options.data;
+    const subcommandExists = optionsData.length !== 0 && optionsData[0].type === 1;
+
+    let subcommandName = "";
+    if (subcommandExists) subcommandName = interaction.options.getSubcommand();
+
     const commandName = interaction.commandName;
-    if (subcommandName !== "gelbooru" && commandName !== "gelbooru") return this.none();
+    if (commandName !== "gelbooru" && subcommandName !== "gelbooru") return this.none();
 
     const focusedOption = interaction.options.getFocused(true);
     if (focusedOption.name !== "tags") return this.none();
