@@ -282,9 +282,10 @@ export class PrivateCommand extends Subcommand {
           .setCustomId(`getSauce`)
           .setLabel("Get Sauce")
           .setEmoji({ name: "🔍" });
+
+        const separator = new SeparatorBuilder();
         const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(button);
-        container.addSeparatorComponents(new SeparatorBuilder());
-        container.addActionRowComponents(actionRow);
+        container.addSeparatorComponents(separator).addActionRowComponents(actionRow);
       }
 
       return interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [container] });

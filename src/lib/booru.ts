@@ -166,11 +166,12 @@ function buildReplyContent(
   const footer = new TextDisplayBuilder().setContent(
     `-# Requested by @${username} | <t:${sentAt ?? getCurrentTimestamp()}:R>`
   );
+  const separator = new SeparatorBuilder();
   const container = new ContainerBuilder()
     .addTextDisplayComponents(...[description].filter((c): c is TextDisplayBuilder => !!c))
     .addMediaGalleryComponents(gallery)
     .addTextDisplayComponents(footer)
-    .addSeparatorComponents(new SeparatorBuilder())
+    .addSeparatorComponents(separator)
     .addActionRowComponents(components);
 
   return {

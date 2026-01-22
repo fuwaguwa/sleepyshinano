@@ -30,7 +30,7 @@ export class KemonoCreatorAutocompleteHandler extends InteractionHandler {
     else if (searchTerm.length < 2)
       return this.some([{ name: "Continue typing to search...", value: focusedOption.value }]);
 
-    const searchResults = await KEMONO.slowJsonSearch(searchTerm, 9);
+    const searchResults = await KEMONO.searchAPICreator(searchTerm, 9);
 
     if (!searchResults)
       return this.some([{ name: "Search error - The command will not work!", value: focusedOption.value }]);

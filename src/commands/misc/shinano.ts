@@ -121,10 +121,11 @@ export class ShinanoCommand extends Subcommand {
     });
 
     const section1 = new SectionBuilder().addTextDisplayComponents(shinanoInfo).setThumbnailAccessory(avatarThumbnail);
+    const separator = new SeparatorBuilder();
 
     const containerComponent = new ContainerBuilder()
       .addSectionComponents(section1)
-      .addSeparatorComponents(new SeparatorBuilder())
+      .addSeparatorComponents(separator)
       .addActionRowComponents(mainButtons);
 
     await interaction.reply({
@@ -203,9 +204,10 @@ export class ShinanoCommand extends Subcommand {
         .setURL("https://discord.gg/NFkMxFeEWr")
     );
 
+    const separator = new SeparatorBuilder();
     const containerComponent = new ContainerBuilder()
       .addTextDisplayComponents(descriptionText)
-      .addSeparatorComponents(new SeparatorBuilder())
+      .addSeparatorComponents(separator)
       .addActionRowComponents(supportButton);
 
     await interaction.reply({ flags: MessageFlags.IsComponentsV2, components: [containerComponent] });
@@ -231,9 +233,10 @@ export class ShinanoCommand extends Subcommand {
         .setCustomId("voteCheck")
     );
 
+    const separator = new SeparatorBuilder();
     const containerComponent = new ContainerBuilder()
       .addTextDisplayComponents(voteText)
-      .addSeparatorComponents(new SeparatorBuilder())
+      .addSeparatorComponents(separator)
       .addActionRowComponents(links);
 
     await interaction.reply({ flags: MessageFlags.IsComponentsV2, components: [containerComponent] });

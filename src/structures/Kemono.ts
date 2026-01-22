@@ -242,9 +242,9 @@ export class Kemono {
     if (id) {
       results = this.creators.filter(c => c.id.toLowerCase().includes(id.toLowerCase()));
     } else {
-      const lowerQuery = query.toLowerCase();
-      results = this.creators.filter(c => c.name.toLowerCase().includes(lowerQuery));
+      results = this.creators.filter(c => c.name.toLowerCase().includes(query.toLowerCase()));
     }
+
     return results
       .sort((a, b) => (b.favorited || 0) - (a.favorited || 0))
       .slice(0, limit)
