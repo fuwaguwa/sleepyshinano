@@ -16,7 +16,7 @@ import {
   TextDisplayBuilder,
 } from "discord.js";
 import { fetchBooruPosts } from "../../lib/booru";
-import { buttonCollector } from "../../lib/collectors";
+import { buttonInteractionCollectorCache } from "../../lib/cache";
 import { BOORU_SITES } from "../../lib/constants";
 import { cleanBooruTags } from "../../lib/utils/misc";
 import { AutobooruModel } from "../../models/Autobooru";
@@ -100,7 +100,7 @@ async function setupCollector(options: AutobooruCollectorOptions) {
     time: 30000,
   });
 
-  buttonCollector.set(interaction.user.id, collector);
+  buttonInteractionCollectorCache.set(interaction.user.id, collector);
 
   collector.on("collect", async i => {
     if (!i.customId.endsWith(interaction.user.id)) {

@@ -16,7 +16,7 @@ import {
   TextDisplayBuilder,
   ThumbnailBuilder,
 } from "discord.js";
-import { buttonCollector } from "../../lib/collectors";
+import { buttonInteractionCollectorCache } from "../../lib/cache";
 import { KEMONO, KEMONO_BASE_URL, LOADING_EMOJI } from "../../lib/constants";
 import { toTitleCase } from "../../lib/utils/misc";
 import type { KemonoCreator, KemonoPost } from "../../structures/Kemono";
@@ -84,9 +84,12 @@ function generatePostsSelections(
     const footerText = new TextDisplayBuilder().setContent(
       `-# Post ID: ${post.id} | Posted: <t:${new Date(post.published).getTime() / 1000}:R>`
     );
-    const previewImage = new MediaGalleryBuilder().addItems([
-      { media: { url: `${KEMONO_BASE_URL}/data${post.file.path}` } },
-    ]);
+
+    let previewUrl =
+      "https://cdn.discordapp.com/attachments/1463496549316431938/1463828295698092164/3840x2160-black-solid-color-background.jpg?ex=69733fd6&is=6971ee56&hm=bd24b51cea7c77afcd024ee84a00b5edd05711ff2daac43e51f67355d94cf870&";
+    if (Object.keys(post.file).length !== 0) previewUrl = `${KEMONO_BASE_URL}/data${post.file.path}`;
+
+    const previewImage = new MediaGalleryBuilder().addItems([{ media: { url: previewUrl } }]);
     const separator = new SeparatorBuilder();
 
     const creatorContainer = new ContainerBuilder()
@@ -326,7 +329,7 @@ export class KemonoCommand extends Subcommand {
       time: KEMONO_INTERACTION_TIMEOUT,
     });
 
-    buttonCollector.set(interaction.user.id, creatorCollector);
+    buttonInteractionCollectorCache.set(interaction.user.id, creatorCollector);
 
     creatorCollector.on("collect", async i => {
       if (!i.customId.endsWith(i.user.id)) {
@@ -420,7 +423,7 @@ export class KemonoCommand extends Subcommand {
       time: KEMONO_INTERACTION_TIMEOUT,
     });
 
-    buttonCollector.set(interaction.user.id, postCollector);
+    buttonInteractionCollectorCache.set(interaction.user.id, postCollector);
 
     postCollector.on("collect", async i => {
       if (!i.customId.endsWith(i.user.id)) {
@@ -503,7 +506,7 @@ export class KemonoCommand extends Subcommand {
       time: KEMONO_INTERACTION_TIMEOUT,
     });
 
-    buttonCollector.set(interaction.user.id, contentCollector);
+    buttonInteractionCollectorCache.set(interaction.user.id, contentCollector);
 
     contentCollector.on("collect", async i => {
       if (!i.customId.endsWith(i.user.id)) {

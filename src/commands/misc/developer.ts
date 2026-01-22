@@ -12,7 +12,7 @@ import {
   InteractionContextType,
   MessageFlags,
 } from "discord.js";
-import { buttonCollector } from "../../lib/collectors";
+import { buttonInteractionCollectorCache } from "../../lib/cache";
 import { fetchJson } from "../../lib/utils/http";
 import { getCurrentTimestamp } from "../../lib/utils/misc";
 import { UserModel } from "../../models/User";
@@ -201,7 +201,7 @@ export class DeveloperCommand extends Subcommand {
       time: 60000,
     });
 
-    buttonCollector.set(interaction.user.id, collector);
+    buttonInteractionCollectorCache.set(interaction.user.id, collector);
 
     collector.on("collect", async i => {
       const ownerIds = process.env.OWNER_IDS.split(",");

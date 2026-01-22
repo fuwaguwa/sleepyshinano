@@ -19,7 +19,7 @@ import type {
   MutableBooruState,
   QueryBooruResult,
 } from "../typings/booru";
-import { buttonCollector, buttonCooldownCheck, buttonCooldownSet } from "./collectors";
+import { buttonInteractionCollectorCache, checkButtonCooldownCache, setButtonCooldownCache } from "./cache";
 import {
   BOORU_BLACKLIST,
   BOORU_CONFIG,
@@ -390,7 +390,7 @@ export async function processBooruRequest({
     time: BOORU_QUERY.collectorTimeoutMs,
   });
 
-  buttonCollector.set(interaction.user.id, collector);
+  buttonInteractionCollectorCache.set(interaction.user.id, collector);
 
   collector.on("collect", async i => {
     if (!i.customId.includes("loadMore")) return;
@@ -403,7 +403,7 @@ export async function processBooruRequest({
       });
     }
 
-    if (await buttonCooldownCheck("loadMore", i)) return;
+    if (await checkButtonCooldownCache("loadMore", i)) return;
 
     await i.deferUpdate();
 
@@ -421,7 +421,7 @@ export async function processBooruRequest({
     }
 
     await processBooruRequest({ interaction, tags, site, mode: "followUp", noTagsOnReply, useRandom });
-    buttonCooldownSet("loadMore", i);
+    setButtonCooldownCache("loadMore", i);
     return collector.stop("done");
   });
 
