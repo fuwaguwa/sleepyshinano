@@ -188,9 +188,9 @@ export class Kemono {
     container.logger.info("Kemono: Building search index...");
     this.fuse = new Fuse(this.creators, {
       keys: ["name", "id"],
-      threshold: 0.3,
+      threshold: 0.2,
       ignoreLocation: true,
-      minMatchCharLength: 2,
+      minMatchCharLength: 1,
     });
 
     container.logger.info(`Kemono: Loaded ${this.creators.length} creators`);
