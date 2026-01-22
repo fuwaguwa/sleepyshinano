@@ -1,11 +1,6 @@
 import { container } from "@sapphire/framework";
 import Fuse from "fuse.js";
-import {
-  kemonoCreatorPostContentCache,
-  kemonoCreatorPostsCache,
-  kemonoPostCacheSet,
-  kemonoPostContentCacheSet,
-} from "../lib/collectors";
+import { kemonoPostContentCache, kemonoPostsCache, setKemonoPostContentCache, setKemonoPostsCache } from "../lib/cache";
 import { KEMONO_API_BASE_URL, KEMONO_BASE_URL } from "../lib/constants";
 import type {
   KemonoAPICreator,
@@ -45,7 +40,7 @@ export class KemonoCreator {
 
   public async getPosts(): Promise<PostListItem[] | null> {
     try {
-      if (kemonoCreatorPostsCache.has(this.id)) return kemonoCreatorPostsCache.get(this.id) as PostListItem[];
+      if (kemonoPostsCache.has(this.id)) return kemonoPostsCache.get(this.id) as PostListItem[];
 
       const allPosts: PostListItem[] = [];
       let offset = 0;
@@ -77,7 +72,7 @@ export class KemonoCreator {
         await new Promise(resolve => setTimeout(resolve, 250));
       }
 
-      kemonoPostCacheSet(this.id, allPosts);
+      setKemonoPostsCache(this.id, allPosts);
       return allPosts;
     } catch (error) {
       container.logger.error(`Kemono(Posts): ${(error as Error).message}`);
@@ -88,7 +83,7 @@ export class KemonoCreator {
   public async getPost(postId: string): Promise<KemonoPost | null> {
     try {
       const cacheKey = `${this.id}-${postId}`;
-      if (kemonoCreatorPostContentCache.has(cacheKey)) return kemonoCreatorPostContentCache.get(cacheKey) as KemonoPost;
+      if (kemonoPostContentCache.has(cacheKey)) return kemonoPostContentCache.get(cacheKey) as KemonoPost;
       container.logger.debug("Cache failed");
       const response = await fetch(`${this.apiBaseUrl}/post/${postId}`, { headers: { Accept: "text/css" } });
       const result = (await response.json()) as PostDetailResponse;
@@ -115,7 +110,7 @@ export class KemonoCreator {
         attachments
       );
 
-      kemonoPostContentCacheSet(postId, this.id, responsePost);
+      setKemonoPostContentCache(postId, this.id, responsePost);
 
       return responsePost;
     } catch (error) {

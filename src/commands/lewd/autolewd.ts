@@ -15,7 +15,7 @@ import {
   SeparatorBuilder,
   TextDisplayBuilder,
 } from "discord.js";
-import { buttonCollector } from "../../lib/collectors";
+import { buttonInteractionCollectorCache } from "../../lib/cache";
 import { AutolewdModel } from "../../models/Autolewd";
 import type {
   AutolewdButtonOptions,
@@ -98,7 +98,7 @@ async function setupCollector(options: AutolewdCollectorOptions) {
     time: 30000,
   });
 
-  buttonCollector.set(interaction.user.id, collector);
+  buttonInteractionCollectorCache.set(interaction.user.id, collector);
 
   collector.on("collect", async i => {
     if (!i.customId.endsWith(interaction.user.id)) {

@@ -16,7 +16,7 @@ import {
   TextInputBuilder,
   TextInputStyle,
 } from "discord.js";
-import { paginationCollector } from "../lib/collectors";
+import { paginatorInteractionCollectorCache } from "../lib/cache";
 import type { ShinanoPaginatorOptions } from "../typings/paginator";
 
 export class ShinanoPaginator {
@@ -189,7 +189,7 @@ export class ShinanoPaginator {
 
       const collector = this.collector;
 
-      paginationCollector.set(this.interaction.user.id, collector);
+      paginatorInteractionCollectorCache.set(this.interaction.user.id, collector);
 
       collector.on("collect", async (i: MessageComponentInteraction) => {
         const splitId = i.customId.split("-")[0];

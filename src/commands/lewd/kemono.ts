@@ -16,7 +16,7 @@ import {
   TextDisplayBuilder,
   ThumbnailBuilder,
 } from "discord.js";
-import { buttonCollector } from "../../lib/collectors";
+import { buttonInteractionCollectorCache } from "../../lib/cache";
 import { KEMONO, KEMONO_BASE_URL, LOADING_EMOJI } from "../../lib/constants";
 import { toTitleCase } from "../../lib/utils/misc";
 import type { KemonoCreator, KemonoPost } from "../../structures/Kemono";
@@ -329,7 +329,7 @@ export class KemonoCommand extends Subcommand {
       time: KEMONO_INTERACTION_TIMEOUT,
     });
 
-    buttonCollector.set(interaction.user.id, creatorCollector);
+    buttonInteractionCollectorCache.set(interaction.user.id, creatorCollector);
 
     creatorCollector.on("collect", async i => {
       if (!i.customId.endsWith(i.user.id)) {
@@ -423,7 +423,7 @@ export class KemonoCommand extends Subcommand {
       time: KEMONO_INTERACTION_TIMEOUT,
     });
 
-    buttonCollector.set(interaction.user.id, postCollector);
+    buttonInteractionCollectorCache.set(interaction.user.id, postCollector);
 
     postCollector.on("collect", async i => {
       if (!i.customId.endsWith(i.user.id)) {
@@ -506,7 +506,7 @@ export class KemonoCommand extends Subcommand {
       time: KEMONO_INTERACTION_TIMEOUT,
     });
 
-    buttonCollector.set(interaction.user.id, contentCollector);
+    buttonInteractionCollectorCache.set(interaction.user.id, contentCollector);
 
     contentCollector.on("collect", async i => {
       if (!i.customId.endsWith(i.user.id)) {

@@ -7,7 +7,7 @@ import {
   SeparatorBuilder,
   TextDisplayBuilder,
 } from "discord.js";
-import { buttonCooldownCheck, buttonCooldownSet } from "../../lib/collectors";
+import { checkButtonCooldownCache, setButtonCooldownCache } from "../../lib/cache";
 import { VOTE_LINK_BUTTON } from "../../lib/constants";
 import { getCurrentTimestamp } from "../../lib/utils/misc";
 import { UserModel } from "../../models/User";
@@ -23,13 +23,13 @@ export class VoteCheckButtonHandler extends InteractionHandler {
   }
 
   public override async run(interaction: ButtonInteraction) {
-    const buttonCooldownStatus = await buttonCooldownCheck("voteCheck", interaction);
+    const buttonCooldownStatus = await checkButtonCooldownCache("voteCheck", interaction);
     if (buttonCooldownStatus) return;
 
     const userId = interaction.user.id;
     const user = await UserModel.findOne({ userId }).lean<ShinanoUser>();
 
-    buttonCooldownSet("voteCheck", interaction);
+    setButtonCooldownCache("voteCheck", interaction);
 
     if (!user?.voteCreatedTimestamp || !user?.voteExpiredTimestamp) {
       if (!user) await UserModel.findOneAndUpdate({ userId }, { $set: { userId } }, { upsert: true });

@@ -11,7 +11,7 @@ import {
   SeparatorBuilder,
   TextDisplayBuilder,
 } from "discord.js";
-import { buttonCollector } from "../../lib/collectors";
+import { buttonInteractionCollectorCache } from "../../lib/cache";
 import { fetchJson } from "../../lib/utils/http";
 import { randomItem } from "../../lib/utils/misc";
 import type { TriviaApiItem, TriviaFetchedQuestion, TriviaQuestion } from "../../typings/api/misc";
@@ -126,7 +126,7 @@ export class TriviaCommand extends Command {
         componentType: ComponentType.Button,
         time: 15000,
       });
-      buttonCollector.set(interaction.user.id, collector);
+      buttonInteractionCollectorCache.set(interaction.user.id, collector);
 
       const finishRound = async (selectedIndex: number | null, timedOut = false) => {
         // Update buttons: mark correct as Success, selected as Danger when wrong, others as Secondary
