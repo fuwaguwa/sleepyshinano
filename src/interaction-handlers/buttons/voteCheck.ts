@@ -38,9 +38,10 @@ export class VoteCheckButtonHandler extends InteractionHandler {
         "## Vote Required\nIt seems that you have not cast your vote for me! Please do so with the option below!"
       );
       const cantVoteButton = VOTE_LINK_BUTTON;
+      const separator = new SeparatorBuilder();
       const cantVoteContainer = new ContainerBuilder()
         .addTextDisplayComponents(cantVoteText)
-        .addSeparatorComponents(new SeparatorBuilder())
+        .addSeparatorComponents(separator)
         .addActionRowComponents(cantVoteButton)
         .setAccentColor([255, 0, 0]);
 
@@ -57,9 +58,10 @@ export class VoteCheckButtonHandler extends InteractionHandler {
         `## Vote Again!\nYour last vote was <t:${user.voteCreatedTimestamp}:R>, you can now vote again using the button below!`
       );
       const canVoteButton = VOTE_LINK_BUTTON;
+      const separator = new SeparatorBuilder();
       const canVoteContainer = new ContainerBuilder()
         .addTextDisplayComponents(canVoteText)
-        .addSeparatorComponents(new SeparatorBuilder())
+        .addSeparatorComponents(separator)
         .addActionRowComponents(canVoteButton)
         .setAccentColor([0, 255, 0]);
 

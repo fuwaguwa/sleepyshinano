@@ -60,9 +60,8 @@ async function handleButtons(options: AutolewdHandleButtonOptions) {
   if (action === "ALDisable") {
     await AutolewdModel.deleteOne({ guildId: commandInteraction.guildId });
 
-    const container = new ContainerBuilder()
-      .addTextDisplayComponents(new TextDisplayBuilder().setContent("✅ | Autolewd has been disabled!"))
-      .setAccentColor([0, 255, 0]);
+    const disabledText = new TextDisplayBuilder().setContent("✅ Autolewd has been disabled!");
+    const container = new ContainerBuilder().addTextDisplayComponents(disabledText).setAccentColor([0, 255, 0]);
     return commandInteraction.editReply({ flags: MessageFlags.IsComponentsV2, components: [container] });
   }
 
@@ -203,6 +202,7 @@ export class AutolewdCommand extends Command {
 
     if (existingDoc) {
       // Show existing setup
+      const separator = new SeparatorBuilder();
       container = new ContainerBuilder()
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent("## Autolewd has already been setup!"),
@@ -210,7 +210,7 @@ export class AutolewdCommand extends Command {
             `User: <@${existingDoc.userId}>\nChannel: <#${existingDoc.channelId}>\nCategory: **${existingDoc.category}**`
           )
         )
-        .addSeparatorComponents(new SeparatorBuilder())
+        .addSeparatorComponents(separator)
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
             `New User: ${interaction.user}\nNew Channel: ${interaction.channel}\nNew Category: **${category}**`
@@ -239,8 +239,9 @@ export class AutolewdCommand extends Command {
       userId: interaction.user.id,
     });
 
-    container.addSeparatorComponents(new SeparatorBuilder());
-    container.addActionRowComponents(row);
+    const separator = new SeparatorBuilder();
+    container.addSeparatorComponents(separator).addActionRowComponents(row);
+
     const response = await interaction.editReply({
       flags: MessageFlags.IsComponentsV2,
       components: [container],

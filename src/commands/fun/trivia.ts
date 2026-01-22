@@ -109,11 +109,12 @@ export class TriviaCommand extends Command {
         `**${question.question}**\n\n` +
           `**Difficulty:** ${question.difficulty.toUpperCase()} | **Category:** ${question.category.toUpperCase()}`
       );
+      const separator = new SeparatorBuilder();
       const footerText = new TextDisplayBuilder().setContent("You have 15s to answer!");
       const container = new ContainerBuilder()
         .addTextDisplayComponents(questionText)
         .addTextDisplayComponents(footerText)
-        .addSeparatorComponents(new SeparatorBuilder())
+        .addSeparatorComponents(separator)
         .addActionRowComponents(answersRow);
 
       const message = await interaction.editReply({
@@ -153,10 +154,11 @@ export class TriviaCommand extends Command {
         }
         const resultDisplay = new TextDisplayBuilder().setContent(resultText);
 
+        const separator = new SeparatorBuilder();
         const resultContainer = new ContainerBuilder()
           .addTextDisplayComponents(questionText)
           .addTextDisplayComponents(resultDisplay)
-          .addSeparatorComponents(new SeparatorBuilder())
+          .addSeparatorComponents(separator)
           .addActionRowComponents(answersRow);
         if (accent) resultContainer.setAccentColor(accent);
         await interaction.editReply({
@@ -191,9 +193,10 @@ export class TriviaCommand extends Command {
           answersRow.components.forEach(comp => {
             comp.setDisabled(true);
           });
+          const separator = new SeparatorBuilder();
           const resultContainer = new ContainerBuilder()
             .addTextDisplayComponents(questionText)
-            .addSeparatorComponents(new SeparatorBuilder())
+            .addSeparatorComponents(separator)
             .addActionRowComponents(answersRow);
           await interaction.editReply({ flags: MessageFlags.IsComponentsV2, components: [resultContainer] });
         }

@@ -81,7 +81,8 @@ export class ShinanoPaginator {
       clonedContainer.addActionRowComponents(this.menu);
     }
 
-    clonedContainer.addSeparatorComponents(new SeparatorBuilder());
+    const separator = new SeparatorBuilder();
+    clonedContainer.addSeparatorComponents(separator);
 
     this.navigationButtons.forEach(button => {
       button.setStyle(ButtonStyle.Secondary).setDisabled(true);
@@ -157,9 +158,10 @@ export class ShinanoPaginator {
     const originalContainer = this.pages[this.currentPage];
     const clonedContainer = new ContainerBuilder(originalContainer.toJSON());
 
-    // Add menu and navigation/extra buttons as action rows inside the container
     if (this.menu) clonedContainer.addActionRowComponents(this.menu);
-    clonedContainer.addSeparatorComponents(new SeparatorBuilder());
+
+    const separator = new SeparatorBuilder();
+    clonedContainer.addSeparatorComponents(separator);
     clonedContainer.addActionRowComponents(this.navigationRow);
     if (this.extraButtons?.[this.currentPage])
       clonedContainer.addActionRowComponents(this.extraButtons[this.currentPage]);
@@ -168,7 +170,7 @@ export class ShinanoPaginator {
   }
 
   private getMessagePayload(): InteractionEditReplyOptions {
-    // If custom payloads are used, user must provide the full payload with flags
+    // Must provide full payload with flags if payloads are used
     if (this.payloads) return Object.assign({}, this.payloads[this.currentPage]) as InteractionEditReplyOptions;
 
     return {
@@ -321,7 +323,8 @@ export class ShinanoPaginator {
       clonedContainer.addActionRowComponents(this.menu);
     }
 
-    clonedContainer.addSeparatorComponents(new SeparatorBuilder());
+    const separator = new SeparatorBuilder();
+    clonedContainer.addSeparatorComponents(separator);
 
     // Disable navigation buttons
     this.navigationButtons.forEach(button => {

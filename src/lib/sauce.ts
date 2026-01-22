@@ -62,7 +62,8 @@ function stringifyValue(value: unknown): string | undefined {
 
 function createErrorContainer(message: string): ContainerBuilder {
   const errorText = new TextDisplayBuilder().setContent(`❌ ${message}`);
-  return new ContainerBuilder().addTextDisplayComponents(errorText).setAccentColor([255, 0, 0]);
+  const errorContainer = new ContainerBuilder().addTextDisplayComponents(errorText).setAccentColor([255, 0, 0]);
+  return errorContainer;
 }
 
 function createLoadingContainer(steps: { link?: boolean; sauce?: boolean; filter?: boolean }): ContainerBuilder {
@@ -72,7 +73,8 @@ function createLoadingContainer(steps: { link?: boolean; sauce?: boolean; filter
   const loadingText = new TextDisplayBuilder().setContent(
     `## Processing...\n${linkStatus}\n${sauceStatus}\n${filterStatus}`
   );
-  return new ContainerBuilder().addTextDisplayComponents(loadingText).setAccentColor([0, 255, 0]);
+  const loadingContainer = new ContainerBuilder().addTextDisplayComponents(loadingText).setAccentColor([0, 255, 0]);
+  return loadingContainer;
 }
 
 function createNoResultContainer(): ContainerBuilder {
@@ -81,7 +83,8 @@ function createNoResultContainer(): ContainerBuilder {
     "https://cdn.discordapp.com/attachments/977409556638474250/999486337822507058/akairo-azur-lane.gif"
   );
   const section = new SectionBuilder().addTextDisplayComponents(noResultText).setThumbnailAccessory(thumbnail);
-  return new ContainerBuilder().addSectionComponents(section).setAccentColor([255, 0, 0]);
+  const noResultContainer = new ContainerBuilder().addSectionComponents(section).setAccentColor([255, 0, 0]);
+  return noResultContainer;
 }
 
 // ============================================================================
@@ -165,7 +168,10 @@ function buildSiteSections(results: LocalSauceResult[], container: ContainerBuil
     if (characters) parts.push(`**Characters**: ${characters}`);
     const danbooruText = new TextDisplayBuilder().setContent(`### Danbooru\n${parts.join("\n") || "N/A"}`);
     const danbooruSection = new SectionBuilder().addTextDisplayComponents(danbooruText);
-    if (thumbnail) danbooruSection.setThumbnailAccessory(new ThumbnailBuilder().setURL(thumbnail));
+    if (thumbnail) {
+      const postThumbnail = new ThumbnailBuilder().setURL(thumbnail);
+      danbooruSection.setThumbnailAccessory(postThumbnail);
+    }
     sections.push(danbooruSection);
   }
 
@@ -185,7 +191,10 @@ function buildSiteSections(results: LocalSauceResult[], container: ContainerBuil
     if (artistId) parts.push(`**Artist ID**: ${artistId}`);
     const pixivText = new TextDisplayBuilder().setContent(`### Pixiv\n${parts.join("\n") || "N/A"}`);
     const pixivSection = new SectionBuilder().addTextDisplayComponents(pixivText);
-    if (thumbnail) pixivSection.setThumbnailAccessory(new ThumbnailBuilder().setURL(thumbnail));
+    if (thumbnail) {
+      const postThumbnail = new ThumbnailBuilder().setURL(thumbnail);
+      pixivSection.setThumbnailAccessory(postThumbnail);
+    }
     sections.push(pixivSection);
   }
 
@@ -204,7 +213,10 @@ function buildSiteSections(results: LocalSauceResult[], container: ContainerBuil
     if (characters) parts.push(`**Characters**: ${characters}`);
     const yandereText = new TextDisplayBuilder().setContent(`### Yande.re\n${parts.join("\n") || "N/A"}`);
     const yandereSection = new SectionBuilder().addTextDisplayComponents(yandereText);
-    if (thumbnail) yandereSection.setThumbnailAccessory(new ThumbnailBuilder().setURL(thumbnail));
+    if (thumbnail) {
+      const postThumbnail = new ThumbnailBuilder().setURL(thumbnail);
+      yandereSection.setThumbnailAccessory(postThumbnail);
+    }
     sections.push(yandereSection);
   }
 
@@ -223,7 +235,10 @@ function buildSiteSections(results: LocalSauceResult[], container: ContainerBuil
     if (characters) parts.push(`**Characters**: ${characters}`);
     const konachanText = new TextDisplayBuilder().setContent(`### Konachan\n${parts.join("\n") || "N/A"}`);
     const konachanSection = new SectionBuilder().addTextDisplayComponents(konachanText);
-    if (thumbnail) konachanSection.setThumbnailAccessory(new ThumbnailBuilder().setURL(thumbnail));
+    if (thumbnail) {
+      const postThumbnail = new ThumbnailBuilder().setURL(thumbnail);
+      konachanSection.setThumbnailAccessory(postThumbnail);
+    }
     sections.push(konachanSection);
   }
 
@@ -250,7 +265,10 @@ function buildResultContainer(results: LocalSauceResult[]): ContainerBuilder {
       `**Estimated Timestamp:** ${String(getRawField(firstResult.raw, ["raw", "data", "est_time"]) ?? "N/A")}`
     );
     section = new SectionBuilder().addTextDisplayComponents(headerText, sauceText, timestampText);
-    if (thumbnail) section.setThumbnailAccessory(new ThumbnailBuilder().setURL(thumbnail));
+    if (thumbnail) {
+      const postThumbnail = new ThumbnailBuilder().setURL(thumbnail);
+      section.setThumbnailAccessory(postThumbnail);
+    }
     container.addSectionComponents(section);
   } else {
     container.addTextDisplayComponents(headerText);
@@ -388,7 +406,8 @@ export async function getSauce({ interaction, link, ephemeral = true }: SauceOpt
   });
 
   if (buttonRow) {
-    resultContainer.addSeparatorComponents(new SeparatorBuilder());
+    const separator = new SeparatorBuilder();
+    resultContainer.addSeparatorComponents(separator);
     resultContainer.addActionRowComponents(buttonRow);
   }
   const replyOptions: InteractionReplyOptions = {

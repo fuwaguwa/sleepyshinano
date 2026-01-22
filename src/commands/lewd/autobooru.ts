@@ -60,9 +60,8 @@ async function handleButtons(options: AutobooruHandleButtonsOptions) {
   if (action === "ABDisable") {
     await AutobooruModel.deleteOne({ guildId: commandInteraction.guildId });
 
-    const container = new ContainerBuilder()
-      .addTextDisplayComponents(new TextDisplayBuilder().setContent("✅ Autobooru has been disabled!"))
-      .setAccentColor([0, 255, 0]);
+    const disabledText = new TextDisplayBuilder().setContent("✅ Autobooru has been disabled!");
+    const container = new ContainerBuilder().addTextDisplayComponents(disabledText).setAccentColor([0, 255, 0]);
     return commandInteraction.editReply({ flags: MessageFlags.IsComponentsV2, components: [container] });
   }
 
@@ -286,6 +285,7 @@ export class AutobooruCommand extends Subcommand {
 
     if (existingDoc) {
       // Show existing setup
+      const separator = new SeparatorBuilder();
       container = new ContainerBuilder()
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent("## Autobooru has already been setup!"),
@@ -293,7 +293,7 @@ export class AutobooruCommand extends Subcommand {
             `User: <@${existingDoc.userId}>\nChannel: <#${existingDoc.channelId}>\nTag(s): **${existingDoc.tags}**\n\n`
           )
         )
-        .addSeparatorComponents(new SeparatorBuilder())
+        .addSeparatorComponents(separator)
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
             `New User: ${interaction.user}\nNew Channel: ${interaction.channel}\nNew Tag(s): **${filteredTags}**`
@@ -308,7 +308,7 @@ export class AutobooruCommand extends Subcommand {
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent("## Autobooru has not been enabled for this server!"),
           new TextDisplayBuilder().setContent(
-            `Do you want Shinano to send booru posts into this channel? Current tags: **${filteredTags}**\n\n**Make sure Shinano has the \`Send Message\` permission before continuing!**`
+            `Do you want Shinano to send booru posts into this channel?\nCurrent Tag(s): **${filteredTags}**\n\n**Make sure Shinano has the \`Send Message\` permission before continuing!**`
           )
         )
         .setAccentColor([255, 0, 0]);
@@ -322,8 +322,9 @@ export class AutobooruCommand extends Subcommand {
       userId: interaction.user.id,
     });
 
-    container.addSeparatorComponents(new SeparatorBuilder());
-    container.addActionRowComponents(row);
+    const separator = new SeparatorBuilder();
+    container.addSeparatorComponents(separator).addActionRowComponents(row);
+
     const response = await interaction.editReply({
       flags: MessageFlags.IsComponentsV2,
       components: [container],

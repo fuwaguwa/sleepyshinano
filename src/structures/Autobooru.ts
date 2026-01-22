@@ -64,11 +64,12 @@ export class ShinanoAutobooru {
       const descriptionText = new TextDisplayBuilder().setContent(tagMessage);
       const gallery = new MediaGalleryBuilder().addItems([{ media: { url: post.file_url } }]);
       const footer = new TextDisplayBuilder().setContent(`-# <t:${getCurrentTimestamp()}:R>`);
+      const separator = new SeparatorBuilder();
       const containerComponent = new ContainerBuilder()
         .addTextDisplayComponents(descriptionText)
         .addMediaGalleryComponents(gallery)
         .addTextDisplayComponents(footer)
-        .addSeparatorComponents(new SeparatorBuilder())
+        .addSeparatorComponents(separator)
         .addActionRowComponents(links);
 
       await channel.send({ flags: MessageFlags.IsComponentsV2, components: [containerComponent] });

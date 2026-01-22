@@ -30,9 +30,10 @@ export class VotedError extends Listener<typeof SubcommandPluginEvents.ChatInput
 
     const errorText = new TextDisplayBuilder().setContent(`## Vote Required\n${description}`);
     const errorButton = VOTE_LINK_BUTTON;
+    const separator = new SeparatorBuilder();
     const errorContainer = new ContainerBuilder()
       .addTextDisplayComponents(errorText)
-      .addSeparatorComponents(new SeparatorBuilder())
+      .addSeparatorComponents(separator)
       .addActionRowComponents(errorButton)
       .setAccentColor([255, 0, 0]);
 

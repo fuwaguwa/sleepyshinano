@@ -31,9 +31,10 @@ export class InMainServerErrorSubcommandListener extends Listener<
         .setEmoji({ name: "🔗" })
         .setURL("https://discord.gg/NFkMxFeEWr")
     );
+    const separator = new SeparatorBuilder();
     const exclusiveContainer = new ContainerBuilder()
       .addTextDisplayComponents(exclusiveText)
-      .addSeparatorComponents(new SeparatorBuilder())
+      .addSeparatorComponents(separator)
       .addActionRowComponents(joinButton)
       .setAccentColor([255, 0, 0]);
 
