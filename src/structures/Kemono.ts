@@ -84,7 +84,6 @@ export class KemonoCreator {
     try {
       const cacheKey = `${this.id}-${postId}`;
       if (kemonoPostContentCache.has(cacheKey)) return kemonoPostContentCache.get(cacheKey) as KemonoPost;
-      container.logger.debug("Cache failed");
       const response = await fetch(`${this.apiBaseUrl}/post/${postId}`, { headers: { Accept: "text/css" } });
       const result = (await response.json()) as PostDetailResponse;
       const post = result.post;

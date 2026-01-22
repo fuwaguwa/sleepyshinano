@@ -12,7 +12,7 @@ import {
 } from "discord.js";
 import sagiri from "sagiri";
 import type { LocalSauceResult, SauceOptions, SauceSortedLinks } from "../typings/sauce";
-import { LOADING_EMOJI, SAUCE_EMOJIS } from "./constants";
+import { LOADING_EMOJI, SAUCE_BUTTON_EMOJIS } from "./constants";
 import { isImageAndGif } from "./utils/misc";
 
 // ============================================================================
@@ -312,7 +312,7 @@ function buildButtonRow(sortedLinks: SauceSortedLinks): ActionRowBuilder<ButtonB
 
   for (const [siteName, linkData] of Object.entries(sortedLinks)) {
     const [url, similarity] = linkData.split("|");
-    const emoji = SAUCE_EMOJIS[siteName as keyof typeof SAUCE_EMOJIS];
+    const emoji = SAUCE_BUTTON_EMOJIS[siteName as keyof typeof SAUCE_BUTTON_EMOJIS];
 
     const button = new ButtonBuilder()
       .setLabel(`${siteName} (${similarity})`)

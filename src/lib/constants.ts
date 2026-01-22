@@ -14,15 +14,15 @@ export const VOTE_LINK_BUTTON = new ActionRowBuilder<ButtonBuilder>().setCompone
     .setURL(TOPGG_VOTE_URL)
 );
 
-export const SAUCE_EMOJIS = {
-  Pixiv: "<:pixiv:1003211984747118642>",
-  Twitter: "<:twitter:1003211986697453680>",
-  Danbooru: "<:danbooru:1003212182156230686>",
-  Gelbooru: "<:gelbooru:1003211988916252682>",
-  "Yande.re": "🔪",
+export const SAUCE_BUTTON_EMOJIS = {
+  Pixiv: "1003211984747118642",
+  Twitter: "1003211986697453680",
+  Danbooru: "1003212182156230686",
+  Gelbooru: "1003211988916252682",
+  Fantia: "1003211990673670194",
+  AniDB: "1003211992410107924",
   Konachan: "⭐",
-  Fantia: "<:fantia:1003211990673670194>",
-  AniDB: "<:anidb:1003211992410107924>",
+  "Yande.re": "🔪",
 };
 
 export const LOADING_EMOJI = "<a:lod:1021265223707000923>";
