@@ -26,10 +26,6 @@ export class KemonoCreatorAutocompleteHandler extends InteractionHandler {
     if (focusedOption.name !== "name") return this.none();
     const searchTerm = focusedOption.value;
 
-    if (searchTerm.length === 0) return this.some([{ name: "Type to search...", value: focusedOption.value }]);
-    else if (searchTerm.length < 2)
-      return this.some([{ name: "Continue typing to search...", value: focusedOption.value }]);
-
     const searchResults = await KEMONO.searchAPICreator(searchTerm, 9);
 
     if (!searchResults)
