@@ -5,7 +5,7 @@ import { getModelForClass, modelOptions, prop } from "@typegoose/typegoose";
     collection: "shinano-users-vote",
   },
 })
-export class User {
+export class UserVote {
   @prop({
     required: true,
     unique: true,
@@ -23,4 +23,4 @@ export class User {
   public voteExpiredTimestamp!: number;
 }
 
-export const UserVoteModel = getModelForClass(User);
+export const UserVoteModel = getModelForClass(UserVote);
