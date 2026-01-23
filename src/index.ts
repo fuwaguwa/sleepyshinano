@@ -1,11 +1,17 @@
-import "./lib/setup";
+import "./core/setup";
 
 import { LogLevel, SapphireClient } from "@sapphire/framework";
 import { GatewayIntentBits, Options, Partials } from "discord.js";
-import { connectToDatabase } from "./lib/utils/db";
+import { connectToDatabase } from "./core/database";
 
 const client: SapphireClient<true> = new SapphireClient({
-  baseUserDirectory: import.meta.dir,
+  defaultCooldown: {
+    limit: 1,
+    delay: 4500,
+    filteredUsers: process.env.COOL_PEOPLE_IDS.split(","),
+  },
+  loadDefaultErrorListeners: false,
+  baseUserDirectory: null,
   logger: {
     level: process.env.NODE_ENV === "production" ? LogLevel.Info : LogLevel.Debug,
   },
@@ -26,10 +32,18 @@ const client: SapphireClient<true> = new SapphireClient({
   },
 });
 
+async function loadVirtualPieces() {
+  const glob = new Bun.Glob("./**/_load.{ts,js}");
+  for await (const file of glob.scan({ cwd: import.meta.dir })) {
+    await import(`./${file}`);
+  }
+}
+
 async function main() {
   try {
     await connectToDatabase();
-    client.logger.info("Logging in...");
+    await loadVirtualPieces();
+    client.logger.info("Core(client): Logging in...");
     await client.login(process.env.BOT_TOKEN);
   } catch (error) {
     client.logger.fatal(error);
