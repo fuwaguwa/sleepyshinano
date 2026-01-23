@@ -3,6 +3,7 @@ import "./core/setup";
 import { LogLevel, SapphireClient } from "@sapphire/framework";
 import { GatewayIntentBits, Options, Partials } from "discord.js";
 import { connectToDatabase } from "./core/database";
+import { autoDiscoverPieces } from "./core/virtualPieces";
 
 const client: SapphireClient<true> = new SapphireClient({
   defaultCooldown: {
@@ -33,12 +34,18 @@ const client: SapphireClient<true> = new SapphireClient({
 });
 
 async function loadVirtualPieces() {
-  const glob = new Bun.Glob("./**/_load.{ts,js}");
-  for await (const file of glob.scan({ cwd: import.meta.dir })) {
-    await import(`./${file}`);
-  }
-}
+  const baseDir = import.meta.dir;
 
+  await autoDiscoverPieces("commands", "features/*/commands/*.{ts,js}", baseDir);
+
+  await autoDiscoverPieces("listeners", "core/listeners/**/*.{ts,js}", baseDir);
+  await autoDiscoverPieces("listeners", "features/*/listeners/**/*.{ts,js}", baseDir);
+
+  await autoDiscoverPieces("preconditions", "core/preconditions/*.{ts,js}", baseDir);
+  await autoDiscoverPieces("preconditions", "features/*/preconditions/*.{ts,js}", baseDir);
+
+  await autoDiscoverPieces("interaction-handlers", "features/*/interaction-handlers/**/*.{ts,js}", baseDir);
+}
 async function main() {
   try {
     await connectToDatabase();
