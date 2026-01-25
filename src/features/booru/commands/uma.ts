@@ -7,7 +7,7 @@ import { processBooruRequest } from "../lib/booru";
   description: "Horse girls",
   cooldownDelay: 10000,
   preconditions: ["NotBlacklisted"],
-  nsfw: true,
+  nsfw: false,
 })
 export class UmaCommand extends Command {
   public override registerApplicationCommands(registry: Command.Registry) {
