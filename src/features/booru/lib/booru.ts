@@ -12,7 +12,7 @@ import {
 import { fetch } from "netbun";
 import { TOPGG_EMOJI_ID, TOPGG_VOTE_URL } from "../../../shared/constants";
 import { buttonInteractionCollectorCache } from "../../../shared/lib/collectors";
-import { checkButtonCooldownCache, setButtonCooldownCache } from "../../../shared/lib/cooldown";
+import { checkButtonCooldownCache, setButtonCooldownCache } from "../../../shared/lib/interactionCooldown";
 import { getCurrentTimestamp, randomItem } from "../../../shared/lib/utils";
 import type { ProcessableInteraction } from "../../sauce/types/Interaction";
 import { UserVoteModel } from "../../vote/models/UserVote";

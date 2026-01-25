@@ -8,7 +8,7 @@ import {
   TextDisplayBuilder,
 } from "discord.js";
 import { VOTE_LINK_BUTTON } from "../../../../shared/constants";
-import { checkButtonCooldownCache, setButtonCooldownCache } from "../../../../shared/lib/cooldown";
+import { checkButtonCooldownCache, setButtonCooldownCache } from "../../../../shared/lib/interactionCooldown";
 import { getCurrentTimestamp } from "../../../../shared/lib/utils";
 import { UserVoteModel } from "../../models/UserVote";
 import type { ShinanoUserVote } from "../../types/UserVote";

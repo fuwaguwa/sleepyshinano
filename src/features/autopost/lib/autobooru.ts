@@ -14,12 +14,12 @@ import {
 } from "discord.js";
 import { TOPGG_EMOJI_ID, TOPGG_VOTE_URL } from "../../../shared/constants";
 import { getCurrentTimestamp } from "../../../shared/lib/utils";
+import { BOORU_CONFIG } from "../../booru/constants";
+import { createLinkButtons, queryBooru } from "../../booru/lib/booru";
+import { isVideoUrl } from "../../booru/lib/utils";
+import type { BooruSite } from "../../booru/types/API";
 import { checkVote } from "../../vote/lib/voteCheck";
-import { BOORU_CONFIG } from "../constants";
-import { createLinkButtons, queryBooru } from "../lib/booru";
 import { AutobooruModel } from "../models/Autobooru";
-import type { BooruSite } from "../types/API";
-import { isVideoUrl } from "./utils";
 
 export class ShinanoAutobooru {
   public async startBooruPosting() {

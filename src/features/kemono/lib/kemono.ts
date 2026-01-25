@@ -155,7 +155,6 @@ export class Kemono {
   private fuse: Fuse<KemonoAPICreator>;
 
   constructor() {
-    // Initialize empty Fuse instance (will be populated in load())
     this.fuse = new Fuse([], {
       keys: ["name", "id"],
       threshold: 0.3,

@@ -13,10 +13,10 @@ import {
 } from "discord.js";
 import { MAIN_GUILD_ID, TOPGG_EMOJI_ID, TOPGG_VOTE_URL } from "../../../shared/constants";
 import { getCurrentTimestamp } from "../../../shared/lib/utils";
+import { fetchRandomLewd, getRandomLewdCategory } from "../../private-lewd/lib/lewd";
+import type { LewdCategory, LewdMedia } from "../../private-lewd/types/Lewd";
 import { UserVoteModel } from "../../vote/models/UserVote";
 import { AutolewdModel } from "../models/Autolewd";
-import type { LewdCategory, LewdMedia } from "../types/Lewd";
-import { fetchRandomLewd, getRandomLewdCategory } from "./lewd";
 
 export class ShinanoAutolewd {
   public async startLewdPosting() {

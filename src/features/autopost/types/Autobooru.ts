@@ -1,5 +1,5 @@
 import type { Types } from "mongoose";
-import type { BooruSite } from "./API";
+import type { BooruSite } from "../../booru/types/API";
 
 export interface AutobooruDocument {
   _id: Types.ObjectId | string;

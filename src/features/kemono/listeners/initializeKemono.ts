@@ -1,7 +1,6 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Events, Listener, type ListenerOptions } from "@sapphire/framework";
-import { ActivityType } from "discord.js";
-import { updateServerCount } from "../logging";
+import { KEMONO } from "../lib/kemono";
 
 @ApplyOptions<ListenerOptions>({
   once: true,
@@ -9,13 +8,6 @@ import { updateServerCount } from "../logging";
 })
 export class ReadyListener extends Listener {
   public override async run() {
-    this.container.logger.info("Shinano is ready!");
-
-    await updateServerCount();
-
-    this.container.client.user?.setActivity({
-      name: "/shinano help",
-      type: ActivityType.Custom,
-    });
+    await KEMONO.start();
   }
 }

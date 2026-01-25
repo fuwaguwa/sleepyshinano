@@ -1,6 +1,6 @@
 import type { ButtonInteraction, ChatInputCommandInteraction, ContainerBuilder, Message } from "discord.js";
-import type { LewdCategory } from "./Lewd";
-import { Types } from "mongoose";
+import type { Types } from "mongoose";
+import type { LewdCategory } from "../../private-lewd/types/Lewd";
 
 export interface AutolewdButtonOptions {
   showEnable: boolean;

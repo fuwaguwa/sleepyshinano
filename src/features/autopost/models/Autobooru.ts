@@ -1,13 +1,13 @@
 import { getModelForClass, modelOptions, prop } from "@typegoose/typegoose";
-import { LEWD_CATEGORIES } from "../constants";
-import type { LewdCategory } from "../types/Lewd";
+import { BOORU_SITES } from "../../booru/constants";
+import type { BooruSite } from "../../booru/types/API";
 
 @modelOptions({
   schemaOptions: {
-    collection: "autolewds",
+    collection: "autoboorus",
   },
 })
-export class Autolewd {
+export class Autobooru {
   @prop({
     required: true,
     unique: true,
@@ -26,10 +26,21 @@ export class Autolewd {
 
   @prop({
     required: true,
-    enum: ["random", ...LEWD_CATEGORIES],
+    enum: BOORU_SITES,
     type: String,
   })
-  public category!: LewdCategory | "random";
+  public site!: BooruSite;
+
+  @prop({
+    required: true,
+  })
+  public tags!: string;
+
+  @prop({
+    required: true,
+    default: false,
+  })
+  public isRandom!: boolean;
 
   @prop({
     required: true,
@@ -38,4 +49,4 @@ export class Autolewd {
   public sentNotVotedWarning!: boolean;
 }
 
-export const AutolewdModel = getModelForClass(Autolewd);
+export const AutobooruModel = getModelForClass(Autobooru);

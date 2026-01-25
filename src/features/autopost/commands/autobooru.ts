@@ -16,13 +16,13 @@ import {
   TextDisplayBuilder,
 } from "discord.js";
 import { buttonInteractionCollectorCache } from "../../../shared/lib/collectors";
-import { BOORU_SITES } from "../constants";
-import { fetchBooruPosts } from "../lib/booru";
-import { cleanBooruTags } from "../lib/utils";
+import { BOORU_SITES } from "../../booru/constants";
+import { fetchBooruPosts } from "../../booru/lib/booru";
+import { cleanBooruTags } from "../../booru/lib/utils";
+import type { BooruSite } from "../../booru/types/API";
+import type { AutobooruCollectorOptions, AutobooruHandleButtonsOptions } from "../../booru/types/Booru";
 import { AutobooruModel } from "../models/Autobooru";
-import type { BooruSite } from "../types/API";
 import type { AutobooruButtonOptions, AutobooruDocument } from "../types/Autobooru";
-import type { AutobooruCollectorOptions, AutobooruHandleButtonsOptions } from "../types/Booru";
 
 function createButtons(options: AutobooruButtonOptions) {
   const { showEnable, showDisable, disabled = false, userId } = options;

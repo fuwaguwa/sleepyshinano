@@ -1,7 +1,7 @@
 import { ApplyOptions } from "@sapphire/decorators";
 import { Events, Listener, type ListenerOptions } from "@sapphire/framework";
-import { ActivityType } from "discord.js";
-import { updateServerCount } from "../logging";
+import { ShinanoAutobooru } from "../lib/autobooru";
+import { ShinanoAutolewd } from "../lib/autolewd";
 
 @ApplyOptions<ListenerOptions>({
   once: true,
@@ -9,13 +9,10 @@ import { updateServerCount } from "../logging";
 })
 export class ReadyListener extends Listener {
   public override async run() {
-    this.container.logger.info("Shinano is ready!");
+    const autobooru = new ShinanoAutobooru();
+    const autolewd = new ShinanoAutolewd();
 
-    await updateServerCount();
-
-    this.container.client.user?.setActivity({
-      name: "/shinano help",
-      type: ActivityType.Custom,
-    });
+    await autobooru.startBooruPosting();
+    await autolewd.startLewdPosting();
   }
 }

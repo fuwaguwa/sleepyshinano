@@ -16,6 +16,7 @@ import {
   TextDisplayBuilder,
 } from "discord.js";
 import { buttonInteractionCollectorCache } from "../../../shared/lib/collectors";
+import type { LewdCategory } from "../../private-lewd/types/Lewd";
 import { AutolewdModel } from "../models/Autolewd";
 import type {
   AutolewdButtonOptions,
@@ -23,7 +24,6 @@ import type {
   AutolewdDocument,
   AutolewdHandleButtonOptions,
 } from "../types/Autolewd";
-import type { LewdCategory } from "../types/Lewd";
 
 function createButtons(options: AutolewdButtonOptions) {
   const { showEnable, showDisable, disabled = false, userId } = options;

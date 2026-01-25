@@ -7,7 +7,6 @@ import { processBooruRequest } from "../lib/booru";
   description: "Horse girls",
   cooldownDelay: 10000,
   preconditions: ["NotBlacklisted"],
-  nsfw: false,
 })
 export class UmaCommand extends Command {
   public override registerApplicationCommands(registry: Command.Registry) {
@@ -26,6 +25,7 @@ export class UmaCommand extends Command {
 
   public override async chatInputRun(interaction: ChatInputCommandInteraction) {
     if (!interaction.deferred) await interaction.deferReply();
+    console.log(interaction.user.id);
 
     await processBooruRequest({ interaction, tags: "umamusume", site: "safebooru", noTagsOnReply: true });
   }
