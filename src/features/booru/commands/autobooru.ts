@@ -287,13 +287,13 @@ export class AutobooruCommand extends Subcommand {
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent("## Autobooru has already been setup!"),
           new TextDisplayBuilder().setContent(
-            `User: <@${existingDoc.userId}>\nChannel: <#${existingDoc.channelId}>\nTag(s): **${existingDoc.tags}**\n\n`
+            `User: <@${existingDoc.userId}>\nChannel: <#${existingDoc.channelId}>\nSite: ${existingDoc.site}\nTag(s): **${existingDoc.tags}**\n`
           )
         )
         .addSeparatorComponents(separator)
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `New User: ${interaction.user}\nNew Channel: ${interaction.channel}\nNew Tag(s): **${filteredTags}**`
+            `New User: ${interaction.user}\nNew Channel: ${interaction.channel}\nNew Site: ${site}\nNew Tag(s): **${filteredTags}**`
           )
         )
         .setAccentColor([255, 0, 0]);
@@ -305,7 +305,7 @@ export class AutobooruCommand extends Subcommand {
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent("## Autobooru has not been enabled for this server!"),
           new TextDisplayBuilder().setContent(
-            `Do you want Shinano to send booru posts into this channel?\nCurrent Tag(s): **${filteredTags}**\n\n**Make sure Shinano has the \`Send Message\` permission before continuing!**`
+            `Do you want Shinano to send booru posts into this channel?\nCurrent Site: **${site}**\nCurrent Tag(s): **${filteredTags}**\n\n**Make sure Shinano has the \`Send Message\` permission before continuing!**`
           )
         )
         .setAccentColor([255, 0, 0]);
