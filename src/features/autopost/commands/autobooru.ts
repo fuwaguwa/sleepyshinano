@@ -20,9 +20,13 @@ import { BOORU_SITES } from "../../booru/constants";
 import { fetchBooruPosts } from "../../booru/lib/booru";
 import { cleanBooruTags } from "../../booru/lib/utils";
 import type { BooruSite } from "../../booru/types/API";
-import type { AutobooruCollectorOptions, AutobooruHandleButtonsOptions } from "../../booru/types/Booru";
 import { AutobooruModel } from "../models/Autobooru";
-import type { AutobooruButtonOptions, AutobooruDocument } from "../types/Autobooru";
+import type {
+  AutobooruButtonOptions,
+  AutobooruCollectorOptions,
+  AutobooruDocument,
+  AutobooruHandleButtonsOptions,
+} from "../types/Autobooru";
 
 function createButtons(options: AutobooruButtonOptions) {
   const { showEnable, showDisable, disabled = false, userId } = options;

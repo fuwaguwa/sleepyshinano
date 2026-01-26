@@ -7,7 +7,6 @@ config({ path: `.env.${process.env.NODE_ENV}` });
 
 // Validate required environment variables
 const requiredEnvVars = [
-  "NODE_ENV",
   "SOCKS_PROXY",
   "BOT_TOKEN",
   "LOGGING_GUILD_ID",
