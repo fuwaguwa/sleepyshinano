@@ -7,7 +7,6 @@ import { processBooruRequest } from "../lib/booru";
   description: "Due to popular demands...",
   fullCategory: ["NSFW", "Booru"],
   cooldownDelay: 15000,
-  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS.split(","),
   nsfw: true,
 })
 export class FemboyCommand extends Command {

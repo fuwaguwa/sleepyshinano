@@ -12,7 +12,7 @@ import {
   type TextChannel,
   TextDisplayBuilder,
 } from "discord.js";
-import { TOPGG_EMOJI_ID, TOPGG_VOTE_URL } from "../../../shared/constants";
+import { IMMUNE_IDS, SHINANO_CONFIG, TOPGG_EMOJI_ID, TOPGG_VOTE_URL } from "../../../shared/constants";
 import { getCurrentTimestamp } from "../../../shared/lib/utils";
 import { BOORU_CONFIG } from "../../booru/constants";
 import { createLinkButtons, queryBooru } from "../../booru/lib/booru";
@@ -25,7 +25,7 @@ export class ShinanoAutobooru {
   public async startBooruPosting() {
     container.logger.info("Autobooru: Initializing...");
 
-    const isDevelopment = process.env.NODE_ENV === "development";
+    const isDevelopment = SHINANO_CONFIG.nodeEnv === "development";
     const intervalTime = isDevelopment ? 10000 : 60000;
 
     await this.processAutobooru(isDevelopment);
@@ -143,7 +143,7 @@ export class ShinanoAutobooru {
           }
 
           // Check vote status
-          const isLowkACoolGuy = process.env.COOL_PEOPLE_IDS.split(",").includes(autobooru.userId);
+          const isLowkACoolGuy = IMMUNE_IDS.includes(autobooru.userId);
           const validVote = await checkVote(autobooru.userId);
 
           if (!isLowkACoolGuy && !validVote && !autobooru.sentNotVotedWarning) {

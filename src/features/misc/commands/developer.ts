@@ -13,6 +13,7 @@ import {
   MessageFlags,
 } from "discord.js";
 import { UserModel } from "../../../core/models/User";
+import { SHINANO_CONFIG } from "../../../shared/constants";
 import { buttonInteractionCollectorCache } from "../../../shared/lib/collectors";
 import { fetchJson } from "../../../shared/lib/http";
 import { getCurrentTimestamp } from "../../../shared/lib/utils";
@@ -154,7 +155,7 @@ export class DeveloperCommand extends Subcommand {
     const result = await fetchJson<TopggVoteCheck>(
       `https://top.gg/api/bots/1002193298229829682/check?userId=${user.id}`,
       {
-        headers: { Authorization: process.env.TOPGG_API_KEY! },
+        headers: { Authorization: SHINANO_CONFIG.topggApiKey },
       }
     );
 
@@ -202,7 +203,7 @@ export class DeveloperCommand extends Subcommand {
     buttonInteractionCollectorCache.set(interaction.user.id, collector);
 
     collector.on("collect", async i => {
-      const ownerIds = process.env.OWNER_IDS.split(",");
+      const ownerIds = SHINANO_CONFIG.ownerIds;
       if (!ownerIds.includes(i.user.id)) {
         return i.reply({
           content: "This button is only for developers!",

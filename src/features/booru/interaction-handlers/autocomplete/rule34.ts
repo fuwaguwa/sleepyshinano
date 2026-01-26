@@ -2,6 +2,7 @@ import { ApplyOptions } from "@sapphire/decorators";
 import { InteractionHandler, type InteractionHandlerOptions, InteractionHandlerTypes } from "@sapphire/framework";
 import type { AutocompleteInteraction } from "discord.js";
 import { fetch } from "netbun";
+import { SHINANO_CONFIG } from "../../../../shared/constants";
 import type { Rule34TagResponse } from "../../types/API";
 
 @ApplyOptions<InteractionHandlerOptions>({
@@ -37,7 +38,7 @@ export class Rule34AutocompleteHandler extends InteractionHandler {
     const url = `https://api.rule34.xxx/autocomplete.php?q=${encodeURIComponent(lastTag)}`;
 
     try {
-      const response = await fetch(url, { proxy: process.env.SOCKS_PROXY });
+      const response = await fetch(url, { proxy: SHINANO_CONFIG.socksProxy });
       const data = (await response.json()) as Rule34TagResponse[];
 
       if (!data?.length) {

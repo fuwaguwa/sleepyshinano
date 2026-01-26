@@ -9,6 +9,7 @@ import {
   MessageFlags,
   TextDisplayBuilder,
 } from "discord.js";
+import { SHINANO_CONFIG } from "../../../shared/constants";
 import { fetchJson } from "../../../shared/lib/http";
 import { getCurrentTimestamp } from "../../../shared/lib/utils";
 import type { DiscordUserResponse } from "../../fun/types/API";
@@ -41,7 +42,7 @@ export class BannerCommand extends Command {
 
     try {
       const data = await fetchJson<DiscordUserResponse>(`https://discord.com/api/v10/users/${user.id}`, {
-        headers: { Authorization: `Bot ${process.env.BOT_TOKEN}` },
+        headers: { Authorization: `Bot ${SHINANO_CONFIG.botToken}` },
       });
 
       if (!data) throw new Error("Failed to fetch data from Discord API.");

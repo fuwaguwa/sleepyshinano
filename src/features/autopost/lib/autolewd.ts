@@ -11,7 +11,7 @@ import {
   type TextChannel,
   TextDisplayBuilder,
 } from "discord.js";
-import { MAIN_GUILD_ID, TOPGG_EMOJI_ID, TOPGG_VOTE_URL } from "../../../shared/constants";
+import { IMMUNE_IDS, MAIN_GUILD_ID, SHINANO_CONFIG, TOPGG_EMOJI_ID, TOPGG_VOTE_URL } from "../../../shared/constants";
 import { getCurrentTimestamp } from "../../../shared/lib/utils";
 import { fetchRandomLewd, getRandomLewdCategory } from "../../private-lewd/lib/lewd";
 import type { LewdCategory, LewdMedia } from "../../private-lewd/types/Lewd";
@@ -22,7 +22,7 @@ export class ShinanoAutolewd {
   public async startLewdPosting() {
     container.logger.info("Autolewd: Initializing");
 
-    const isDevelopment = process.env.NODE_ENV === "development";
+    const isDevelopment = SHINANO_CONFIG.nodeEnv === "development";
     const intervalTime = isDevelopment ? 10000 : 600000;
 
     await this.processAutolewd(isDevelopment);
@@ -135,7 +135,7 @@ export class ShinanoAutolewd {
           // Check vote status
           const user = await UserVoteModel.findOne({ userId: autolewd.userId });
           const currentTimestamp = getCurrentTimestamp();
-          const isLowkACoolGuy = process.env.COOL_PEOPLE_IDS.split(",").includes(autolewd.userId);
+          const isLowkACoolGuy = IMMUNE_IDS.includes(autolewd.userId);
           const validVote = user?.voteExpiredTimestamp && user.voteExpiredTimestamp >= currentTimestamp;
 
           if (!isLowkACoolGuy && !validVote && !autolewd.sentNotVotedWarning) {

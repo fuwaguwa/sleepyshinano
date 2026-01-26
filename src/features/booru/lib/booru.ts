@@ -10,7 +10,7 @@ import {
   TextDisplayBuilder,
 } from "discord.js";
 import { fetch } from "netbun";
-import { TOPGG_EMOJI_ID, TOPGG_VOTE_URL } from "../../../shared/constants";
+import { IMMUNE_IDS, SHINANO_CONFIG, TOPGG_EMOJI_ID, TOPGG_VOTE_URL } from "../../../shared/constants";
 import { buttonInteractionCollectorCache } from "../../../shared/lib/collectors";
 import { checkButtonCooldownCache, setButtonCooldownCache } from "../../../shared/lib/interactionCooldown";
 import { getCurrentTimestamp, randomItem } from "../../../shared/lib/utils";
@@ -29,7 +29,7 @@ import type {
 } from "../types/Booru";
 import { cleanBooruTags, isGroupDM, isGuildInteraction, isUserDM, isValidSourceUrl, isVideoUrl } from "./utils";
 
-const COOL_PEOPLE_SET = new Set(process.env.COOL_PEOPLE_IDS.split(","));
+const COOL_PEOPLE_SET = new Set(IMMUNE_IDS);
 const voteCache = new Map<string, { hasVoted: boolean; expiresAt: number }>();
 const VOTE_CACHE_TTL_MS = 60;
 
@@ -238,7 +238,7 @@ export async function fetchBooruPosts(
   }
 
   const url = `${config.apiUrl}?${params.toString()}`;
-  const fetchOptions = config.needsProxy ? { proxy: process.env.SOCKS_PROXY } : {};
+  const fetchOptions = config.needsProxy ? { proxy: SHINANO_CONFIG.socksProxy } : {};
 
   for (let attempt = 0; attempt < BOORU_QUERY.maxFetchRetries; attempt++) {
     try {

@@ -2,6 +2,8 @@ import { ApplyOptions } from "@sapphire/decorators";
 import { InteractionHandler, type InteractionHandlerOptions, InteractionHandlerTypes } from "@sapphire/framework";
 import type { AutocompleteInteraction } from "discord.js";
 import { fetch } from "netbun";
+import { SHINANO_CONFIG } from "../../../../shared/constants";
+import { BOORU_CONFIG } from "../../constants";
 import type { GelbooruTagResponse } from "../../types/API";
 
 @ApplyOptions<InteractionHandlerOptions>({
@@ -40,15 +42,15 @@ export class GelbooruAutocompleteHandler extends InteractionHandler {
       q: "index",
       json: "1",
       name_pattern: `${lastTag}%`,
-      api_key: process.env.GELBOORU_API_KEY,
-      user_id: process.env.GELBOORU_USER_ID,
+      api_key: BOORU_CONFIG.gelbooru.apiKey as string,
+      user_id: BOORU_CONFIG.gelbooru.userId as string,
       limit: "10",
     });
 
     const url = `https://gelbooru.com/index.php?${params.toString()}`;
 
     try {
-      const response = await fetch(url, { proxy: process.env.SOCKS_PROXY });
+      const response = await fetch(url, { proxy: SHINANO_CONFIG.socksProxy });
       const data = (await response.json()) as GelbooruTagResponse;
 
       if (!data.tag?.length) return this.some([{ name: `No tags found for "${lastTag}"`, value: focusedOption.value }]);

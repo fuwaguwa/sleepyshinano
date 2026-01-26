@@ -1,5 +1,6 @@
 import { AllFlowsPrecondition } from "@sapphire/framework";
 import type { CommandInteraction, ContextMenuCommandInteraction, Message } from "discord.js";
+import { SHINANO_CONFIG } from "../../../shared/constants";
 
 export class OwnerOnlyPrecondition extends AllFlowsPrecondition {
   public override async messageRun(message: Message) {
@@ -15,7 +16,7 @@ export class OwnerOnlyPrecondition extends AllFlowsPrecondition {
   }
 
   private checkOwner(userId: string) {
-    const ownerIds = process.env.OWNER_IDS.split(",") || [];
+    const ownerIds = SHINANO_CONFIG.ownerIds;
 
     return ownerIds.includes(userId)
       ? this.ok()
