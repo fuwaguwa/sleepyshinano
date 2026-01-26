@@ -1,0 +1,2 @@
+export const AUTOBOORU_POSTING_INTERVAL = 0.5 * 60 * 1000;
+export const AUTOLEWD_POSTING_INTERVAL = 5 * 60 * 1000;

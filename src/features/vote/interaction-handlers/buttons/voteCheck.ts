@@ -11,7 +11,6 @@ import { VOTE_LINK_BUTTON } from "../../../../shared/constants";
 import { checkButtonCooldownCache, setButtonCooldownCache } from "../../../../shared/lib/interactionCooldown";
 import { getCurrentTimestamp } from "../../../../shared/lib/utils";
 import { UserVoteModel } from "../../models/UserVote";
-import type { ShinanoUserVote } from "../../types/UserVote";
 
 @ApplyOptions<InteractionHandlerOptions>({
   interactionHandlerType: InteractionHandlerTypes.Button,
@@ -27,7 +26,7 @@ export class VoteCheckButtonHandler extends InteractionHandler {
     if (buttonCooldownStatus) return;
 
     const userId = interaction.user.id;
-    const user = await UserVoteModel.findOne({ userId }).lean<ShinanoUserVote>();
+    const user = await UserVoteModel.findOne({ userId }).lean();
 
     setButtonCooldownCache("voteCheck", interaction);
 

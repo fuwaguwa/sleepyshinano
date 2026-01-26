@@ -4,7 +4,6 @@ import {
   ButtonBuilder,
   ButtonStyle,
   ContainerBuilder,
-  EmbedBuilder,
   type Guild,
   MediaGalleryBuilder,
   MessageFlags,
@@ -19,6 +18,7 @@ import { createLinkButtons, queryBooru } from "../../booru/lib/booru";
 import { isVideoUrl } from "../../booru/lib/utils";
 import type { BooruSite } from "../../booru/types/API";
 import { checkVote } from "../../vote/lib/voteCheck";
+import { AUTOBOORU_POSTING_INTERVAL } from "../constants";
 import { AutobooruModel } from "../models/Autobooru";
 
 export class ShinanoAutobooru {
@@ -26,11 +26,11 @@ export class ShinanoAutobooru {
     container.logger.info("Autobooru: Initializing...");
 
     const isDevelopment = SHINANO_CONFIG.nodeEnv === "development";
-    const intervalTime = isDevelopment ? 10000 : 60000;
+    const intervalTime = isDevelopment ? 10000 : AUTOBOORU_POSTING_INTERVAL;
 
-    await this.processAutobooru(isDevelopment);
+    await this.processAutobooru(isDevelopment, intervalTime);
     setInterval(async () => {
-      await this.processAutobooru(isDevelopment);
+      await this.processAutobooru(isDevelopment, intervalTime);
     }, intervalTime);
   }
 
@@ -60,8 +60,6 @@ export class ShinanoAutobooru {
 
       const postUrl = config.baseUrl + post.id;
       const links = createLinkButtons(postUrl, post.source, isVideo);
-
-      // container.logger.debug(fileUrl);
 
       const descriptionText = new TextDisplayBuilder().setContent(tagMessage);
       const gallery = new MediaGalleryBuilder().addItems([{ media: { url: post.file_url } }]);
@@ -97,11 +95,17 @@ export class ShinanoAutobooru {
     }
   }
 
-  private async processAutobooru(isDevelopment: boolean) {
+  private async processAutobooru(isDevelopment: boolean, intervalTime: number) {
     try {
       if (isDevelopment) return this.processDevelopmentMode();
 
-      const autoboorus = await AutobooruModel.find();
+      const now = getCurrentTimestamp() * 1000;
+
+      const autoboorus = await AutobooruModel.find({
+        $or: [{ lastPostTime: null }, { lastPostTime: { $lte: now - intervalTime } }], // less than or equal to
+      });
+
+      container.logger.info(`Autobooru: Processing ${autoboorus.length} servers due for posting`);
 
       for (const autobooru of autoboorus) {
         try {
@@ -128,13 +132,18 @@ export class ShinanoAutobooru {
 
           // Check if channel is NSFW
           if (!channel?.nsfw) {
-            const errorEmbed = new EmbedBuilder()
-              .setColor("Red")
-              .setDescription(
-                "❌ This channel is NOT NSFW, please make this channel age-restricted and run `/autobooru` again"
-              );
+            const nsfwMessage = new TextDisplayBuilder().setContent("### 🔞 NSFW Feature");
+            const nsfwInfo = new TextDisplayBuilder().setContent(
+              "This channel is NOT NSFW, please make this channel age-restricted, and run `/autobooru` again!"
+            );
+            const separator = new SeparatorBuilder();
+            const nsfwContainer = new ContainerBuilder()
+              .addTextDisplayComponents(nsfwMessage)
+              .addSeparatorComponents(separator)
+              .addTextDisplayComponents(nsfwInfo);
 
-            await channel.send({ embeds: [errorEmbed] });
+            await channel.send({ flags: MessageFlags.IsComponentsV2, components: [nsfwContainer] });
+
             await autobooru.deleteOne();
             container.logger.info(
               `Autobooru: Channel ${autobooru.channelId} is not NSFW, deleting entry of ${autobooru.guildId}`
@@ -147,6 +156,9 @@ export class ShinanoAutobooru {
           const validVote = await checkVote(autobooru.userId);
 
           if (!isLowkACoolGuy && !validVote && !autobooru.sentNotVotedWarning) {
+            const voteMessage = new TextDisplayBuilder().setContent("### ❌️ Vote Expired");
+            const voteInfo = new TextDisplayBuilder().setContent("Please vote for Shinano to continue posting!");
+            const separator = new SeparatorBuilder();
             const links = new ActionRowBuilder<ButtonBuilder>().addComponents(
               new ButtonBuilder()
                 .setStyle(ButtonStyle.Link)
@@ -160,15 +172,17 @@ export class ShinanoAutobooru {
                 .setCustomId("voteCheck")
             );
 
-            const voteBro = new EmbedBuilder()
-              .setColor("Red")
-              .setTitle("Vote expired!")
-              .setDescription("❌ Please vote for Shinano to continue posting!");
+            const voteContainer = new ContainerBuilder()
+              .addTextDisplayComponents(voteMessage)
+              .addSeparatorComponents(separator)
+              .addTextDisplayComponents(voteInfo)
+              .addSeparatorComponents(separator)
+              .addActionRowComponents(links);
 
             await channel.send({
+              flags: MessageFlags.IsComponentsV2,
               content: `<@${autobooru.userId}>,`,
-              embeds: [voteBro],
-              components: [links],
+              components: [voteContainer],
             });
 
             autobooru.sentNotVotedWarning = true;
@@ -181,18 +195,19 @@ export class ShinanoAutobooru {
 
           const tags = autobooru.tags;
           const isRandom = autobooru.isRandom;
-
           const success = await this.sendBooruToChannel(channel, autobooru.userId, tags, isRandom, autobooru.site);
 
           if (success) {
+            const jitter = Math.random() * AUTOBOORU_POSTING_INTERVAL;
+            autobooru.lastPostTime = now - jitter;
+            await autobooru.save();
+
             container.logger.info(
               `Autobooru: Sent post to guild ${autobooru.guildId} in channel ${autobooru.channelId}`
             );
-          } else {
-            throw new Error();
-          }
-        } catch (_) {
-          container.logger.error(`Error processing autobooru for ${autobooru.guildId}`);
+          } else throw new Error();
+        } catch (error) {
+          container.logger.error(`Error processing autobooru for ${autobooru.guildId}:`, error);
         }
       }
     } catch (error) {
