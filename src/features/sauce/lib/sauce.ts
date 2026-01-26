@@ -11,7 +11,7 @@ import {
   ThumbnailBuilder,
 } from "discord.js";
 import sagiri from "sagiri";
-import { LOADING_EMOJI } from "../../../shared/constants";
+import { LOADING_EMOJI, SHINANO_CONFIG } from "../../../shared/constants";
 import type { LocalSauceResult, SauceOptions, SauceSortedLinks } from "../types/Sauce";
 import { isImageAndGif } from "./utils";
 
@@ -371,7 +371,7 @@ export async function getSauce({ interaction, link, ephemeral = true }: SauceOpt
     components: [createLoadingContainer({ link: true, sauce: false, filter: false })],
   });
 
-  const sauceClient = sagiri(process.env.SAUCENAO_API_KEY!);
+  const sauceClient = sagiri(SHINANO_CONFIG.saucenaoApiKey);
   let rawResults: unknown;
 
   try {

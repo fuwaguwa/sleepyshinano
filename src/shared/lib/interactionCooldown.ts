@@ -1,4 +1,5 @@
 import { type ButtonInteraction, EmbedBuilder, MessageFlags } from "discord.js";
+import { IMMUNE_IDS } from "../constants";
 
 export const buttonCooldownCache: Map<string, number> = new Map();
 const BUTTON_COOLDOWN_MS = 5000;
@@ -26,7 +27,7 @@ export async function checkButtonCooldownCache(id: string, interaction: ButtonIn
  */
 export function setButtonCooldownCache(id: string, interaction: ButtonInteraction) {
   const userId = interaction.user.id;
-  if (process.env.OWNER_IDS.split(",").includes(userId)) return; // No cooldown for bot owners
+  if (IMMUNE_IDS.includes(userId)) return;
 
   buttonCooldownCache.set(`${id}${userId}`, Date.now() + BUTTON_COOLDOWN_MS);
   setTimeout(() => {

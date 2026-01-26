@@ -1,12 +1,12 @@
 import { Precondition } from "@sapphire/framework";
 import type { ChatInputCommandInteraction } from "discord.js";
+import { IMMUNE_IDS } from "../../../shared/constants";
 import { getCurrentTimestamp } from "../../../shared/lib/utils";
 import { UserVoteModel } from "../models/UserVote";
 
 export class VotedPrecondition extends Precondition {
   public override async chatInputRun(interaction: ChatInputCommandInteraction) {
-    const coolPeopleIds = process.env.COOL_PEOPLE_IDS.split(",");
-    if (coolPeopleIds.includes(interaction.user.id)) return this.ok();
+    if (IMMUNE_IDS.includes(interaction.user.id)) return this.ok();
 
     return this.checkVote(interaction);
   }

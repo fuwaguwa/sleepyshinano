@@ -4,17 +4,18 @@ import { LogLevel, SapphireClient } from "@sapphire/framework";
 import { GatewayIntentBits, Options, Partials } from "discord.js";
 import { connectToDatabase } from "./core/database";
 import { autoDiscoverPieces } from "./core/virtualPieces";
+import { IMMUNE_IDS, SHINANO_CONFIG } from "./shared/constants";
 
 const client: SapphireClient<true> = new SapphireClient({
   defaultCooldown: {
     limit: 1,
     delay: 4500,
-    filteredUsers: process.env.COOL_PEOPLE_IDS.split(","),
+    filteredUsers: IMMUNE_IDS,
   },
   loadDefaultErrorListeners: false,
   baseUserDirectory: null,
   logger: {
-    level: process.env.NODE_ENV === "production" ? LogLevel.Info : LogLevel.Debug,
+    level: SHINANO_CONFIG.nodeEnv === "production" ? LogLevel.Info : LogLevel.Debug,
   },
   shards: "auto",
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
@@ -51,7 +52,7 @@ async function main() {
     await connectToDatabase();
     await loadVirtualPieces();
     client.logger.info("Core(client): Logging in...");
-    await client.login(process.env.BOT_TOKEN);
+    await client.login(SHINANO_CONFIG.botToken);
   } catch (error) {
     client.logger.fatal(error);
     await client.destroy();

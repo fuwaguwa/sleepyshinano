@@ -22,8 +22,6 @@ import { isGroupDM, isUserDM } from "../../booru/lib/utils";
 @ApplyOptions<SubcommandOptions>({
   description: "silly commands",
   preconditions: ["NotBlacklisted"],
-  cooldownDelay: 5000,
-  cooldownFilteredUsers: process.env.COOL_PEOPLE_IDS.split(","),
   subcommands: [
     { name: "ping", chatInputRun: "subcommandPing" },
     { name: "info", chatInputRun: "subcommandInfo" },

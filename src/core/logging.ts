@@ -10,20 +10,21 @@ import type {
   ChatInputSubcommandSuccessPayload,
 } from "@sapphire/plugin-subcommands";
 import { type Guild, InteractionContextType, type User, type VoiceChannel } from "discord.js";
+import { SHINANO_CONFIG } from "../shared/constants";
 
 /**
  * Update server count on bot's listings and logging server
  */
 export async function updateServerCount() {
   // Only run in prod
-  if (process.env.NODE_ENV !== "production") {
+  if (SHINANO_CONFIG.nodeEnv !== "production") {
     container.logger.debug("Skipping server count update (not in production)");
     return;
   }
 
   // Only defined in production environment
-  const loggingGuildId = process.env.LOGGING_GUILD_ID;
-  const loggingChannelId = process.env.LOGGING_CHANNEL_ID;
+  const loggingGuildId = SHINANO_CONFIG.loggingGuildId;
+  const loggingChannelId = SHINANO_CONFIG.loggingChannelId;
 
   const serverCount = container.client.guilds.cache.size;
 
@@ -39,7 +40,7 @@ export async function updateServerCount() {
     await fetch(`https://top.gg/api/bots/1002193298229829682/stats`, {
       method: "POST",
       headers: {
-        Authorization: process.env.TOPGG_API_KEY,
+        Authorization: SHINANO_CONFIG.topggApiKey,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ server_count: serverCount }),
