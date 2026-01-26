@@ -47,6 +47,12 @@ export class Autobooru {
     default: false,
   })
   public sentNotVotedWarning!: boolean;
+
+  @prop({
+    required: true,
+    default: null,
+  })
+  public lastPostTime!: number;
 }
 
 export const AutobooruModel = getModelForClass(Autobooru);

@@ -16,15 +16,16 @@ import {
   TextDisplayBuilder,
 } from "discord.js";
 import { buttonInteractionCollectorCache } from "../../../shared/lib/collectors";
+import { getCurrentTimestamp } from "../../../shared/lib/utils";
 import { BOORU_SITES } from "../../booru/constants";
 import { fetchBooruPosts } from "../../booru/lib/booru";
 import { cleanBooruTags } from "../../booru/lib/utils";
 import type { BooruSite } from "../../booru/types/API";
+import { AUTOBOORU_POSTING_INTERVAL } from "../constants";
 import { AutobooruModel } from "../models/Autobooru";
 import type {
   AutobooruButtonOptions,
   AutobooruCollectorOptions,
-  AutobooruDocument,
   AutobooruHandleButtonsOptions,
 } from "../types/Autobooru";
 
@@ -69,6 +70,7 @@ async function handleButtons(options: AutobooruHandleButtonsOptions) {
   }
 
   // Enable/Update autobooru
+  const jitter = Math.random() * AUTOBOORU_POSTING_INTERVAL;
   await AutobooruModel.updateOne(
     { guildId: commandInteraction.guild!.id },
     {
@@ -79,6 +81,7 @@ async function handleButtons(options: AutobooruHandleButtonsOptions) {
         site,
         tags,
         isRandom,
+        lastPostTime: getCurrentTimestamp() * 1000 - jitter,
       },
     },
     { upsert: true }
@@ -88,7 +91,7 @@ async function handleButtons(options: AutobooruHandleButtonsOptions) {
     .addTextDisplayComponents(
       new TextDisplayBuilder().setContent(`## Autobooru has been ${isUpdate ? "updated" : "enabled"}!`),
       new TextDisplayBuilder().setContent(
-        `User: <@${commandInteraction.user.id}>\nChannel: <#${commandInteraction.channelId}>\nTags: **${tags}**`
+        `User: <@${commandInteraction.user.id}>\nChannel: <#${commandInteraction.channelId}>\nChannel: **${site}**Tags: **${tags}**`
       )
     )
     .setAccentColor([0, 255, 0]);
@@ -277,7 +280,7 @@ export class AutobooruCommand extends Subcommand {
     }
 
     const filteredTags = cleanBooruTags(tags);
-    const existingDoc = await AutobooruModel.findOne({ guildId: interaction.guildId }).lean<AutobooruDocument>();
+    const existingDoc = await AutobooruModel.findOne({ guildId: interaction.guildId }).lean();
 
     let container: ContainerBuilder;
     const showEnable: boolean = true;
@@ -291,13 +294,13 @@ export class AutobooruCommand extends Subcommand {
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent("## Autobooru has already been setup!"),
           new TextDisplayBuilder().setContent(
-            `User: <@${existingDoc.userId}>\nChannel: <#${existingDoc.channelId}>\nSite: ${existingDoc.site}\nTag(s): **${existingDoc.tags}**\n`
+            `User: <@${existingDoc.userId}>\nChannel: <#${existingDoc.channelId}>\nSite: **${existingDoc.site}**\nTag(s): **${existingDoc.tags}**\n`
           )
         )
         .addSeparatorComponents(separator)
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `New User: ${interaction.user}\nNew Channel: ${interaction.channel}\nNew Site: ${site}\nNew Tag(s): **${filteredTags}**`
+            `New User: ${interaction.user}\nNew Channel: ${interaction.channel}\nNew Site: **${site}**\nNew Tag(s): **${filteredTags}**`
           )
         )
         .setAccentColor([255, 0, 0]);

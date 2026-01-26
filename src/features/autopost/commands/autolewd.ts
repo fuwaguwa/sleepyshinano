@@ -16,14 +16,11 @@ import {
   TextDisplayBuilder,
 } from "discord.js";
 import { buttonInteractionCollectorCache } from "../../../shared/lib/collectors";
+import { getCurrentTimestamp } from "../../../shared/lib/utils";
 import type { LewdCategory } from "../../private-lewd/types/Lewd";
+import { AUTOLEWD_POSTING_INTERVAL } from "../constants";
 import { AutolewdModel } from "../models/Autolewd";
-import type {
-  AutolewdButtonOptions,
-  AutolewdCollectorOptions,
-  AutolewdDocument,
-  AutolewdHandleButtonOptions,
-} from "../types/Autolewd";
+import type { AutolewdButtonOptions, AutolewdCollectorOptions, AutolewdHandleButtonOptions } from "../types/Autolewd";
 
 function createButtons(options: AutolewdButtonOptions) {
   const { showEnable, showDisable, disabled = false, userId } = options;
@@ -66,6 +63,7 @@ async function handleButtons(options: AutolewdHandleButtonOptions) {
   }
 
   // Enable/Update autolewd
+  const jitter = Math.random() * AUTOLEWD_POSTING_INTERVAL;
   await AutolewdModel.updateOne(
     { guildId: commandInteraction.guild!.id },
     {
@@ -74,6 +72,7 @@ async function handleButtons(options: AutolewdHandleButtonOptions) {
         channelId: commandInteraction.channel!.id,
         userId: commandInteraction.user.id,
         category,
+        lastPostTime: getCurrentTimestamp() * 1000 - jitter,
       },
     },
     { upsert: true }
@@ -191,7 +190,7 @@ export class AutolewdCommand extends Command {
     }
 
     const category = (interaction.options.getString("category") as LewdCategory) || "random";
-    const existingDoc = await AutolewdModel.findOne({ guildId: interaction.guildId }).lean<AutolewdDocument>();
+    const existingDoc = await AutolewdModel.findOne({ guildId: interaction.guildId }).lean();
 
     let container: ContainerBuilder;
     const showEnable = true;

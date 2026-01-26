@@ -36,6 +36,12 @@ export class Autolewd {
     default: false,
   })
   public sentNotVotedWarning!: boolean;
+
+  @prop({
+    required: true,
+    default: null,
+  })
+  public lastPostTime!: number;
 }
 
 export const AutolewdModel = getModelForClass(Autolewd);
