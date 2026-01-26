@@ -53,4 +53,27 @@ export function startCatchers(client: SapphireClient) {
   mongoose.connection.on("error", err => {
     client.logger.error("Database error:", err);
   });
+
+  // Graceful shutdown
+  process.on("SIGINT", async () => {
+    try {
+      await mongoose.connection.close();
+      console.log("Core(database): MongoDB connection closed due to app termination");
+      process.exit(0);
+    } catch (error) {
+      console.error("Core(database): Error during shutdown:", error);
+      process.exit(1);
+    }
+  });
+
+  process.on("SIGTERM", async () => {
+    try {
+      await mongoose.connection.close();
+      console.log("Core(database): MongoDB connection closed due to SIGTERM");
+      process.exit(0);
+    } catch (error) {
+      console.error("Core(database): Error during shutdown:", error);
+      process.exit(1);
+    }
+  });
 }

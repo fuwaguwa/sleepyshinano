@@ -61,6 +61,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ~/projects/Shinano
+            git pull origin main
 
             cat > .env.production << EOF
             NODE_ENV=production
