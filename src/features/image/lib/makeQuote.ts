@@ -3,6 +3,7 @@ import path from "node:path";
 import sharp from "sharp";
 import type { ImageQuoteOptions } from "../types/Image";
 
+let overlayBufferCache: Buffer | undefined;
 const IMAGE_WIDTH = 1200;
 const IMAGE_HEIGHT = 675;
 const AVATAR_WIDTH_PERCENT = 0.52;
@@ -19,7 +20,13 @@ export async function createQuoteImage({ text, username, avatarUrl }: ImageQuote
     .grayscale()
     .toBuffer();
 
-  const overlayBuffer = await fs.readFile(OVERLAY_PATH);
+  let overlayBuffer: Buffer;
+  if (overlayBufferCache) {
+    overlayBuffer = overlayBufferCache;
+  } else {
+    overlayBuffer = await fs.readFile(OVERLAY_PATH);
+    overlayBufferCache = overlayBuffer;
+  }
 
   const calculateFontSize = (textLength: number): number => {
     if (textLength < 30) return 48;
