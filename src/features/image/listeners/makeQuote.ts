@@ -41,8 +41,8 @@ export class MakeQuoteContextMenuListener extends Listener {
     const avatarUrl = user.displayAvatarURL({ extension: "png", size: 512, forceStatic: true });
 
     const buffer = await createQuoteImage({ text: content, username, avatarUrl });
-    const image = new AttachmentBuilder(buffer, { name: "quote.png" });
-    const gallery = new MediaGalleryBuilder().addItems([{ media: { url: "attachment://quote.png" } }]);
+    const image = new AttachmentBuilder(buffer, { name: "quote.gif" });
+    const gallery = new MediaGalleryBuilder().addItems([{ media: { url: "attachment://quote.gif" } }]);
     const container = new ContainerBuilder().addMediaGalleryComponents(gallery);
     await interaction.editReply({
       flags: MessageFlags.IsComponentsV2,

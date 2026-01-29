@@ -1,6 +1,6 @@
 import { getModelForClass, modelOptions, prop } from "@typegoose/typegoose";
-import { LEWD_CATEGORIES } from "../../private-lewd/constants";
-import type { LewdCategory } from "../../private-lewd/types/Lewd";
+import { LEWD_CATEGORIES } from "../../private/constants";
+import type { LewdCategory } from "../../private/types/Lewd";
 
 @modelOptions({
   schemaOptions: {

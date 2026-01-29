@@ -17,7 +17,7 @@ import {
 } from "discord.js";
 import { buttonInteractionCollectorCache } from "../../../shared/lib/collectors";
 import { getCurrentTimestamp } from "../../../shared/lib/utils";
-import type { LewdCategory } from "../../private-lewd/types/Lewd";
+import type { LewdCategory } from "../../private/types/Lewd";
 import { AUTOLEWD_POSTING_INTERVAL } from "../constants";
 import { AutolewdModel } from "../models/Autolewd";
 import type { AutolewdButtonOptions, AutolewdCollectorOptions, AutolewdHandleButtonOptions } from "../types/Autolewd";

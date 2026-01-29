@@ -47,6 +47,7 @@ async function loadVirtualPieces() {
 
   await autoDiscoverPieces("interaction-handlers", "features/*/interaction-handlers/**/*.{ts,js}", baseDir);
 }
+
 async function main() {
   try {
     await connectToDatabase();

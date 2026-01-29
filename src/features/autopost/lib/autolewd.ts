@@ -13,8 +13,8 @@ import {
 } from "discord.js";
 import { IMMUNE_IDS, MAIN_GUILD_ID, SHINANO_CONFIG, TOPGG_EMOJI_ID, TOPGG_VOTE_URL } from "../../../shared/constants";
 import { getCurrentTimestamp } from "../../../shared/lib/utils";
-import { fetchRandomLewd, getRandomLewdCategory } from "../../private-lewd/lib/lewd";
-import type { LewdCategory, LewdMedia } from "../../private-lewd/types/Lewd";
+import { fetchRandomLewd, getRandomLewdCategory } from "../../private/lib/lewd";
+import type { LewdCategory, LewdMedia } from "../../private/types/Lewd";
 import { UserVoteModel } from "../../vote/models/UserVote";
 import { AUTOLEWD_POSTING_INTERVAL } from "../constants";
 import { AutolewdModel } from "../models/Autolewd";

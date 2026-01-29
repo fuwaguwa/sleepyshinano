@@ -29,7 +29,7 @@ async function collectStream(stream: Readable): Promise<Buffer> {
   });
 }
 
-// Cache for overlay frames to avoid hitting disk every command
+// Cache for overlay frames
 const framesCache = new Map<string, Image[]>();
 const framesLoading = new Map<string, Promise<Image[]>>();
 
