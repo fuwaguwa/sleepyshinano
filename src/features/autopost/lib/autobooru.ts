@@ -159,7 +159,9 @@ export class ShinanoAutobooru {
 
           if (!isLowkACoolGuy && !validVote && !autobooru.sentNotVotedWarning) {
             const voteMessage = new TextDisplayBuilder().setContent("### ❌️ Vote Expired");
-            const voteInfo = new TextDisplayBuilder().setContent("Please vote for Shinano to continue posting!");
+            const voteInfo = new TextDisplayBuilder().setContent(
+              `<@${autobooru.userId}>, please vote for Shinano to continue posting!`
+            );
             const separator = new SeparatorBuilder();
             const links = new ActionRowBuilder<ButtonBuilder>().addComponents(
               new ButtonBuilder()
@@ -183,7 +185,6 @@ export class ShinanoAutobooru {
 
             await channel.send({
               flags: MessageFlags.IsComponentsV2,
-              content: `<@${autobooru.userId}>,`,
               components: [voteContainer],
             });
 
