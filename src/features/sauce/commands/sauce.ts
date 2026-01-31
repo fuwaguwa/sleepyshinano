@@ -42,8 +42,6 @@ export class SauceCommand extends Command {
   }
 
   public override async chatInputRun(interaction: ChatInputCommandInteraction) {
-    if (!interaction.deferred) await interaction.deferReply();
-
     const link = interaction.options.getString("link");
     const media = interaction.options.getAttachment("media");
     const ERROR_EMBED = new EmbedBuilder().setColor("Red");
@@ -61,11 +59,15 @@ export class SauceCommand extends Command {
       return interaction.editReply({ embeds: [ERROR_EMBED] });
     }
 
-    // Ephemeral if in a non-NSFW TextChannel
+    const isPrivateChannel = interaction.context === InteractionContextType.PrivateChannel;
+    const guildTextIsNotNsfw = interaction.channel?.type === 0 && !interaction.channel.nsfw;
+    const foreignGuild = !interaction.guild;
+    const ephemeralCheck = guildTextIsNotNsfw || isPrivateChannel || foreignGuild;
+
     await getSauce({
       interaction,
       link: imageUrl,
-      ephemeral: interaction.channel?.type === 0 && !interaction.channel.nsfw,
+      ephemeral: ephemeralCheck,
     });
   }
 }
