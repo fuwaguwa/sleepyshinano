@@ -107,6 +107,8 @@ export class ShinanoAutobooru {
         $or: [{ nextPostTime: null }, { nextPostTime: { $lte: now } }], // less than or equal to
       });
 
+      if (autoboorus.length === 0) return;
+
       container.logger.info(`Autobooru: Processing ${autoboorus.length} servers due for posting`);
 
       for (const autobooru of autoboorus) {
