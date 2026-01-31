@@ -52,7 +52,7 @@ export class Autobooru {
     required: true,
     default: null,
   })
-  public lastPostTime!: number;
+  public nextPostTime!: number;
 }
 
 export const AutobooruModel = getModelForClass(Autobooru);

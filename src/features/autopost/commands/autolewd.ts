@@ -63,7 +63,6 @@ async function handleButtons(options: AutolewdHandleButtonOptions) {
   }
 
   // Enable/Update autolewd
-  const jitter = Math.random() * AUTOLEWD_POSTING_INTERVAL;
   await AutolewdModel.updateOne(
     { guildId: commandInteraction.guild!.id },
     {
@@ -72,7 +71,7 @@ async function handleButtons(options: AutolewdHandleButtonOptions) {
         channelId: commandInteraction.channel!.id,
         userId: commandInteraction.user.id,
         category,
-        lastPostTime: getCurrentTimestamp() * 1000 - jitter,
+        nextPostTime: getCurrentTimestamp() * 1000 + AUTOLEWD_POSTING_INTERVAL,
       },
     },
     { upsert: true }

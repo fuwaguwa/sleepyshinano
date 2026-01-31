@@ -27,11 +27,13 @@ export class ShinanoAutobooru {
 
     const isDevelopment = SHINANO_CONFIG.nodeEnv === "development";
     const intervalTime = isDevelopment ? 10000 : AUTOBOORU_POSTING_INTERVAL;
+    // checkInterval < intervalTime
+    const checkInterval = 5000;
 
     await this.processAutobooru(isDevelopment, intervalTime);
     setInterval(async () => {
       await this.processAutobooru(isDevelopment, intervalTime);
-    }, intervalTime);
+    }, checkInterval);
   }
 
   private async sendBooruToChannel(
@@ -102,7 +104,7 @@ export class ShinanoAutobooru {
       const now = getCurrentTimestamp() * 1000;
 
       const autoboorus = await AutobooruModel.find({
-        $or: [{ lastPostTime: null }, { lastPostTime: { $lte: now - intervalTime } }], // less than or equal to
+        $or: [{ nextPostTime: null }, { nextPostTime: { $lte: now } }], // less than or equal to
       });
 
       container.logger.info(`Autobooru: Processing ${autoboorus.length} servers due for posting`);
@@ -198,8 +200,7 @@ export class ShinanoAutobooru {
           const success = await this.sendBooruToChannel(channel, autobooru.userId, tags, isRandom, autobooru.site);
 
           if (success) {
-            const jitter = Math.random() * AUTOBOORU_POSTING_INTERVAL;
-            autobooru.lastPostTime = now - jitter;
+            autobooru.nextPostTime = now + intervalTime;
             await autobooru.save();
 
             container.logger.info(

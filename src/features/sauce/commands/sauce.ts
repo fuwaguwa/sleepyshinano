@@ -7,7 +7,7 @@ import {
   InteractionContextType,
 } from "discord.js";
 import { getSauce } from "../lib/sauce";
-import { isImageAndGif } from "../lib/utils";
+import { isImageAndGif, isTextChannelNonNSFW } from "../lib/utils";
 
 @ApplyOptions<CommandOptions>({
   description: "Find sauce for an image/GIF with SauceNAO",
@@ -60,9 +60,9 @@ export class SauceCommand extends Command {
     }
 
     const isPrivateChannel = interaction.context === InteractionContextType.PrivateChannel;
-    const guildTextIsNotNsfw = interaction.channel?.type === 0 && !interaction.channel.nsfw;
+    const isNonNsfw = isTextChannelNonNSFW(interaction);
     const foreignGuild = !interaction.guild;
-    const ephemeralCheck = guildTextIsNotNsfw || isPrivateChannel || foreignGuild;
+    const ephemeralCheck = isNonNsfw || isPrivateChannel || foreignGuild;
 
     await getSauce({
       interaction,

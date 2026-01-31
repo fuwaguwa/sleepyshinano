@@ -70,7 +70,6 @@ async function handleButtons(options: AutobooruHandleButtonsOptions) {
   }
 
   // Enable/Update autobooru
-  const jitter = Math.random() * AUTOBOORU_POSTING_INTERVAL;
   await AutobooruModel.updateOne(
     { guildId: commandInteraction.guild!.id },
     {
@@ -81,7 +80,7 @@ async function handleButtons(options: AutobooruHandleButtonsOptions) {
         site,
         tags,
         isRandom,
-        lastPostTime: getCurrentTimestamp() * 1000 - jitter,
+        nextPostTime: getCurrentTimestamp() * 1000 + AUTOBOORU_POSTING_INTERVAL,
       },
     },
     { upsert: true }

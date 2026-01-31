@@ -25,11 +25,13 @@ export class ShinanoAutolewd {
 
     const isDevelopment = SHINANO_CONFIG.nodeEnv === "development";
     const intervalTime = isDevelopment ? 10000 : AUTOLEWD_POSTING_INTERVAL;
+    // checkInterval < intervalTime
+    const checkInterval = 5000;
 
     await this.processAutolewd(isDevelopment, intervalTime);
     setInterval(async () => {
       await this.processAutolewd(isDevelopment, intervalTime);
-    }, intervalTime);
+    }, checkInterval);
   }
 
   private async sendLewdToChannel(channel: TextChannel, category: LewdCategory | null): Promise<boolean> {
@@ -77,11 +79,13 @@ export class ShinanoAutolewd {
     try {
       if (isDevelopment) return this.processDevelopmentMode();
 
-      const now = Date.now();
+      const now = getCurrentTimestamp() * 1000;
 
       const autolewds = await AutolewdModel.find({
-        $or: [{ lastPostTime: null }, { lastPostTime: { $lte: now - intervalTime } }],
+        $or: [{ nextPostTime: null }, { nextPostTime: { $lte: now } }],
       });
+
+      if (autolewds.length === 0) return;
 
       container.logger.info(`Autolewd: Processing ${autolewds.length} servers due for posting`);
 
@@ -192,8 +196,8 @@ export class ShinanoAutolewd {
           const success = await this.sendLewdToChannel(channel, category);
 
           if (success) {
-            const jitter = Math.random() * AUTOLEWD_POSTING_INTERVAL;
-            autolewd.lastPostTime = now - jitter;
+            autolewd.nextPostTime = now + intervalTime;
+
             await autolewd.save();
 
             container.logger.info(`Autolewd: Sent lewd to ${autolewd.guildId} in channel ${autolewd.channelId}`);

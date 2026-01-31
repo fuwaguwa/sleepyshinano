@@ -41,7 +41,7 @@ export class Autolewd {
     required: true,
     default: null,
   })
-  public lastPostTime!: number;
+  public nextPostTime!: number;
 }
 
 export const AutolewdModel = getModelForClass(Autolewd);
