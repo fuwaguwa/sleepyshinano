@@ -91,7 +91,7 @@ async function handleButtons(options: AutobooruHandleButtonsOptions) {
     .addTextDisplayComponents(
       new TextDisplayBuilder().setContent(`## Autobooru has been ${isUpdate ? "updated" : "enabled"}!`),
       new TextDisplayBuilder().setContent(
-        `User: <@${commandInteraction.user.id}>\nChannel: <#${commandInteraction.channelId}>\nChannel: **${site}**Tags: **${tags}**`
+        `User: <@${commandInteraction.user.id}>\nChannel: <#${commandInteraction.channelId}>\nSite: **${site}**\nTags: **${tags}**`
       )
     )
     .setAccentColor([0, 255, 0]);
@@ -294,7 +294,7 @@ export class AutobooruCommand extends Subcommand {
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent("## Autobooru has already been setup!"),
           new TextDisplayBuilder().setContent(
-            `User: <@${existingDoc.userId}>\nChannel: <#${existingDoc.channelId}>\nSite: **${existingDoc.site}**\nTag(s): **${existingDoc.tags}**\n`
+            `User: <@${existingDoc.userId}>\nChannel: <#${existingDoc.channelId}>\nSite: **${existingDoc.site}**\nTag(s): **${existingDoc.tags}**`
           )
         )
         .addSeparatorComponents(separator)
